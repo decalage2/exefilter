@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# -*- coding: latin-1 -*-
+# -*- coding: iso-8859-1 -*-
 """
 Filtre_PDF - ExeFilter
 
@@ -16,22 +16,27 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 
 @contact: U{Philippe Lagadec<mailto:philippe.lagadec(a)laposte.net>}
 
-@copyright: DGA/CELAR 2004-2007
-@license: CeCILL (open-source compatible GPL) - cf. code source ou fichier LICENCE.txt joint
+@copyright: DGA/CELAR 2004-2008
+@copyright: NATO/NC3A 2008 (modifications PL apres v1.1.0)
 
-@version: 1.01
+@license: CeCILL (open-source compatible GPL)
+          cf. code source ou fichier LICENCE.txt joint
+
+@version: 1.02
 
 @status: beta
 """
+#==============================================================================
 __docformat__ = 'epytext en'
 
-__date__      = "2008-02-19"
-__version__   = "1.01"
+__date__    = "2008-03-24"
+__version__ = "1.02"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
 
-# Copyright DGA/CELAR 2004-2007
+# Copyright DGA/CELAR 2004-2008
+# Copyright NATO/NC3A 2008 (PL changes after v1.1.0)
 # Auteurs:
 # - Philippe Lagadec (PL) - philippe.lagadec(a)laposte.net
 # - Arnaud Kerréneur (AK) - arnaud.kerreneur(a)dga.defense.gouv.fr
@@ -72,6 +77,8 @@ __version__   = "1.01"
 # 12/01/2007 v1.00 PL: - version 1.00 officielle
 # 2008-02-19 v1.01 PL: - licence CeCILL
 #                      - ajout suppression de mots-cles actifs (Javascript, ...)
+# 2008-03-24 v1.02 PL: - ajout de _() pour traduction gettext des chaines
+#                      - simplification dans nettoyer() en appelant resultat_*
 
 # A FAIRE:
 #------------------------------------------------------------------------------
@@ -117,7 +124,7 @@ class Filtre_PDF (Filtre.Filtre):
     @cvar version: version du filtre
     """
 
-    nom = "Document PDF"
+    nom = _(u"Document PDF")
     extensions = [".pdf"]
     format_conteneur = False
     extractible = False
@@ -196,18 +203,17 @@ class Filtre_PDF (Filtre.Filtre):
                 Journal.info2 (u"Des objets PDF actifs ont ete trouves et desactives.")
                 # Le fichier nettoye, on remplace la copie temporaire:
                 fichier.remplacer_copie_temp(chem_temp)
-                return Resultat.Resultat(Resultat.NETTOYE,
-                    [self.nom + " : objets PDF actifs supprimés"], fichier)
+                return self.resultat_nettoye(fichier)
+                #return Resultat.Resultat(Resultat.NETTOYE,
+                #    [self.nom + " : objets PDF actifs supprimés"], fichier)
             else:
                 # pas de contenu actif
                 Journal.info2 (u"Aucun contenu PDF actif n'a ete trouve.")
                 # on efface le ficher temporaire:
                 os.remove(chem_temp)
-                return Resultat.Resultat(Resultat.ACCEPTE,
-                    self.nom + " : pas de contenu actif détecté", fichier)
+                return self.resultat_accepte(fichier)
         else:
-            resultat = Resultat.Resultat(Resultat.ACCEPTE,
-                    self.nom + " : pas de contenu actif détecté", fichier)
+            resultat = self.resultat_accepte(fichier)
         return resultat
 
 

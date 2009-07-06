@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# -*- coding: latin-1 -*-
+# -*- coding: iso-8859-1 -*-
 """
 Filtre - ExeFilter
 
@@ -15,24 +15,27 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 
 @contact: U{Philippe Lagadec<mailto:philippe.lagadec(a)laposte.net>}
 
-@copyright: DGA/CELAR 2004-2007
-@license: CeCILL (open-source compatible GPL) - cf. code source ou fichier LICENCE.txt joint
+@copyright: DGA/CELAR 2004-2008
+@copyright: NATO/NC3A 2008 (modifications PL apres v1.1.0)
 
-@version: 1.01
+@license: CeCILL (open-source compatible GPL)
+          cf. code source ou fichier LICENCE.txt joint
+
+@version: 1.02
 
 @status: beta
 """
 #==============================================================================
 __docformat__ = 'epytext en'
 
-#__author__  = "Philippe Lagadec"
-__date__    = "2007-11-02"
-__version__ = "1.01"
+__date__    = "2008-03-24"
+__version__ = "1.02"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
 
-# Copyright DGA/CELAR 2004-2007
+# Copyright DGA/CELAR 2004-2008
+# Copyright NATO/NC3A 2008 (PL changes after v1.1.0)
 # Auteurs:
 # - Philippe Lagadec (PL) - philippe.lagadec(a)laposte.net
 # - Arnaud Kerréneur (AK) - arnaud.kerreneur(a)dga.defense.gouv.fr
@@ -72,8 +75,14 @@ __version__ = "1.01"
 # 2004-2007        PL: - nombreuses évolutions
 # 12/01/2007 v1.00 PL: - version 1.00 officielle
 # 2007-09-10 v1.01 PL: - ajout licence CeCILL
+# 2008-03-24 v1.02 PL: - ajout de _() pour traduction gettext des chaines
+#                      - ajout methodes resultat_*() pour simplifier filtres
 
 # A FAIRE:
+# - Completer fonctions resultat_*() pour retourner des objets Resultat
+#   standards et homogeneiser/simplifier les filtres.
+# - ajouter des fonctions communes pour simplifier la gestion des fichiers
+#   temporaires lors du nettoyage de fichiers
 #------------------------------------------------------------------------------
 
 #=== IMPORTS ==================================================================
@@ -81,6 +90,7 @@ __version__ = "1.01"
 # modules du projet:
 from commun import *
 import Parametres
+import Resultat
 
 #=== CONSTANTES ===============================================================
 
@@ -113,7 +123,7 @@ class Filtre:
     """
 
     # attributs de la classe, communs à tous les objets Filtre:
-    nom = "Filtre Generique"    # nom détaillé du filtre
+    nom = _(u"Filtre Generique")    # nom détaillé du filtre
     nom_code = "GEN"        # nom de code du filtre
     extensions = []            # liste des extensions de fichiers possibles
     format_conteneur = False    # indique si c'est un format conteneur
@@ -137,8 +147,8 @@ class Filtre:
         # on commence par créer un dictionnaire de paramètres par défaut
         self.parametres = {}
         # le seul paramètre commun à tous les filtres est "format_autorise":
-        Parametres.Parametre("format_autorise", bool, nom="Format autorisé",
-            description="indique si ce format est autorisé ou non par la politique de filtrage",
+        Parametres.Parametre("format_autorise", bool, nom=_(u"Format autorisé"),
+            description=_(u"indique si ce format est autorisé ou non par la politique de filtrage"),
             valeur_defaut=True).ajouter(self.parametres)
         # si des paramètres ont été fournis au constructeur, on les met à jour
         if parametres:
@@ -166,5 +176,84 @@ class Filtre:
         Retourne un code résultat suivant l'action effectuée."""
         raise NotImplementedError
 
+
+    def resultat_accepte (self, fichier):
+        """
+        Retourne un objet resultat pour un fichier accepte.
+
+        @param: objet Fichier correspondant
+        """
+        return Resultat.Resultat(Resultat.ACCEPTE,
+            self.nom + _(u" : Pas de contenu actif détecté"), fichier)
+
+
+    def resultat_nettoye (self, fichier):
+        """
+        Retourne un objet resultat pour un fichier nettoye.
+
+        @param: objet Fichier correspondant
+        """
+        return Resultat.Resultat(Resultat.NETTOYE,
+            self.nom + _(u" : Contenu actif détecté et nettoyé"), fichier)
+
+
+    def resultat_format_incorrect (self, fichier, erreur=None):
+        """
+        Retourne un objet resultat pour un fichier dont le format est incorrect
+        ou non supporte. Exemple: voir Filtre_Zip.
+
+        @param: objet Fichier correspondant
+        @param erreur: message d'erreur optionnel pour donner plus de details
+        """
+        msg = self.nom + _(u" : Format de fichier incorrect ou non supporté, ne peut être analysé.")
+        if erreur: msg += u"(%s)" % erreur
+        Journal.info2(msg)
+        return Resultat.Resultat(Resultat.FORMAT_INCORRECT, msg, fichier)
+
+
+    def resultat_analyse_impossible (self, fichier, raison=None, erreur=None):
+        """
+        Retourne un objet resultat pour un fichier dont l'analyse est impossible
+        a cause d'une erreur survenue lors de l'analyse.
+
+        @param: objet Fichier correspondant
+        @param raison: details optionnels sur la raison du refus
+        @param erreur: message d'erreur optionnel pour donner plus de details
+        """
+        msg = self.nom + " : "
+        if raison: msg += raison + ", "
+        msg += _(u"Analyse impossible.")
+        if erreur: msg += u"(%s)" % erreur
+        Journal.info2(msg)
+        return Resultat.Resultat(Resultat.REFUSE, msg, fichier)
+
+
+    def resultat_chiffre (self, fichier, erreur=None):
+        """
+        Retourne un objet resultat pour un fichier dont l'analyse est impossible
+        parce que ce fichier est chiffre.
+
+        @param: objet Fichier correspondant
+        @param erreur: message d'erreur optionnel pour donner plus de details
+        """
+        return self.resultat_analyse_impossible(fichier,
+            raison=_(u"Fichier chiffré"), erreur=erreur)
+
+
+    def resultat_nettoyage_impossible (self, fichier, raison=None, erreur=None):
+        """
+        Retourne un objet resultat pour un fichier dont le nettoyage est
+        impossible a cause d'une erreur survenue lors du nettoyage.
+
+        @param: objet Fichier correspondant
+        @param raison: details optionnels sur la raison du refus
+        @param erreur: message d'erreur optionnel pour donner plus de details
+        """
+        msg = self.nom + " : "
+        if raison: msg += raison + ", "
+        msg += _(u"Nettoyage impossible.")
+        if erreur: msg += u"(%s)" % erreur
+        Journal.info2(msg)
+        return Resultat.Resultat(Resultat.REFUSE, msg, fichier)
 
 

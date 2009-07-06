@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# -*- coding: latin-1 -*-
+# -*- coding: iso-8859-1 -*-
 """
 ExeFilter - Fonctions, constantes et variables communes а tous les modules.
 
@@ -243,7 +243,7 @@ if __name__ == "__main__":
     print ''
     print_console('print_console avec accents: йиклза')
     print ''
-    
+
     plx._test_Popen_timer()
 
 

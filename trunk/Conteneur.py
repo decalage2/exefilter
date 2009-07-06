@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# -*- coding: latin-1 -*-
+# -*- coding: iso-8859-1 -*-
 """
 Conteneur - ExeFilter
 
@@ -15,24 +15,25 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 
 @contact: U{Philippe Lagadec<mailto:philippe.lagadec(a)laposte.net>}
 
-@copyright: DGA/CELAR 2004-2007
+@copyright: DGA/CELAR 2004-2008
+@copyright: NATO/NC3A 2008 (PL changes after v1.1.0)
 @license: CeCILL (open-source compatible GPL) - cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.01
+@version: 1.02
 
 @status: beta
 """
 #==============================================================================
 __docformat__ = 'epytext en'
 
-#__author__  = "Philippe Lagadec, Arnaud Kerréneur (DGA/CELAR)"
-__date__    = "2007-11-02"
-__version__ = "1.01"
+__date__    = "2008-03-24"
+__version__ = "1.02"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
 
-# Copyright DGA/CELAR 2004-2007
+# Copyright DGA/CELAR 2004-2008
+# Copyright NATO/NC3A 2008 (modifications PL apres v1.1.0)
 # Auteurs:
 # - Philippe Lagadec (PL) - philippe.lagadec(a)laposte.net
 # - Arnaud Kerréneur (AK) - arnaud.kerreneur(a)dga.defense.gouv.fr
@@ -74,6 +75,7 @@ __version__ = "1.01"
 # 12/01/2007 v1.00 PL: - version 1.00 officielle
 # 2007-10-28 v1.01 PL: - ajout licence CeCILL
 #                      - amelioration portabilite creer_rep_temp avec os.path.join
+# 2008-03-24 v1.02 PL: - ajout de _() pour traduction gettext des chaines
 
 #------------------------------------------------------------------------------
 # A FAIRE:
@@ -160,7 +162,7 @@ class Conteneur:
             Journal.debug(u"chemin_complet = %s" % self.chemin_complet)
         self.creer_rep_temp()
         Journal.debug(u"Répertoire temporaire = %s" % self.rep_temp_complet)
-        self.type = "Conteneur generique"
+        self.type = _(u"Conteneur generique")
 
 
     def creer_rep_temp(self):
@@ -252,17 +254,21 @@ class Conteneur:
             ou None. Si None, la politique par défaut sera appliquée.
         @type  politique: objet L{Politique.Politique}
         """
+        import Conteneur_Zip # import necessaire plus bas, ne peut etre fait
+                             # a l'init du module car reference croisee...
         liste_resultats=[]    # liste des objets Resultat de chaque fichier
         # on commence par lister les fichiers
         self.lister_fichiers()
         for fichier in self.liste_fichiers:
-            Journal.info2(u"FICHIER: %s" % fichier.chemin_complet)
+            Journal.info2(_(u"FICHIER: %s") % fichier.chemin_complet)
             # test de l'interruption de transfert par l'utilisateur
             if commun.continuer_transfert == False:
                 break
             fichier.nettoyer(politique)
             # on incrémente le compteur d'avancement sauf pour les conteneurs zip
-            if self.type != "Archive Zip"  : commun.compteur_avancement += 1
+            #if self.type != "Archive Zip"  : # test incorrect si OS non fr
+            if isinstance(self, Conteneur_Zip.Conteneur_Zip):
+                commun.compteur_avancement += 1
             # on ajoute le résultat à la liste des résultats
             liste_resultats.append(fichier.resultat_fichier)
             #if fichier.rejet:

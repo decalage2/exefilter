@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# -*- coding: latin-1 -*-
+# -*- coding: iso-8859-1 -*-
 """
 Filtre_HTML - ExeFilter
 
@@ -16,22 +16,27 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 
 @contact: U{Philippe Lagadec<mailto:philippe.lagadec(a)laposte.net>}
 
-@copyright: DGA/CELAR 2004-2007
-@license: CeCILL (open-source compatible GPL) - cf. code source ou fichier LICENCE.txt joint
+@copyright: DGA/CELAR 2004-2008
+@copyright: NATO/NC3A 2008 (modifications PL apres v1.1.0)
 
-@version: 1.01
+@license: CeCILL (open-source compatible GPL)
+          cf. code source ou fichier LICENCE.txt joint
+
+@version: 1.02
 
 @status: beta
 """
+#==============================================================================
 __docformat__ = 'epytext en'
 
-__date__      = "2008-02-19"
-__version__   = "1.01"
+__date__    = "2008-03-24"
+__version__ = "1.02"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
 
-# Copyright DGA/CELAR 2004-2007
+# Copyright DGA/CELAR 2004-2008
+# Copyright NATO/NC3A 2008 (PL changes after v1.1.0)
 # Auteurs:
 # - Philippe Lagadec (PL) - philippe.lagadec(a)laposte.net
 # - Arnaud Kerréneur (AK) - arnaud.kerreneur(a)dga.defense.gouv.fr
@@ -71,6 +76,8 @@ __version__   = "1.01"
 # 2004-2006     PL,AK: - evolutions
 # 12/01/2007 v1.00 PL: - version 1.00 officielle
 # 2008-02-24 v1.01 PL: - licence CeCILL
+# 2008-03-24 v1.02 PL: - ajout de _() pour traduction gettext des chaines
+#                      - simplification dans nettoyer() en appelant resultat_*
 
 #------------------------------------------------------------------------------
 # A FAIRE:
@@ -166,7 +173,7 @@ class HTML_META (HTMLParser_base):
                         if variables[0].strip() == "charset":
                             # s'il y avait déjà un charset, problème
                             if charset != "":
-                                raise ValueError, "Double charset dans une balise META"
+                                raise ValueError, _(u"Double charset dans une balise META")
                             charset = variables[1].strip()
                             Journal.debug(u'trouvé attribut content = "charset=%s"' % charset)
             elif nom_attr == "http-equiv" and val_attr == "content-type":
@@ -176,10 +183,10 @@ class HTML_META (HTMLParser_base):
         if http_equiv and charset != "":
             # si un encodage différent de charset était déjà spécifié, incohérence:
             if self.encodage_META != None and charset != self.encodage_META:
-                raise ValueError, "Double encodage META incoherent."
+                raise ValueError, _(u"Double encodage META incoherent.")
             # idem si l'encodage du BOM et celui de la balise META sont différents:
             elif self.encodage_BOM != None and charset != self.encodage_BOM:
-                raise ValueError, "Encodages BOM et META incoherents."
+                raise ValueError, _(u"Encodages BOM et META incoherents.")
             else:
                 self.encodage_META = charset
 
@@ -215,7 +222,7 @@ class HTML_Nettoyeur(HTMLParser_base):
         tag: nom de la balise supprimée."""
         self._suppression = True
         self._balise_suppr = tag
-        self._fdest.write("<!-- balise %s supprimee -->" % tag)
+        self._fdest.write(_(u"<!-- balise %s supprimee -->") % tag)
         self.nettoyage = True
 
     def _supprimer_balise_fin(self, tag):
@@ -248,7 +255,7 @@ class HTML_Nettoyeur(HTMLParser_base):
                     # à la liste des attributs nettoyés.
                     # On note qu'au moins un attribut est supprimé
                     suppr_attr = True
-                    Journal.info2(u"attribut interdit: %s=..." % nom_attr)
+                    Journal.info2(_(u"attribut interdit: %s=...") % nom_attr)
                 elif ":" in val_attr:
                     # la valeur contient ":", ce doit être
                     # une URL de type "protocole:..." ou "*script:..."
@@ -260,7 +267,7 @@ class HTML_Nettoyeur(HTMLParser_base):
                         attrs_bruts += attr_brut
                     else:
                         suppr_attr = True
-                        Journal.info2(u"attribut interdit: %s=%s:..." %
+                        Journal.info2(_(u"attribut interdit: %s=%s:...") %
                             (nom_attr, proto))
                 else:
                     # sinon pas de problème, l'attribut est
@@ -399,7 +406,7 @@ class Filtre_HTML (Filtre.Filtre):
     @cvar version: version du filtre
     """
 
-    nom = "Document HTML"
+    nom = _(u"Document HTML")
     extensions = [".html", ".htm"] # et .php, .asp, .cgi, ... ?
     format_conteneur = False
     extractible = False
@@ -436,7 +443,7 @@ class Filtre_HTML (Filtre.Filtre):
         encodage_BOM = lire_BOM(debut)
         if encodage_BOM:
             encodage = encodage_BOM
-            Journal.info2 (u"encodage d'après le BOM: %s" % encodage_BOM)
+            Journal.info2 (_(u"encodage d'après le BOM: %s") % encodage_BOM)
 
         # 3) 1ère passe d'analyse pour déterminer si une balise META indique un
         # autre encodage:
@@ -456,20 +463,18 @@ class Filtre_HTML (Filtre.Filtre):
             h.close()
         except HTMLParser.HTMLParseError:
             # erreur de syntaxe lors de l'analyse HTML:
-            Journal.info2("Erreur lors de l'analyse des balises META", exc_info=True)
+            Journal.info2(_(u"Erreur lors de l'analyse des balises META"), exc_info=True)
             erreur = str(sys.exc_info()[1])
-            return Resultat.Resultat(Resultat.REFUSE,
-                "%s : Syntaxe HTML incorrecte, nettoyage impossible (%s)"
-                % (self.nom, erreur), fichier)
+            return self.resultat_analyse_impossible(fichier,
+                raison=_(u"Syntaxe HTML incorrecte"), erreur=erreur)
         except ValueError, UnicodeError:
             # si on obtient une de ces 2 erreurs, il s'agit de caractères
             # incorrects vis-à-vis de l'encodage, ou bien d'un double encodage
             # incohérent:
-            Journal.info2("Erreur lors de l'analyse des balises META", exc_info=True)
+            Journal.info2(_(u"Erreur lors de l'analyse des balises META"), exc_info=True)
             erreur = str(sys.exc_info()[1])
-            return Resultat.Resultat(Resultat.REFUSE,
-                "%s : Encodage du fichier incorrect, analyse impossible (%s)"
-                % (self.nom, erreur), fichier)
+            return self.resultat_analyse_impossible(fichier,
+                raison=_(u"Encodage du fichier incorrect"), erreur=erreur)
         except:
             # sinon on remonte l'exception:
             raise
@@ -477,14 +482,14 @@ class Filtre_HTML (Filtre.Filtre):
         # on récupère l'encodage fourni par une balise META, si c'est le cas:
         if h.encodage_META:
             encodage = h.encodage_META
-            Journal.info2 (u"encodage d'après la balise META: %s" % encodage)
+            Journal.info2 (_(u"encodage d'après la balise META: %s") % encodage)
 
         # 4) 2ème passe pour nettoyer le code HTML vers un fichier temporaire
         # Création d'un fichier HTML temporaire:
         #f_temp, chem_temp = tempfile.mkstemp(suffix=".html", dir=Conteneur.RACINE_TEMP)
         f_temp, chem_temp = tempfile.mkstemp(suffix=".html",
             dir=commun.politique.parametres['rep_temp'].valeur)
-        Journal.info2 (u"Fichier HTML temporaire: %s" % chem_temp)
+        Journal.info2 (_(u"Fichier HTML temporaire: %s") % chem_temp)
         # f_temp est un handle de fichier (cf. os.open), il faut le
         # convertir en objet file:
         #fich_dest = os.fdopen(f_temp, 'wb')
@@ -513,29 +518,25 @@ class Filtre_HTML (Filtre.Filtre):
             hn.close()
         except HTMLParser.HTMLParseError:
             # erreur de syntaxe lors de l'analyse HTML:
-            Journal.info2("Erreur lors du nettoyage HTML", exc_info=True)
+            Journal.info2(_(u"Erreur lors du nettoyage HTML"), exc_info=True)
             erreur = str(sys.exc_info()[1])
-            return Resultat.Resultat(Resultat.REFUSE,
-                "%s : Syntaxe HTML incorrecte, nettoyage impossible (%s)"
-                % (self.nom, erreur), fichier)
+            return self.resultat_nettoyage_impossible(fichier,
+                raison=_(u"Syntaxe HTML incorrecte"), erreur=erreur)
         except ValueError, UnicodeError:
             # si on obtient une de ces 2 erreurs, il s'agit de caractères
             # incorrects vis-à-vis de l'encodage, ou bien d'un double encodage
             # incohérent:
-            Journal.info2("Erreur lors du nettoyage HTML", exc_info=True)
+            Journal.info2(_(u"Erreur lors du nettoyage HTML"), exc_info=True)
             erreur = str(sys.exc_info()[1])
-            return Resultat.Resultat(Resultat.REFUSE,
-                "%s : Encodage du fichier incorrect, nettoyage impossible (%s)"
-                % (self.nom, erreur), fichier)
+            return self.resultat_nettoyage_impossible(fichier,
+                raison=_(u"Encodage du fichier incorrect"), erreur=erreur)
         # IL FAUDRAIT AUSSI SUPPRIMER LE FICHIER TEMP SI ERREUR !!
         fich_src.close()
         fich_dest.close()
         if hn.nettoyage:
-            resultat = Resultat.Resultat(Resultat.NETTOYE,
-                self.nom + " : contenu actif détecté et nettoyé", fichier)
+            resultat = self.resultat_nettoye(fichier)
         else:
-            resultat = Resultat.Resultat(Resultat.ACCEPTE,
-                self.nom + " : pas de contenu actif détecté", fichier)
+            resultat = self.resultat_accepte(fichier)
         # on modifie la date du nouveau fichier pour correspondre à
         # celle d'origine:
         date_fich = os.path.getmtime(copie_temp)

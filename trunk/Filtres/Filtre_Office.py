@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# -*- coding: latin-1 -*-
+# -*- coding: iso-8859-1 -*-
 """
 Filtre_Office - ExeFilter
 
@@ -17,22 +17,27 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 
 @contact: U{Philippe Lagadec<mailto:philippe.lagadec(a)laposte.net>}
 
-@copyright: DGA/CELAR 2004-2007
-@license: CeCILL (open-source compatible GPL) - cf. code source ou fichier LICENCE.txt joint
+@copyright: DGA/CELAR 2004-2008
+@copyright: NATO/NC3A 2008 (modifications PL apres v1.1.0)
 
-@version: 1.01
+@license: CeCILL (open-source compatible GPL)
+          cf. code source ou fichier LICENCE.txt joint
+
+@version: 1.02
 
 @status: beta
 """
+#==============================================================================
 __docformat__ = 'epytext en'
 
-__date__      = "2008-02-25"
-__version__   = "1.02"
+__date__    = "2008-03-24"
+__version__ = "1.02"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
 
-# Copyright DGA/CELAR 2004-2007
+# Copyright DGA/CELAR 2004-2008
+# Copyright NATO/NC3A 2008 (PL changes after v1.1.0)
 # Auteurs:
 # - Philippe Lagadec (PL) - philippe.lagadec(a)laposte.net
 # - Arnaud Kerréneur (AK) - arnaud.kerreneur(a)dga.defense.gouv.fr
@@ -75,6 +80,8 @@ __version__   = "1.02"
 # 2007-10-27 v1.01 PL: - ajout licence CeCILL
 #                      - ajout methodes suppression macros: win32, remplacer
 # 2008-02-06 v1.02 PL: - correction bug dans Infos_OLE.__init__
+# 2008-03-24       PL: - ajout de _() pour traduction gettext des chaines
+#                      - simplification dans nettoyer() en appelant resultat_*
 
 #------------------------------------------------------------------------------
 # A FAIRE:
@@ -213,7 +220,7 @@ class Infos_OLE:
         # par WordPad, il n'y a pas de sommaire.
         if sommaire == False and self.type_doc != WORD:
             self.type_doc = NON_DEFINI
-            
+
         # bugfix 2008-02-06: il faut fermer explicitement le fichier...
         ole.fp.close()
 
@@ -236,7 +243,7 @@ class _Filtre_Office (Filtre.Filtre):
     @cvar version: version du filtre
     """
 
-    nom = "Document MS Office generique"
+    nom = _(u"Document MS Office generique")
     extensions = []
     format_conteneur = False
     extractible = False
@@ -332,8 +339,9 @@ class _Filtre_Office (Filtre.Filtre):
         Retourne un code résultat suivant l'action effectuée."""
         # si c'est un fichier chiffré, on ne peut pas l'analyser correctement:
         if self.infos_ole.chiffre:
-            return Resultat.Resultat(Resultat.REFUSE,
-                self.nom + " : fichier chiffré, non analysable", fichier)
+            return self.resultat_chiffre(fichier)
+            #return Resultat.Resultat(Resultat.REFUSE,
+            #    self.nom + " : fichier chiffré, non analysable", fichier)
         if self.parametres["detecter_ole_pkg"].valeur == True:
             # détection d'objet OLE Package: A AMELIORER
             # (éviter de lire tout le fichier en mémoire)
@@ -341,8 +349,8 @@ class _Filtre_Office (Filtre.Filtre):
             buf = f.read().lower()
             f.close()
             if 'package\x00' in buf or '\x00package' in buf:
-                return Resultat.Resultat(Resultat.REFUSE,
-                    self.nom + " : contient un objet OLE Package", fichier)
+                return self.resultat_nettoyage_impossible(fichier,
+                    _(u"Contient un objet OLE Package"))
         if self.parametres["supprimer_macros"].valeur == True:
             # On choisit la methode la plus fiable en fonction des parametres:
             if self.parametres["macros_fpcmd"].valeur == True:
@@ -354,8 +362,7 @@ class _Filtre_Office (Filtre.Filtre):
             else:
                 resultat = self.supprimer_macros_remplacer(fichier)
         else:
-            resultat = Resultat.Resultat(Resultat.ACCEPTE,
-                self.nom + " : pas de contenu suspect détecté", fichier)
+            resultat = self.resultat_accepte(fichier)
         return resultat
 
 
@@ -369,8 +376,7 @@ class _Filtre_Office (Filtre.Filtre):
         """
         if self.motif_macros == None:
             # Pour certains formats cette methode simple ne fonctionne pas:
-            return Resultat.Resultat(Resultat.ACCEPTE,
-                self.nom + " : pas de contenu suspect détecté", fichier)
+            return self.resultat_accepte(fichier)
         # creation d'un fichier temporaire
         f_temp, chem_temp = tempfile.mkstemp(dir=self.politique.parametres['rep_temp'].valeur)
         Journal.info2 (u"Fichier temporaire: %s" % chem_temp)
@@ -386,17 +392,15 @@ class _Filtre_Office (Filtre.Filtre):
             Journal.info2 (u"Des macros VBA ont ete trouvees et desactivees.")
             # Le fichier nettoye, on remplace la copie temporaire:
             fichier.remplacer_copie_temp(chem_temp)
-            return Resultat.Resultat(Resultat.NETTOYE,
-                [self.nom + " : macro(s) supprimée(s)"], fichier)
+            return self.resultat_nettoye(fichier)#, _(u"Macro(s) VBA supprimée(s)"))
         else:
             # macros VBA non trouvees
             Journal.info2 (u"Aucune macro VBA n'a ete trouvee.")
             # on efface le ficher temporaire:
             os.remove(chem_temp)
-            return Resultat.Resultat(Resultat.ACCEPTE,
-                self.nom + " : pas de contenu suspect détecté", fichier)
+            return self.resultat_accepte(fichier)
 
-        
+
     def supprimer_macros_win32 (self, fichier):
         """
         Pour desactiver les macros VBA en utilisant l'API Win32 pour supprimer
@@ -417,15 +421,13 @@ class _Filtre_Office (Filtre.Filtre):
             istorage.DestroyElement(self.stream_macros)
             Journal.debug (u"Le stream %s a ete supprime." % self.stream_macros)
             Journal.info2 (u"Des macros VBA ont ete trouvees et desactivees.")
-            return Resultat.Resultat(Resultat.NETTOYE,
-                [self.nom + " : macro(s) supprimée(s)"], fichier)
+            return self.resultat_nettoye(fichier)#, _(u"Macro(s) VBA supprimée(s)"))
         except pythoncom.com_error, details:
             # exception specifique quand le stream n'existe pas
             if details[1] == 'STG_E_FILENOTFOUND':
                 # macros VBA non trouvees
                 Journal.info2 (u"Aucune macro VBA n'a ete trouvee.")
-                return Resultat.Resultat(Resultat.ACCEPTE,
-                    self.nom + " : pas de contenu suspect détecté", fichier)
+                return self.resultat_accepte(fichier)
             else:
                 # autre erreur pythoncom:
                 Journal.exception("Erreur lors du nettoyage des macros")
@@ -433,8 +435,8 @@ class _Filtre_Office (Filtre.Filtre):
             # toute autre erreur:
             Journal.exception("Erreur lors du nettoyage des macros")
         # Dans tous les cas si on arrive ici c'est qu'une erreur s'est produite
-        return Resultat.Resultat(Resultat.REFUSE,
-            self.nom + " : erreur lors du nettoyage des macros", fichier)
+        return self.resultat_nettoyage_impossible(fichier,
+            _(u"erreur lors du nettoyage des macros VBA"))
 
 
     def supprimer_macros_fpcmd (self, fichier):
@@ -454,19 +456,15 @@ class _Filtre_Office (Filtre.Filtre):
         # limiter le temps d'exécution (cf. commun.py):
         resultat_fprot = Popen_timer(args_fprot)
         if resultat_fprot == 0:
-            resultat = Resultat.Resultat(Resultat.ACCEPTE,
-                self.nom + " : pas de macro", fichier)
+            resultat = self.resultat_accepte(fichier)
         elif resultat_fprot == 6:
-            resultat = Resultat.Resultat(Resultat.NETTOYE,
-                [self.nom + " : macro(s) supprimée(s)"], fichier)
+            resultat = self.resultat_nettoye(fichier)
         elif resultat_fprot == EXIT_KILL_PTIMER:
-            resultat = Resultat.Resultat(Resultat.REFUSE,
-                self.nom + " : temps dépassé lors du nettoyage de macros",
-                fichier)
+            resultat = self.resultat_nettoyage_impossible(fichier,
+                _(u"temps dépassé lors du nettoyage des macros VBA"))
         else:
-            resultat = Resultat.Resultat(Resultat.REFUSE,
-                self.nom + " : macro(s) détectée(s), nettoyage impossible",
-                fichier)
+            resultat = self.resultat_nettoyage_impossible(fichier,
+                _(u"erreur lors du nettoyage des macros VBA"))
         return resultat
 
 #    F-Prot /ALL /AUTO /DIS /NOB /NOH /NOME /PAR /REMOVEA /SIL /TYP /OLD /REPORT=%s
@@ -503,7 +501,7 @@ class Filtre_Word (_Filtre_Office):
 
     """
 
-    nom = "Document MS Word"
+    nom = _(u"Document MS Word")
     extensions = [".doc", ".wbk", ".dot"]
 
     # date et version définies à partir de celles du module
@@ -514,7 +512,7 @@ class Filtre_Word (_Filtre_Office):
     # les desactiver:
     stream_macros = 'Macros'
 
-    # motif pour desactiver les macros: 
+    # motif pour desactiver les macros:
     # regex du motif a rechercher (r pour raw string):
     # Pour Word, 'Macros' en Unicode:
     regex_VBA = r'M\x00a\x00c\x00r\x00o\x00s'
@@ -558,7 +556,7 @@ class Filtre_Excel (_Filtre_Office):
 
     """
 
-    nom = "Classeur MS Excel"
+    nom = _(u"Classeur MS Excel")
     extensions = [".xls", '.xlt']
 
     # date et version définies à partir de celles du module
@@ -613,7 +611,7 @@ class Filtre_Powerpoint (_Filtre_Office):
 
     """
 
-    nom = "Presentation MS Powerpoint"
+    nom = _(u"Presentation MS Powerpoint")
     extensions = [".ppt", ".pps", ".pot"]
 
     # date et version définies à partir de celles du module
@@ -654,7 +652,7 @@ class Filtre_Visio (_Filtre_Office):
 
     """
 
-    nom = "Dessin MS Visio"
+    nom = _(u"Dessin MS Visio")
     extensions = [".vsd", ".vst", ".vss"]
 
     # date et version d?finies ? partir de celles du module
@@ -694,7 +692,7 @@ class Filtre_Project (_Filtre_Office):
 
     """
 
-    nom = "Projet MS Project"
+    nom = _(u"Projet MS Project")
     extensions = [".mpp", ".mpt"]
 
     # date et version d?finies ? partir de celles du module

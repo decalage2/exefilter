@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# -*- coding: latin-1 -*-
+# -*- coding: iso-8859-1 -*-
 """
 Conteneur_Repertoire - ExeFilter
 
@@ -15,24 +15,27 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 
 @contact: U{Philippe Lagadec<mailto:philippe.lagadec(a)laposte.net>}
 
-@copyright: DGA/CELAR 2004-2007
-@license: CeCILL (open-source compatible GPL) - cf. code source ou fichier LICENCE.txt joint
+@copyright: DGA/CELAR 2004-2008
+@copyright: NATO/NC3A 2008 (modifications PL apres v1.1.0)
 
-@version: 1.01
+@license: CeCILL (open-source compatible GPL)
+          cf. code source ou fichier LICENCE.txt joint
+
+@version: 1.02
 
 @status: beta
 """
 #==============================================================================
 __docformat__ = 'epytext en'
 
-#__author__  = "Philippe Lagadec, Arnaud Kerréneur (DGA/CELAR)"
-__date__    = "2007-11-02"
-__version__ = "1.01"
+__date__    = "2008-03-24"
+__version__ = "1.02"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
 
-# Copyright DGA/CELAR 2004-2007
+# Copyright DGA/CELAR 2004-2008
+# Copyright NATO/NC3A 2008 (PL changes after v1.1.0)
 # Auteurs:
 # - Philippe Lagadec (PL) - philippe.lagadec(a)laposte.net
 # - Arnaud Kerréneur (AK) - arnaud.kerreneur(a)dga.defense.gouv.fr
@@ -73,6 +76,7 @@ __version__ = "1.01"
 #                      - contributions de Y. Bidan et C. Catherin
 # 12/01/2007 v1.00 PL: - version 1.00 officielle
 # 2007-11-03 v1.01 PL: - ajout licence CeCILL
+# 2008-03-24 v1.02 PL: - ajout de _() pour traduction gettext des chaines
 
 #------------------------------------------------------------------------------
 # A FAIRE:
@@ -111,33 +115,33 @@ class Conteneur_Repertoire (Conteneur.Conteneur):
     La classe Conteneur_Repertoire correspond à un répertoire.
 
     """
-    
-    def __init__(self, nom_repertoire, nom_destination, rep_relatif_source, 
+
+    def __init__(self, nom_repertoire, nom_destination, rep_relatif_source,
                 fichier=None):
         """
         Constructeur d'objet Conteneur_Repertoire.
 
-        
+
         @param nom_repertoire: nom du répertoire du conteneur source.
         (chemin relatif par rapport au conteneur)
         @type nom_repertoire: str
-        
+
         @param nom_destination: nom de fichier/répertoire du conteneur nettoyé.
         @type nom_destination: str
-        
+
         @param fichier: objet Fichier du conteneur.
         @type fichier: str
-        
+
         """
         # nom source est le chemin absolu du répertoire source:
         chem_source = path(nom_repertoire).abspath().normpath()
         # on appelle d'abord le constructeur de base
         Conteneur.Conteneur.__init__(self, chem_source, nom_destination, rep_relatif_source, fichier)
-        self.type = "Repertoire"
+        self.type = _(u"Repertoire")
         self.taille_rep = 0
         print self
 
-    
+
     def lister_fichiers (self):
         """
         retourne la liste des objets Fichier du répertoire, qui n'est lue qu'une fois au 1er appel.
@@ -164,7 +168,7 @@ class Conteneur_Repertoire (Conteneur.Conteneur):
                 self.taille_rep += os.stat(fichier).st_size
         return self.taille_rep
 
-                
+
     def copie_temp (self, fichier):
         """
         copie le fichier vers un répertoire temporaire, et retourne
@@ -179,17 +183,17 @@ class Conteneur_Repertoire (Conteneur.Conteneur):
         Journal.debug(u"chem_temp = %s" % chem_temp)
         if not chem_temp.exists():
             chem_temp.makedirs()
-        fichier_temp = self.rep_temp_complet / fichier.chemin   
+        fichier_temp = self.rep_temp_complet / fichier.chemin
         fichier_source = self.chem_src / fichier.chemin
-        Journal.info2(u'Copie temporaire: "%s" -> "%s"...' % (fichier_source, fichier_temp))
+        Journal.info2(_(u'Copie temporaire: "%s" -> "%s"...') % (fichier_source, fichier_temp))
         fichier_source.copy2(fichier_temp)
 
         # droit en écriture sur le répertoire temporaire pour suppression
         #TODO: est-ce necessaire et sur ??
         os.chmod( path(fichier_temp).abspath().normpath(), stat.S_IRWXU )
-        
+
         return fichier_temp
-    
+
 
     def reconstruire (self):
         """
@@ -205,7 +209,7 @@ class Conteneur_Repertoire (Conteneur.Conteneur):
                 if not chem_dest_fich.exists():
                     chem_dest_fich.makedirs()
                 fichier_dest = self.chem_dest / self.rep_relatif_source / fichier.chemin
-                Journal.info2(u'Copie vers la destination: "%s" -> "%s"...' % (fichier._copie_temp, fichier_dest))
+                Journal.info2(_(u'Copie vers la destination: "%s" -> "%s"...') % (fichier._copie_temp, fichier_dest))
                 fichier._copie_temp.copy2(fichier_dest)
 
                 # on copie les fichiers nettoyés vers le répertoire archivage
@@ -213,9 +217,9 @@ class Conteneur_Repertoire (Conteneur.Conteneur):
                 if not chem_dest_fich.exists():
                     chem_dest_fich.makedirs()
                 fichier_dest = path(self.rep_archive) / path(commun.sous_rep_archive) / self.rep_relatif_source / fichier.chemin
-                debug('Copie: "%s" -> "%s"...' % (fichier._copie_temp, fichier_dest))
+                debug(_(u'Copie: "%s" -> "%s"...') % (fichier._copie_temp, fichier_dest))
                 fichier._copie_temp.copy2(fichier_dest)
-                
+
         # puis détruire le répertoire temporaire !
         debug ("effacement du rep temp partiel %s" % self.rep_temp_partiel)
         self.rep_temp_partiel.rmtree()

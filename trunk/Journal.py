@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# -*- coding: latin-1 -*-
+# -*- coding: iso-8859-1 -*-
 """
 Journal - ExeFilter
 
@@ -143,7 +143,7 @@ class Formatter_console (logging.Formatter):
         # on appelle d'abord le format() d'origine pour obtenir la chaîne:
         chaine = logging.Formatter.format(self, record)
         # ensuite on convertit le résultat si besoin:
-        return str_console(chaine)
+        return str_console(chaine, errors='replace')
 
 #------------------------------------------------------------------------------
 # classe Formatter_Latin1
@@ -159,7 +159,7 @@ class Formatter_Latin1 (logging.Formatter):
         # on appelle d'abord le format() d'origine pour obtenir la chaîne:
         chaine = logging.Formatter.format(self, record)
         # ensuite on convertit le résultat en str si c'est de l'Unicode:
-        return str_lat1(chaine)
+        return str_lat1(chaine, errors='replace')
 
 
 

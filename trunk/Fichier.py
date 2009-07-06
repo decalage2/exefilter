@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# -*- coding: latin-1 -*-
+# -*- coding: iso-8859-1 -*-
 """
 Fichier - ExeFilter
 
@@ -15,10 +15,11 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 
 @contact: U{Philippe Lagadec<mailto:philippe.lagadec(a)laposte.net>}
 
-@copyright: DGA/CELAR 2004-2007
+@copyright: DGA/CELAR 2004-2008
+@copyright: NATO/NC3A 2008 (PL changes after v1.1.0)
 @license: CeCILL (open-source compatible GPL) - cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.01
+@version: 1.02
 
 @status: beta
 """
@@ -26,14 +27,14 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 #==============================================================================
 __docformat__ = 'epytext en'
 
-#__author__  = "Philippe Lagadec, Arnaud Kerréneur"
-__date__    = "2007-09-10"
-__version__ = "1.01"
+__date__    = "2008-03-24"
+__version__ = "1.02"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
 
-# Copyright DGA/CELAR 2004-2007
+# Copyright DGA/CELAR 2004-2008
+# Copyright NATO/NC3A 2008 (PL changes after v1.1.0)
 # Auteurs:
 # - Philippe Lagadec (PL) - philippe.lagadec(a)laposte.net
 # - Arnaud Kerréneur (AK) - arnaud.kerreneur(a)dga.defense.gouv.fr
@@ -78,6 +79,7 @@ __version__ = "1.01"
 # 2007-10-10       PL: - ajout support antivirus ClamAV (clamd)
 # 2007-10-22       PL: - ajout support antivirus F-Prot 6 (fpscan)
 # 2007-10-28       PL: - ajout Fichier.remplacer_copie_temp()
+# 2008-03-24 v1.02 PL: - ajout de _() pour traduction gettext des chaines
 
 #------------------------------------------------------------------------------
 # A FAIRE:
@@ -183,8 +185,8 @@ class Fichier:
         # on vérifie si le nom de fichier fourni est bien un chemin relatif par
         # rapport au conteneur:
         if chemin_relatif_incorrect(nom_fichier):
-            debug("chemin relatif incorrect: %s" % nom_fichier)
-            raise ValueError, "Nom de fichier non relatif ou incorrect"
+            debug(_(u"chemin relatif incorrect: %s") % nom_fichier)
+            raise ValueError, _(u"Nom de fichier non relatif ou incorrect")
         self.chemin = path(nom_fichier)
         # on construit le chemin absolu à partir de celui du conteneur:
         if conteneur.chemin_complet == "":
@@ -221,7 +223,7 @@ class Fichier:
                 self._copie_temp.remove()
         except:
             #TODO: mieux gerer exception ?
-            Journal.exception(u'Impossible de supprimer un fichier temporaire: %s' % self._copie_temp)
+            Journal.exception(_(u'Impossible de supprimer un fichier temporaire: %s') % self._copie_temp)
 
     def remplacer_copie_temp (self, nouveau_fichier):
         """
@@ -284,7 +286,7 @@ class Fichier:
         if self.conteneur.est_chiffre(self):
             self.resultat_fichier.ajouter(Resultat.Resultat(
                 Resultat.REFUSE,[
-                    u"%s : Le fichier est chiffré, il ne peut être analysé."
+                    _(u"%s : Le fichier est chiffré, il ne peut être analysé.")
                     % self.conteneur.type], self))
         # sinon on teste si l'extension est reconnue par un des filtres:
         elif self.extension in dico_filtres:
@@ -302,7 +304,7 @@ class Fichier:
                     except:
                         format_reconnu = False
                         erreur = str(sys.exc_info()[1])
-                        msg = "%s : Erreur lors de l'analyse du format (%s)" % \
+                        msg = _(u"%s : Erreur lors de l'analyse du format (%s)") % \
                             (filtre.nom, erreur)
                         resultat_filtre = Resultat.Resultat(
                             Resultat.ERREUR_ANALYSE, msg, self)
@@ -313,7 +315,7 @@ class Fichier:
                         debug_pause()
                 if format_reconnu:
                     # contenu reconnu
-                    Journal.info2(filtre.nom + " : Reconnu")
+                    Journal.info2(filtre.nom + _(u" : Reconnu"))
                     # on ajoute ce format à la liste:
                     formats_reconnus.append(filtre.nom)
                     # on appelle le filtre pour nettoyer,
@@ -324,14 +326,15 @@ class Fichier:
                         # si on obtient cette exception, c'est que le module zipfile ne
                         # supporte pas le format de ce fichier zip.
                         erreur = str(sys.exc_info()[1])
-                        msg = u"Le format de l'archive zip est incorrect ou non " \
-                            +u"supporté, le fichier ne peut être analysé. (%s)" % erreur
-                        resultat_filtre = Resultat.Resultat(
-                            Resultat.ERREUR_ANALYSE, msg, self)
-                        Journal.info2(msg, exc_info=True)
+                        #msg = _(u"Le format de l'archive zip est incorrect ou non supporté, ") \
+                        #    + _(u"le fichier ne peut être analysé. (%s)") % erreur
+                        #resultat_filtre = Resultat.Resultat(
+                        #    Resultat.ERREUR_ANALYSE, msg, self)
+                        #Journal.info2(msg, exc_info=True)
+                        resultat_filtre = filtre.resultat_format_incorrect(self, erreur)
                     except:
                         erreur = str(sys.exc_info()[1])
-                        msg = "%s : Erreur lors du nettoyage (%s)" % \
+                        msg = _(u"%s : Erreur lors du nettoyage (%s)") % \
                             (filtre.nom, erreur)
                         resultat_filtre = Resultat.Resultat(
                             Resultat.ERREUR_ANALYSE,msg, self)
@@ -359,7 +362,7 @@ class Fichier:
                     # met à jour le résultat:
                     resultat_filtre = Resultat.Resultat(
                         Resultat.FORMAT_INCORRECT,[filtre.nom \
-                        + u" : Format de fichier non reconnu ou non autorisé"], self)
+                        + _(u" : Format de fichier non reconnu ou non autorisé")], self)
                     self.resultat_fichier.ajouter(resultat_filtre)
         else:
             # le fichier a une extension non autorisée:
@@ -437,41 +440,40 @@ class Fichier:
             # La connexion vers le service clamd n'est pas encore initialisee
             serveur = politique.parametres['clamd_serveur'].valeur
             port    = politique.parametres['clamd_port'].valeur
-            Journal.info2('Connexion au serveur clamd %s:%d...' % (serveur, port))
+            Journal.info2(_(u'Connexion au serveur clamd %s:%d...') % (serveur, port))
             try:
                 pyclamd.init_network_socket(serveur, port, timeout=180)
             except pyclamd.ScanError:
-                Journal.exception("Connexion au service clamd (%s:%d) impossible."
+                Journal.exception(_(u"Connexion au service clamd (%s:%d) impossible.")
                      % (serveur, port))
                 raise
             Journal.info2(pyclamd.version())
-        Journal.info2("Appel de clamd pour l'analyse antivirus...")
+        Journal.info2(_(u"Appel de clamd pour l'analyse antivirus..."))
         # clamd a besoin du chemin absolu du fichier:
         abspath = str_lat1(self.copie_temp().abspath())
-        Journal.debug('analyse de %s' % abspath)
+        Journal.debug(_(u'analyse de %s') % abspath)
         try:
             res = pyclamd.scan_file(abspath)
         except socket.timeout:
             return Resultat.Resultat(Resultat.ERREUR_ANALYSE,
-                u"clamd: Temps dépassé lors de la vérification antivirus"
+                "clamd: "+_(u"Temps dépassé lors de la vérification antivirus")
                 % self.nom, self)
         except:
-            Journal.exception("clamd: erreur lors de l'analyse antivirus.")
-            return Resultat.Resultat(Resultat.ERREUR_ANALYSE,
-                u"clamd: Erreur lors de la vérification antivirus"
-                % self.nom, self)
+            msg = "clamd: "+_(u"Erreur lors de la vérification antivirus")
+            Journal.exception(msg)
+            return Resultat.Resultat(Resultat.ERREUR_ANALYSE, msg, self)
         if res == None:
             # resultat OK, pas de virus
-            Journal.info2(u"clamd: Pas de virus détecté.")
+            Journal.info2("clamd: "+_(u"Pas de virus détecté."))
             # on retourne un objet Resultat vide
             return Resultat.Resultat(fichier=self)
         else:
             # un virus a ete detecte
             fichier = res.keys[0]
             msg_virus = res[fichier]
-            Journal.debug('clamd: fichier=%s resultat=%s' %(fichier, msg_virus))
+            Journal.debug("clamd: "+_(u'fichier=%s resultat=%s') %(fichier, msg_virus))
             return Resultat.Resultat(Resultat.REFUSE,
-                u"%s : Virus détecté ou fichier suspect: %" % (self.nom,msg_virus),
+                "clamd: "+_(u"Virus détecté ou fichier suspect: %s") % msg_virus,
                 self)
 
 
@@ -490,7 +492,7 @@ class Fichier:
         if sys.platform == "win32":
             # on récupère le chemin de F-Prot:
             chemin_fprot = politique.parametres['fpscan_executable'].valeur
-            Journal.info2("Lancement de F-Prot pour l'analyse antivirus...")
+            Journal.info2(_(u"Lancement de fpscan pour l'analyse antivirus..."))
             # Options pour fpscan:
             # -t: analyse des alternate data streams sur NTFS (par precaution)
             # -v 0: pas d'affichage sauf si erreur ou infection
@@ -521,26 +523,27 @@ class Fichier:
                     stderr=sys.stderr)
             else:
                 resultat_fprot = Popen_timer(args_fprot)
-            Journal.debug('resultat F-Prot: %d' % resultat_fprot)
+            Journal.debug(_(u'resultat F-Prot fpscan: %d') % resultat_fprot)
             if resultat_fprot == 0:
-                Journal.info2(u"F-Prot: Pas de virus détecté.")
+                Journal.info2(u"fpscan: "+_(u"Pas de virus détecté."))
                 resultat = None
             # on teste en premier s'il y a eu un timeout:
             elif resultat_fprot == EXIT_KILL_PTIMER:
                 resultat = Resultat.Resultat(Resultat.ERREUR_ANALYSE,
-                    u"%s : Temps dépassé lors de la vérification antivirus par fpscan" % self.nom,
+                    u"fpscan: "+_(u"Temps dépassé lors de la vérification antivirus"),
                     self)
             elif resultat_fprot & FPSCAN_INFECTION:
                 resultat = Resultat.Resultat(Resultat.REFUSE,
-                    u"%s : Virus détecté ou fichier suspect" % self.nom,
+                    u"fpscan: "+_(u"Virus détecté ou fichier suspect"),
                     self)
             else:
                 resultat = Resultat.Resultat(Resultat.ERREUR_ANALYSE,
-                    u"%s : Erreur lors de la vérification antivirus par fpscan" % self.nom,
+                    u"fpscan: "+_(u"Erreur lors de la vérification antivirus"),
                     self)
         else:
             # pour l'instant seul F-Prot sous Windows est supporté:
-            raise NotImplementedError, "Antivirus fpscan non implemente pour ce systeme."
+            raise NotImplementedError, \
+            u"fpscan: "+_(u"Antivirus non supporte ou implemente pour ce systeme.")
         return resultat
 
 
@@ -558,7 +561,7 @@ class Fichier:
         if sys.platform == "win32":
             # on récupère le chemin de fpcmd:
             chemin_fprot = politique.parametres['fpcmd_executable'].valeur
-            Journal.info2("Lancement de F-Prot pour l'analyse antivirus...")
+            Journal.info2(_(u"Lancement de fpcmd pour l'analyse antivirus..."))
             args_fprot = [chemin_fprot, '-nomem', '-noboot', '-nosub', '-silent',
                 '-old', '-collect', str_lat1(self.copie_temp())]
             # A VOIR: l'option -type laisse F-Prot décider si un type de fichier doit
@@ -584,21 +587,22 @@ class Fichier:
             #    7 - Insufficient memory to run the program.
             #    8 - At least one suspicious file was found, but no infections.
             if resultat_fprot == 0:
-                Journal.info2(u"F-Prot: Pas de virus détecté.")
+                Journal.info2(u"fpcmd: "+_(u"Pas de virus détecté."))
                 resultat = None
             elif resultat_fprot in [3, 4, 6, 8]:
                 resultat = Resultat.Resultat(Resultat.REFUSE,
-                    u"%s : Virus détecté ou fichier suspect" % self.nom,
+                    u"fpcmd: "+_(u"Virus détecté ou fichier suspect"),
                     self)
             elif resultat_fprot == EXIT_KILL_PTIMER:
                 resultat = Resultat.Resultat(Resultat.ERREUR_ANALYSE,
-                    u"%s : Temps dépassé lors de la vérification antivirus" % self.nom,
+                    u"fpcmd: "+_(u"Temps dépassé lors de la vérification antivirus"),
                     self)
             else:
                 resultat = Resultat.Resultat(Resultat.ERREUR_ANALYSE,
-                    u"%s : Erreur lors de la vérification antivirus" % self.nom,
+                    u"fpcmd: "+_(u"Erreur lors de la vérification antivirus"),
                     self)
         else:
             # pour l'instant seul F-Prot sous Windows est supporté:
-            raise NotImplementedError, "Antivirus fpcmd non implemente pour ce systeme."
+            raise NotImplementedError, \
+            u"fpcmd: "+_(u"Antivirus non supporte ou implemente pour ce systeme.")
         return resultat

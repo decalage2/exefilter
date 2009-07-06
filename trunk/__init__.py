@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# -*- coding: latin-1 -*-
+# -*- coding: iso-8859-1 -*-
 #
 """
 ExeFilter - Package principal
@@ -26,16 +26,19 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 
 @contact: U{Philippe Lagadec<mailto:philippe.lagadec(a)laposte.net>}
 
-@copyright: DGA/CELAR 2004-2007
-@version: 1.1.0
+@copyright: DGA/CELAR 2004-2008
+@copyright: NATO/NC3A 2008 (modifications PL apres v1.1.0)
+@version: 1.1.1
 
 @status: beta
 
-@license: CeCILL (open-source compatible GPL) - cf. code source ou fichier LICENCE.txt joint
+@license: CeCILL (open-source compatible GPL)
+          cf. code source ou fichier LICENCE.txt joint
 
 LICENCE pour le projet ExeFilter:
 
-Copyright DGA/CELAR 2004-2007
+Copyright DGA/CELAR 2004-2008
+Copyright NATO/NC3A 2008 (modifications PL apres v1.1.0)
 
 Auteurs:
     - Philippe Lagadec (PL) - philippe.lagadec(a)laposte.net
@@ -74,8 +77,8 @@ termes.
 __docformat__ = 'epytext en'
 
 #__author__    = 'Philippe Lagadec, Tanguy Vinceleux, Arnaud Kerréneur (DGA/CELAR)'
-__date__      = '2008-02-24'
-__version__   = '1.1.0' #: le numero de version ExeFilter global suit la logique Linux
+__date__      = '2008-03-27'
+__version__   = '1.1.1' #: le numero de version ExeFilter global suit la logique Linux
 
 # ce fichier __init__.py sert uniquement à faire en sorte que Python considère
 # ce répertoire comme un package de modules, et à constituer la racine de la

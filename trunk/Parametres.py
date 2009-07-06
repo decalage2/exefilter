@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# -*- coding: latin-1 -*-
+# -*- coding: iso-8859-1 -*-
 """
 Parametres - ExeFilter
 
@@ -17,23 +17,27 @@ URL du projet: http://admisource.gouv.fr/projects/exefilter
 
 @contact: U{Philippe Lagadec<mailto:philippe.lagadec(a)laposte.net>}
 
-@copyright: DGA/CELAR 2004-2007
-@license: CeCILL (open-source compatible GPL) - cf. code source ou fichier LICENCE.txt joint
+@copyright: DGA/CELAR 2004-2008
+@copyright: NATO/NC3A 2008 (modifications PL apres v1.1.0)
 
-@version: 1.01
+@license: CeCILL (open-source compatible GPL)
+          cf. code source ou fichier LICENCE.txt joint
+
+@version: 1.02
 
 @status: beta
 """
+#==============================================================================
 __docformat__ = 'epytext en'
 
-#__author__    = "Philippe Lagadec"
-__date__      = "2007-09-18"
-__version__   = "1.01"
+__date__    = "2008-03-24"
+__version__ = "1.02"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
 
-# Copyright DGA/CELAR 2004-2007
+# Copyright DGA/CELAR 2004-2008
+# Copyright NATO/NC3A 2008 (PL changes after v1.1.0)
 # Auteurs:
 # - Philippe Lagadec (PL) - philippe.lagadec(a)laposte.net
 # - Arnaud Kerréneur (AK) - arnaud.kerreneur(a)dga.defense.gouv.fr
@@ -76,6 +80,7 @@ __version__   = "1.01"
 #                      - fonction ajouter_parametre transformée en méthode
 # 12/01/2007 v1.00 PL: - version 1.00 officielle
 # 2007-09-18 v1.01 PL: - ajout licence CeCILL
+# 2008-03-27 v1.02 PL: - bug corrige dans Parametre.set
 
 #------------------------------------------------------------------------------
 # A FAIRE:
@@ -197,12 +202,12 @@ class Parametre:
         else:
             # si la valeur est une chaîne (str ou unicode) et que le
             # paramètre est un booléen, conversion:
-            if self.type == bool and \
-                ( isinstance(valeur, str) or isinstance(valeur, unicode) ):
-                if valeur.strip().lower() in VALEURS_VRAIES:
-                    self.valeur = True
-                elif valeur.strip().lower() in VALEURS_FAUSSES:
-                    self.valeur = False
+            if self.type == bool:
+                if isinstance(valeur, str) or isinstance(valeur, unicode):
+                    if valeur.strip().lower() in VALEURS_VRAIES:
+                        self.valeur = True
+                    elif valeur.strip().lower() in VALEURS_FAUSSES:
+                        self.valeur = False
                 else:
                     self.valeur = bool(valeur)
             else:

@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# -*- coding: latin-1 -*-
+# -*- coding: iso-8859-1 -*-
 """
 Filtre_AVI - ExeFilter
 
@@ -16,22 +16,27 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 
 @contact: U{Philippe Lagadec<mailto:philippe.lagadec(a)laposte.net>}
 
-@copyright: DGA/CELAR 2004-2007
-@license: CeCILL (open-source compatible GPL) - cf. code source ou fichier LICENCE.txt joint
+@copyright: DGA/CELAR 2004-2008
+@copyright: NATO/NC3A 2008 (modifications PL apres v1.1.0)
 
-@version: 1.01
+@license: CeCILL (open-source compatible GPL)
+          cf. code source ou fichier LICENCE.txt joint
+
+@version: 1.02
 
 @status: beta
 """
+#==============================================================================
 __docformat__ = 'epytext en'
 
-__date__      = "2008-02-19"
-__version__   = "1.01"
+__date__    = "2008-03-24"
+__version__ = "1.02"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
 
-# Copyright DGA/CELAR 2004-2007
+# Copyright DGA/CELAR 2004-2008
+# Copyright NATO/NC3A 2008 (PL changes after v1.1.0)
 # Auteurs:
 # - Philippe Lagadec (PL) - philippe.lagadec(a)laposte.net
 # - Arnaud Kerréneur (AK) - arnaud.kerreneur(a)dga.defense.gouv.fr
@@ -71,6 +76,8 @@ __version__   = "1.01"
 # 2004-2005     TV,PL: - evolutions
 # 12/01/2007 v1.00 PL: - version 1.00 officielle
 # 2007-09-20 v1.01 PL: - licence CeCILL
+# 2008-03-24 v1.02 PL: - ajout de _() pour traduction gettext des chaines
+#                      - simplification dans nettoyer() en appelant resultat_*
 
 # A FAIRE:
 # + Tenir compte des octets indiquant la taille du fichier
@@ -109,7 +116,7 @@ class Filtre_AVI (Filtre.Filtre):
 
     """
 
-    nom = "Fichier Video AVI"
+    nom = _(u"Fichier Video AVI")
     extensions = [".avi"]
     format_conteneur = False
     extractible = False
@@ -134,5 +141,4 @@ class Filtre_AVI (Filtre.Filtre):
         # Ce format ne contient jamais de code.
         # (sauf bien sûr d'éventuels "exploits" qui sont normalement détectés
         # par l'antivirus)
-        return Resultat.Resultat(Resultat.ACCEPTE,
-                                 self.nom + " : ne contient pas de code", fichier)
+        return self.resultat_accepte(fichier)

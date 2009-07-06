@@ -1,11 +1,12 @@
 LICENCE CeCILL pour le logiciel ExeFilter :
 (sauf certains modules additionnels listés plus bas)
 
-ExeFilter est un logiciel qui permet de filtrer des fichiers, courriels ou 
-pages web, afin de supprimer tout code exécutable et tout contenu 
+ExeFilter est un logiciel qui permet de filtrer des fichiers, courriels ou
+pages web, afin de supprimer tout code exécutable et tout contenu
 potentiellement dangereux en terme de sécurité informatique.
 
-Copyright DGA/CELAR 2004-2007
+Copyright DGA/CELAR 2004-2008
+Copyright NATO/NC3A 2008 (modifications PL apres la v1.1.0)
 Auteurs:
 - Philippe Lagadec (PL) - philippe.lagadec(a)laposte.net
 - Arnaud Kerréneur (AK) - arnaud.kerreneur(a)dga.defense.gouv.fr
@@ -15,7 +16,7 @@ Ce logiciel est régi par la licence CeCILL soumise au droit français et
 respectant les principes de diffusion des logiciels libres. Vous pouvez
 utiliser, modifier et/ou redistribuer ce programme sous les conditions
 de la licence CeCILL telle que diffusée par le CEA, le CNRS et l'INRIA
-sur le site "http://www.cecill.info". Une copie de cette licence est jointe 
+sur le site "http://www.cecill.info". Une copie de cette licence est jointe
 dans les fichiers Licence_CeCILL_V2-fr.html et Licence_CeCILL_V2-en.html.
 
 En contrepartie de l'accessibilité au code source et des droits de copie,
@@ -92,7 +93,7 @@ prepare derivative works, distribute, and otherwise use Python
 alone or in any derivative version, provided, however, that PSF's
 License Agreement and PSF's notice of copyright, i.e., "Copyright (c)
 2001, 2002, 2003, 2004, 2005, 2006 Python Software Foundation; All Rights
-Reserved" are retained in Python alone or in any derivative version 
+Reserved" are retained in Python alone or in any derivative version
 prepared by Licensee.
 
 3. In the event Licensee prepares a derivative work that is based on
@@ -214,3 +215,21 @@ same conditions as regards security.
 
 The fact that you are presently reading this means that you have had
 knowledge of the CeCILL license and that you accept its terms.
+
+
+-------------------------------------------------------------------------------
+LICENCE GPL pour le module pyclamd:
+
+This program is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation; either version 2 of the License, or (at your option) any later
+version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with
+this program; (see http://www.fsf.org/licensing/licenses/info/GPLv2.html)
+if not, write to the Free Software Foundation, Inc., 675 Mass Ave,
+Cambridge, MA 02139, USA.
