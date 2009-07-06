@@ -1,0 +1,216 @@
+LICENCE CeCILL pour le logiciel ExeFilter :
+(sauf certains modules additionnels listés plus bas)
+
+ExeFilter est un logiciel qui permet de filtrer des fichiers, courriels ou 
+pages web, afin de supprimer tout code exécutable et tout contenu 
+potentiellement dangereux en terme de sécurité informatique.
+
+Copyright DGA/CELAR 2004-2007
+Auteurs:
+- Philippe Lagadec (PL) - philippe.lagadec(a)laposte.net
+- Arnaud Kerréneur (AK) - arnaud.kerreneur(a)dga.defense.gouv.fr
+- Tanguy Vinceleux (TV) - tanguy.vinceleux(a)dga.defense.gouv.fr
+
+Ce logiciel est régi par la licence CeCILL soumise au droit français et
+respectant les principes de diffusion des logiciels libres. Vous pouvez
+utiliser, modifier et/ou redistribuer ce programme sous les conditions
+de la licence CeCILL telle que diffusée par le CEA, le CNRS et l'INRIA
+sur le site "http://www.cecill.info". Une copie de cette licence est jointe 
+dans les fichiers Licence_CeCILL_V2-fr.html et Licence_CeCILL_V2-en.html.
+
+En contrepartie de l'accessibilité au code source et des droits de copie,
+de modification et de redistribution accordés par cette licence, il n'est
+offert aux utilisateurs qu'une garantie limitée.  Pour les mêmes raisons,
+seule une responsabilité restreinte pèse sur l'auteur du programme,  le
+titulaire des droits patrimoniaux et les concédants successifs.
+
+A cet égard  l'attention de l'utilisateur est attirée sur les risques
+associés au chargement,  à l'utilisation,  à la modification et/ou au
+développement et à la reproduction du logiciel par l'utilisateur étant
+donné sa spécificité de logiciel libre, qui peut le rendre complexe à
+manipuler et qui le réserve donc à des développeurs et des professionnels
+avertis possédant  des  connaissances  informatiques approfondies.  Les
+utilisateurs sont donc invités à charger  et  tester  l'adéquation  du
+logiciel à leurs besoins dans des conditions permettant d'assurer la
+sécurité de leurs systèmes et ou de leurs données et, plus généralement,
+à l'utiliser et l'exploiter dans les mêmes conditions de sécurité.
+
+Le fait que vous puissiez accéder à cet en-tête signifie que vous avez
+pris connaissance de la licence CeCILL, et que vous en avez accepté les
+termes.
+
+
+-------------------------------------------------------------------------------
+LICENCE PIL pour le module OleFileIO_PL :
+
+OleFileIO_PL is an improved version of the OleFileIO module from the
+Python Imaging Library (PIL).
+
+The Python Imaging Library (PIL) is
+   Copyright (c) 1997-2005 by Secret Labs AB
+   Copyright (c) 1995-2005 by Fredrik Lundh
+
+OleFileIO_PL changes are Copyright (c) 2005-2007 by Philippe Lagadec
+
+By obtaining, using, and/or copying this software and/or its associated
+documentation, you agree that you have read, understood, and will comply with
+the following terms and conditions:
+
+Permission to use, copy, modify, and distribute this software and its
+associated documentation for any purpose and without fee is hereby granted,
+provided that the above copyright notice appears in all copies, and that both
+that copyright notice and this permission notice appear in supporting
+documentation, and that the name of Secret Labs AB or the author(s) not be used
+in advertising or publicity pertaining to distribution of the software
+without specific, written prior permission.
+
+SECRET LABS AB AND THE AUTHORS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
+SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS.
+IN NO EVENT SHALL SECRET LABS AB OR THE AUTHORS BE LIABLE FOR ANY SPECIAL,
+INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS SOFTWARE.
+
+
+-------------------------------------------------------------------------------
+LICENCE PSF pour le module HTMLParser_PL :
+
+HTMLParser_PL is based on the HTMLParser source code from Python v2.5
+
+PYTHON SOFTWARE FOUNDATION LICENSE VERSION 2
+
+1. This LICENSE AGREEMENT is between the Python Software Foundation
+("PSF"), and the Individual or Organization ("Licensee") accessing and
+otherwise using this software ("Python") in source or binary form and
+its associated documentation.
+
+2. Subject to the terms and conditions of this License Agreement, PSF
+hereby grants Licensee a nonexclusive, royalty-free, world-wide
+license to reproduce, analyze, test, perform and/or display publicly,
+prepare derivative works, distribute, and otherwise use Python
+alone or in any derivative version, provided, however, that PSF's
+License Agreement and PSF's notice of copyright, i.e., "Copyright (c)
+2001, 2002, 2003, 2004, 2005, 2006 Python Software Foundation; All Rights
+Reserved" are retained in Python alone or in any derivative version 
+prepared by Licensee.
+
+3. In the event Licensee prepares a derivative work that is based on
+or incorporates Python or any part thereof, and wants to make
+the derivative work available to others as provided herein, then
+Licensee hereby agrees to include in any such work a brief summary of
+the changes made to Python.
+
+4. PSF is making Python available to Licensee on an "AS IS"
+basis.  PSF MAKES NO REPRESENTATIONS OR WARRANTIES, EXPRESS OR
+IMPLIED.  BY WAY OF EXAMPLE, BUT NOT LIMITATION, PSF MAKES NO AND
+DISCLAIMS ANY REPRESENTATION OR WARRANTY OF MERCHANTABILITY OR FITNESS
+FOR ANY PARTICULAR PURPOSE OR THAT THE USE OF PYTHON WILL NOT
+INFRINGE ANY THIRD PARTY RIGHTS.
+
+5. PSF SHALL NOT BE LIABLE TO LICENSEE OR ANY OTHER USERS OF PYTHON
+FOR ANY INCIDENTAL, SPECIAL, OR CONSEQUENTIAL DAMAGES OR LOSS AS
+A RESULT OF MODIFYING, DISTRIBUTING, OR OTHERWISE USING PYTHON,
+OR ANY DERIVATIVE THEREOF, EVEN IF ADVISED OF THE POSSIBILITY THEREOF.
+
+6. This License Agreement will automatically terminate upon a material
+breach of its terms and conditions.
+
+7. Nothing in this License Agreement shall be deemed to create any
+relationship of agency, partnership, or joint venture between PSF and
+Licensee.  This License Agreement does not grant permission to use PSF
+trademarks or trade name in a trademark sense to endorse or promote
+products or services of Licensee, or any third party.
+
+8. By copying, installing or otherwise using Python, Licensee
+agrees to be bound by the terms and conditions of this License
+Agreement.
+
+
+-------------------------------------------------------------------------------
+LICENCE pour le module path :
+
+(cf. http://www.jorendorff.com/articles/python/path)
+
+License: path.py is public domain. This means you may do whatever you want with
+it; but it is provided without any guarantee or warranty of any kind, not even
+for merchantability or fitness for any purpose.
+
+If you do make changes to path.py, please consider sending them along to me:
+jason dot orendorff at gmail dot com.
+
+
+-------------------------------------------------------------------------------
+LICENCE CeCILL pour le module zipfile_PL:
+
+Copyright Philippe Lagadec 2005-2008 - voir http://www.decalage.info/contact
+
+zipfile_PL est un module Python pour etendre les fonctionnalites du module
+zipfile de la bibliotheque standard Python.
+
+Ce logiciel est régi par la licence CeCILL soumise au droit français et
+respectant les principes de diffusion des logiciels libres. Vous pouvez
+utiliser, modifier et/ou redistribuer ce programme sous les conditions
+de la licence CeCILL telle que diffusée par le CEA, le CNRS et l'INRIA
+sur le site "http://www.cecill.info". Une copie de cette licence est jointe
+dans les fichiers Licence_CeCILL_V2-fr.html et Licence_CeCILL_V2-en.html.
+
+En contrepartie de l'accessibilité au code source et des droits de copie,
+de modification et de redistribution accordés par cette licence, il n'est
+offert aux utilisateurs qu'une garantie limitée.  Pour les mêmes raisons,
+seule une responsabilité restreinte pèse sur l'auteur du programme,  le
+titulaire des droits patrimoniaux et les concédants successifs.
+
+A cet égard  l'attention de l'utilisateur est attirée sur les risques
+associés au chargement,  à l'utilisation,  à la modification et/ou au
+développement et à la reproduction du logiciel par l'utilisateur étant
+donné sa spécificité de logiciel libre, qui peut le rendre complexe à
+manipuler et qui le réserve donc à des développeurs et des professionnels
+avertis possédant  des  connaissances  informatiques approfondies.  Les
+utilisateurs sont donc invités à charger  et  tester  l'adéquation  du
+logiciel à leurs besoins dans des conditions permettant d'assurer la
+sécurité de leurs systèmes et ou de leurs données et, plus généralement,
+à l'utiliser et l'exploiter dans les mêmes conditions de sécurité.
+
+Le fait que vous puissiez accéder à cet en-tête signifie que vous avez
+pris connaissance de la licence CeCILL, et que vous en avez accepté les
+termes.
+
+
+-------------------------------------------------------------------------------
+LICENCE CeCILL pour le module plx:
+
+Copyright Philippe Lagadec - see http://www.decalage.info/contact for contact info
+
+This software is a Python module/package which contains several small useful
+functions to extend Python features, especially to improve portability on
+Windows and Unix.
+
+This software is governed by the CeCILL license under French law and
+abiding by the rules of distribution of free software.  You can  use,
+modify and/or redistribute the software under the terms of the CeCILL
+license as circulated by CEA, CNRS and INRIA at the following URL
+"http://www.cecill.info".
+
+A copy of the CeCILL license is also provided in these attached files:
+Licence_CeCILL_V2-en.html and Licence_CeCILL_V2-fr.html
+
+As a counterpart to the access to the source code and  rights to copy,
+modify and redistribute granted by the license, users are provided only
+with a limited warranty  and the software's author, the holder of the
+economic rights, and the successive licensors have only limited
+liability.
+
+In this respect, the user's attention is drawn to the risks associated
+with loading,  using,  modifying and/or developing or reproducing the
+software by the user in light of its specific status of free software,
+that may mean  that it is complicated to manipulate,  and  that  also
+therefore means  that it is reserved for developers  and  experienced
+professionals having in-depth computer knowledge. Users are therefore
+encouraged to load and test the software's suitability as regards their
+requirements in conditions enabling the security of their systems and/or
+data to be ensured and,  more generally, to use and operate it in the
+same conditions as regards security.
+
+The fact that you are presently reading this means that you have had
+knowledge of the CeCILL license and that you accept its terms.
