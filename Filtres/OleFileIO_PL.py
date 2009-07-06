@@ -1,5 +1,5 @@
 #!/usr/local/bin/python
-# -*- coding: latin-1 -*-
+# -*- coding: iso-8859-1 -*-
 """
 OleFileIO_PL:
     Module to read Microsoft OLE2 files (also called Structured Storage or
@@ -363,11 +363,11 @@ def _clsid(clsid):
 try:
     # is Unicode supported ?
     unicode
-    
+
     def _unicode(s, errors='replace'):
         """
         Map unicode string to Latin 1. (Python with Unicode support)
-        
+
         s: UTF-16LE unicode string to convert to Latin-1
         errors: 'replace', 'ignore' or 'strict'. See Python doc for unicode()
         """
@@ -382,7 +382,7 @@ try:
             else:
                 # Second the unicode string is converted to Latin-1
                 return u.encode('latin_1', errors)
-        except: 
+        except:
             # there was an error during Unicode to Latin-1 conversion:
             raise IOError, 'incorrect Unicode name'
 
@@ -576,7 +576,7 @@ class _OleDirectoryEntry:
         """
         Constructor for an _OleDirectoryEntry object.
         Parses a 128-bytes entry from the OLE Directory stream.
-        
+
         entry  : string (must be 128 bytes long)
         sid    : index of this directory entry in the OLE file directory
         olefile: OleFileIO containing this directory entry
@@ -663,7 +663,7 @@ class _OleDirectoryEntry:
             else:
                 minifat = False
             olefile._check_duplicate_stream(self.isectStart, minifat)
-            
+
 
 
     def build_storage_tree(self):
@@ -790,7 +790,7 @@ class OleFileIO:
     def __init__(self, filename = None, raise_defects=DEFECT_FATAL):
         """
         Constructor for OleFileIO class.
-        
+
         filename: file to open.
         raise_defects: minimal level for defects to be raised as exceptions.
         (use DEFECT_FATAL for a typical application, DEFECT_INCORRECT for a
@@ -817,7 +817,7 @@ class OleFileIO:
         # added by [PL]
         if defect_level >= self._raise_defects_level:
             raise IOError, message
-        
+
 
     def open(self, filename):
         """
@@ -1103,7 +1103,7 @@ class OleFileIO:
         """
         # The header contains a sector  numbers
         # for the first 109 FAT sectors.  Additional sectors are
-        # described by DIF blocks 
+        # described by DIF blocks
 
         sect = header[76:512]
         debug( "len(sect)=%d, so %d integers" % (len(sect), len(sect)/4) )
@@ -1260,8 +1260,8 @@ class OleFileIO:
         self.root = self.direntries[0]
         # read and build all storage trees, starting from the root:
         self.root.build_storage_tree()
-        
-        
+
+
     def _load_direntry (self, sid):
         """
         Load a directory entry from the directory.
@@ -1297,7 +1297,7 @@ class OleFileIO:
         """
         Open a stream, either in FAT or MiniFAT according to its size.
         (openstream helper)
-        
+
         start: index of first sector
         size: size of stream (or nothing if size is unknown)
         force_FAT: if False (default), stream will be opened in FAT or MiniFAT
@@ -1383,7 +1383,7 @@ class OleFileIO:
     def openstream(self, filename):
         """
         Open a stream as a read-only file object (StringIO).
-        
+
         filename: path of stream in storage tree (except root entry), either:
             - a string using Unix path syntax, for example:
               'storage_1/storage_1.2/stream'
@@ -1485,7 +1485,7 @@ class OleFileIO:
             id = i32(s, 8+i*8)
             offset = i32(s, 12+i*8)
             type = i32(s, offset)
-            
+
             debug ('property id=%d: type=%d offset=%X' % (id, type, offset))
 
             # test for common types first (should perhaps use
@@ -1593,7 +1593,7 @@ Options:
                                     v = '(binary data)'
                                     break
                         print "   ", k, v
-                        
+
             if check_streams:
                 # Read all streams to check if there are errors:
                 print '\nChecking streams...'

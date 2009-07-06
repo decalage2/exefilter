@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# -*- coding: latin-1 -*-
+# -*- coding: iso-8859-1 -*-
 """
 Filtre_ZIP - ExeFilter
 
@@ -16,22 +16,27 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 
 @contact: U{Philippe Lagadec<mailto:philippe.lagadec(a)laposte.net>}
 
-@copyright: DGA/CELAR 2004-2007
-@license: CeCILL (open-source compatible GPL) - cf. code source ou fichier LICENCE.txt joint
+@copyright: DGA/CELAR 2004-2008
+@copyright: NATO/NC3A 2008 (modifications PL apres v1.1.0)
 
-@version: 1.01
+@license: CeCILL (open-source compatible GPL)
+          cf. code source ou fichier LICENCE.txt joint
+
+@version: 1.02
 
 @status: beta
 """
+#==============================================================================
 __docformat__ = 'epytext en'
 
-__date__      = "2008-02-19"
-__version__   = "1.01"
+__date__    = "2008-03-24"
+__version__ = "1.02"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
 
-# Copyright DGA/CELAR 2004-2007
+# Copyright DGA/CELAR 2004-2008
+# Copyright NATO/NC3A 2008 (PL changes after v1.1.0)
 # Auteurs:
 # - Philippe Lagadec (PL) - philippe.lagadec(a)laposte.net
 # - Arnaud Kerréneur (AK) - arnaud.kerreneur(a)dga.defense.gouv.fr
@@ -71,6 +76,8 @@ __version__   = "1.01"
 # 2004-2005     PL,AK: - evolutions
 # 12/01/2007 v1.00 PL: - version 1.00 officielle
 # 2008-02-25 v1.01 PL: - licence CeCILL
+# 2008-03-24 v1.02 PL: - ajout de _() pour traduction gettext des chaines
+#                      - simplification dans nettoyer() en appelant resultat_*
 
 #------------------------------------------------------------------------------
 # A FAIRE:
@@ -80,7 +87,7 @@ __version__   = "1.01"
 #=== IMPORTS ==================================================================
 
 # modules standards Python:
-import zipfile
+import zipfile, sys
 
 # modules du projet:
 from commun import *
@@ -113,7 +120,7 @@ class Filtre_Zip (Filtre.Filtre):
     @cvar version: version du filtre
     """
 
-    nom = "Archive Zip"
+    nom = _(u"Archive Zip")
     extensions = [".zip"]
     format_conteneur = True
     extractible = True
@@ -153,10 +160,7 @@ class Filtre_Zip (Filtre.Filtre):
             # si on obtient cette exception, c'est que le module zipfile ne
             # supporte pas le format de ce fichier zip.
             erreur = str(sys.exc_info()[1])
-            msg = self.nom + u" : Le format de ce fichier est incorrect ou non " \
-                +u"supporté, il ne peut être analysé. (%s)" % erreur
-            return Resultat.Resultat(Resultat.ERREUR_ANALYSE, msg , fichier)
-            Journal.info2(msg)
+            return self.resultat_format_incorrect(fichier, erreur)
         liste_resultats = conteneur_zip.nettoyer(self.politique)
         # on crée un objet Resultat par défaut pour le zip
         resultat_zip = Resultat.Resultat(fichier = fichier)

@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# -*- coding: latin-1 -*-
+# -*- coding: iso-8859-1 -*-
 """
 Conteneur_Zip - ExeFilter
 
@@ -15,24 +15,27 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 
 @contact: U{Philippe Lagadec<mailto:philippe.lagadec(a)laposte.net>}
 
-@copyright: DGA/CELAR 2004-2007
-@license: CeCILL (open-source compatible GPL) - cf. code source ou fichier LICENCE.txt joint
+@copyright: DGA/CELAR 2004-2008
+@copyright: NATO/NC3A 2008 (modifications PL apres v1.1.0)
 
-@version: 1.01
+@license: CeCILL (open-source compatible GPL)
+          cf. code source ou fichier LICENCE.txt joint
+
+@version: 1.02
 
 @status: beta
 """
 #==============================================================================
 __docformat__ = 'epytext en'
 
-#__author__  = "Philippe Lagadec, Arnaud Kerréneur (DGA/CELAR)"
-__date__    = "2007-11-02"
-__version__ = "1.01"
+__date__    = "2008-03-24"
+__version__ = "1.02"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
 
-# Copyright DGA/CELAR 2004-2007
+# Copyright DGA/CELAR 2004-2008
+# Copyright NATO/NC3A 2008 (PL changes after v1.1.0)
 # Auteurs:
 # - Philippe Lagadec (PL) - philippe.lagadec(a)laposte.net
 # - Arnaud Kerréneur (AK) - arnaud.kerreneur(a)dga.defense.gouv.fr
@@ -73,6 +76,7 @@ __version__ = "1.01"
 #                      - contributions de Y. Bidan et C. Catherin
 # 12/01/2007 v1.00 PL: - version 1.00 officielle
 # 2007-11-03 v1.01 PL: - ajout licence CeCILL
+# 2008-03-24 v1.02 PL: - ajout de _() pour traduction gettext des chaines
 
 #------------------------------------------------------------------------------
 # A FAIRE:
@@ -123,34 +127,34 @@ class Conteneur_Zip (Conteneur.Conteneur):
     qui contient un ensemble de fichiers, par exemple une archive Zip.
     La classe Conteneur_Zip correspond à une archive Zip.
     """
-    
+
     def __init__(self, nom_archive, nom_destination, fichier):
         """
         Constructeur d'objet Conteneur_Zip.
-        
+
         @warning: Si le format de zip n'est pas supporté, peut lever une exception
         zipfile.BadZipFile ou zipfile.error.
-        
+
         @param nom_archive: nom de fichier/répertoire du fichier zip source.
                             (chemin relatif par rapport au conteneur)
         @type  nom_archive: str, unicode
-        
+
         @param nom_destination: nom de fichier/répertoire du conteneur nettoyé.
         @type  nom_destination: str, unicode
-        
+
         @param fichier: objet Fichier du conteneur, ou bien None si c'est le
                         1er répertoire.
         @type  fichier: objet L{Fichier.Fichier} ou None
         """
         # on appelle d'abord le constructeur de base
         Conteneur.Conteneur.__init__(self, nom_archive, nom_destination, "", fichier)
-        self.type = "Archive Zip"
+        self.type = _(u"Archive Zip")
         # on ouvre le fichier Zip:
-        Journal.info2(u"Ouverture du fichier ZIP grâce au module zipfile.")
+        Journal.info2(_(u"Ouverture du fichier ZIP grâce au module zipfile."))
         self.politique = politique
         self.zip = zipfile_PL.ZipFile_PL(nom_archive)
 
-    
+
     def creer_rep_temp(self):
         """Pour initialiser le répertoire temporaire nécessaire à l'analyse du
         conteneur."""
@@ -173,13 +177,13 @@ class Conteneur_Zip (Conteneur.Conteneur):
         if len(self.liste_fichiers) == 0:
             # liste des répertoires contenus (objets ZipInfo)
             self.repertoires = []
-            Journal.info2(u"Lecture de la liste des fichiers du fichier ZIP:")
+            Journal.info2(_(u"Lecture de la liste des fichiers du fichier ZIP:"))
             for zipinfo in self.zip.infolist():
                 # on convertit le nom de fichier en unicode en utilisant le
                 # codec "cp850", car dans un zip les noms de fichiers sont
                 # au format OEM (MS-DOS): sinon erreur en cas d'accents
                 nom_fichier = unicode(zipinfo.filename, 'cp850')
-                Journal.info2(u"- fichier: %s" % nom_fichier)
+                Journal.info2(_(u"- fichier: %s") % nom_fichier)
                 Journal.info2(
                     "  zipinfo: flag_bits = %d, internal_attr = %d, external_attr = %d"
                     % (zipinfo.flag_bits, zipinfo.internal_attr, zipinfo.external_attr))
@@ -192,20 +196,20 @@ class Conteneur_Zip (Conteneur.Conteneur):
                 Journal.info2(
                     "  compress_size = %d, file_size = %d"
                     % (zipinfo.compress_size, zipinfo.file_size))
-                # les répertoires et labels doivent être traités à part, ils ne 
+                # les répertoires et labels doivent être traités à part, ils ne
                 # sont pas dans la liste des fichiers
                 if zipinfo.external_attr & (ATTRIB_DIRECTORY | ATTRIB_DIR_UNIX) :
                     # Si c'est un répertoire on ajoute le zipinfo à la liste:
                     self.repertoires.append(zipinfo)
-                    Journal.info2(u"  Répertoire.")
+                    Journal.info2(_(u"  Répertoire."))
                 elif zipinfo.external_attr & ATTRIB_LABEL :
                     # Si c'est un label on l'ignore:
-                    Journal.info2(u"  Cette entrée est un label de volume MS-DOS, on l'ignore.")
+                    Journal.info2(_(u"  Cette entrée est un label de volume MS-DOS, on l'ignore."))
                 else:
                     # C'est un fichier, on l'ajoute à la liste.
                     # si le nom est vide ou "-", ce n'est pas un fichier mais
                     # un texte issu de l'entrée standard (cf. appnote.iz)
-                    # il faut aussi vérifier que ce n'est pas un chemin absolu, 
+                    # il faut aussi vérifier que ce n'est pas un chemin absolu,
                     # et convertir tous les antislashs en slashs
                     f = Fichier.Fichier(nom_fichier, conteneur=self)
                     # on ajoute un nouvel attribut zipinfo au fichier
@@ -213,7 +217,7 @@ class Conteneur_Zip (Conteneur.Conteneur):
                     self.liste_fichiers.append(f)
         return self.liste_fichiers
 
-                
+
     def copie_temp (self, fichier):
         """copie le fichier vers un répertoire temporaire, et retourne
         le chemin de la copie. Cette fonction est normalement appelée
@@ -224,8 +228,8 @@ class Conteneur_Zip (Conteneur.Conteneur):
         if not chem_temp.exists():
             chem_temp.makedirs()
         fichier_temp = self.rep_temp_complet / fichier.chemin
-        Journal.info2(u'Décompression: "%s" -> "%s"...' % (fichier.chemin, fichier_temp))
-        
+        Journal.info2(_(u'Décompression: "%s" -> "%s"...') % (fichier.chemin, fichier_temp))
+
         # droit en écriture sur le répertoire temporaire pour suppression
 ##      os.chmod( path(fichier_temp).abspath().normpath(), stat.S_IRWXU )
 
@@ -235,7 +239,7 @@ class Conteneur_Zip (Conteneur.Conteneur):
         f.close()
         return fichier_temp
 
-    
+
     def fermer (self):
         """
         Ferme le conteneur une fois que tous les fichiers inclus ont
@@ -243,7 +247,7 @@ class Conteneur_Zip (Conteneur.Conteneur):
         """
         self.zip.close()
 
-    
+
     def reconstruire (self):
         """
         reconstruit le Conteneur à partir des fichiers nettoyés.
@@ -256,7 +260,7 @@ class Conteneur_Zip (Conteneur.Conteneur):
         # on ne reconstruit le fichier Zip que s'il y a des fichiers acceptés
         # (sinon un ZipFile vide provoque une exception bizarre...)
         if len(liste_fichiers_ok) != 0:
-            Journal.info2(u"Recompression du fichier Zip après nettoyage des fichiers...")
+            Journal.info2(_(u"Recompression du fichier Zip après nettoyage des fichiers..."))
             # on reconstruit d'abord l'archive Zip dans un fichier temporaire,
             # puisqu'il faudra remplacer le fichier déjà obtenu par copie_temp.
             # Obtention d'un nom de fichier zip temporaire:
@@ -275,7 +279,7 @@ class Conteneur_Zip (Conteneur.Conteneur):
                     Journal.debug (u'Compression: "%s"...' % fichier.copie_temp())
                     # on ajoute le fichier dans l'archive :
                     # le permier argument permet d'ouvrir le fichier à compresser corretement
-                    # le deuxième argument permet l'affichage du fichier dans l'archive avec le 
+                    # le deuxième argument permet l'affichage du fichier dans l'archive avec le
                     # bon encodage de caractères
                     # reconstruction de l'archive zip sans le répertoire temp
                     f = file(fichier.copie_temp(), 'rb')
@@ -298,17 +302,17 @@ class Conteneur_Zip (Conteneur.Conteneur):
             #path_zip_temp.rename(str_lat1(self.fichier._copie_temp))
             os.rename(chem_zip_temp, self.fichier._copie_temp)
         else:
-            Journal.info2(u"Aucun fichier accepté dans le Zip: suppression.")
+            Journal.info2(_(u"Aucun fichier accepté dans le Zip: suppression."))
             self.fichier._copie_temp.remove()
         # pour finir on détruit le répertoire temporaire:
         if self.rep_temp_complet.exists():
             self.rep_temp_complet.rmtree()
-    
+
 
     def est_chiffre(self, fichier):
         """Retourne True si le fichier indiqué est chiffré, et qu'il ne peut
         pas être extrait du fichier ZIP.
-        
+
         @param fichier: fichier à tester.
         @type  fichier: objet L{Fichier<Fichier.Fichier>}
         """

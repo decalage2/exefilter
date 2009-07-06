@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# -*- coding: latin-1 -*-
+# -*- coding: iso-8859-1 -*-
 """
 ExeFilter - programme principal
 
@@ -25,10 +25,13 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 
 @contact: U{Philippe Lagadec<mailto:philippe.lagadec(a)laposte.net>}
 
-@copyright: DGA/CELAR 2004-2007
-@license: CeCILL (open-source compatible GPL) - cf. code source ou fichier LICENCE.txt joint
+@copyright: DGA/CELAR 2004-2008
+@copyright: NATO/NC3A 2008 (modifications PL apres v1.1.0)
 
-@version: 1.01
+@license: CeCILL (open-source compatible GPL)
+          cf. code source ou fichier LICENCE.txt joint
+
+@version: 1.02
 
 @status: beta
 """
@@ -37,13 +40,14 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 __docformat__ = 'epytext en'
 
 #__author__  = "Philippe Lagadec, Tanguy Vinceleux, Arnaud Kerréneur (DGA/CELAR)"
-__date__    = "2007-09-10"
-__version__ = "1.01"
+__date__    = "2008-03-23"
+__version__ = "1.02"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
 
-# Copyright DGA/CELAR 2004-2007
+# Copyright DGA/CELAR 2004-2008
+# Copyright NATO/NC3A 2008 (modifications PL apres v1.1.0)
 # Auteurs:
 # - Philippe Lagadec (PL) - philippe.lagadec(a)laposte.net
 # - Arnaud Kerréneur (AK) - arnaud.kerreneur(a)dga.defense.gouv.fr
@@ -81,16 +85,56 @@ __version__ = "1.01"
 # HISTORIQUE:
 # 2004-10-24 v0.01 PL: - 1ère version (Sas de dépollution)
 # 2004-2006  PL,AK,TV: - Nombreuses évolutions
-# 2007-06-20 v1.01 PL: - 1ère version libre, transformation en ExeFilter
+# 2007-06-20 v1.01 PL: - Licence CeCILL, transformation en ExeFilter
 # 2007-07-24       PL: - Appel à get_username pour ameliorer la portabilité
 # 2007-09-13       PL: - Amélioration portabilité constantes, imports
 # 2007-10-08       PL: - Ajout option -e pour exporter la politique en HTML
 #                      - Journal syslog desactive par defaut
 # 2007-10-22       PL: - Ajout options antivirus
 # 2008-02-29       PL: - correction banniere et rapport avec XF_VERSION/DATE
+# 2008-03-23 v1.02 PL: - ajout gettext dans programme principal pour traduction
+#                      - ajout _() a chaque constante chaine pour traduction
+#                      - ajout parametre pour activer l'archivage (non par défaut)
+#                      - code archivage deplace de transfert vers init_archivage
 #------------------------------------------------------------------------------
 # A FAIRE :
+# + gettext quand importe comme module
+# + parametre archivage false par defaut
+# + finir traduction gettext
+# + traduire codes parametres en anglais (pour avoir une config homogene)
+# + decouper transfert() en plusieurs fonctions pour une utilisation plus generique
 #------------------------------------------------------------------------------
+
+#=== GETTEXT =================================================================
+
+if __name__ == '__main__':
+    # Gettext pour adapter certaines chaines de caracteres a la langue du
+    # systeme (traduction en anglais ou francais)
+    # => DOIT etre fait avant toute constante chaine _("...") et tout import
+    import gettext, locale, plx, os.path
+    # repertoire "locale": normalement un sous-repertoire du script principal
+    locale_dir = os.path.join(plx.get_main_dir(), "locale")
+    #print 'locale_dir =', locale_dir
+    # initialisation de la locale (cf. doc Python): est-ce toujours necessaire ?
+    locale.setlocale(locale.LC_ALL, '')
+    # langue du systeme: 2 premieres lettres de la locale/lang
+    lang = locale.getdefaultlocale()[0][:2]
+    #print 'lang =', lang
+    if lang != 'fr':
+        # ordre prefere des langues: 1) systeme, 2) english, 3) francais
+        languages=[lang, 'en', 'fr']
+        # On charge la langue correspondante depuis le repertoire locale:
+        try:
+            gt = gettext.translation("ExeFilter", locale_dir, languages)
+            # puis on installe la fonction de traduction _():
+            gt.install(unicode=True)
+        except:
+            # en cas d'erreur, on doit quand meme definir _() comme une fonction
+            # "builtin" qui renvoie la chaine inchangee:
+            __builtins__._ = lambda text: text
+    else:
+        # si la langue est 'fr', on n'utilise aucune traduction:
+        __builtins__._ = lambda text: text
 
 #=== IMPORTS ==================================================================
 
@@ -102,13 +146,15 @@ if sys.platform == 'win32':
     try:
         import win32api , win32security
     except:
-        raise ImportError, "the pywin32 module is not installed: see http://sourceforge.net/projects/pywin32"
+        raise ImportError, "the pywin32 module is not installed: "\
+                           "see http://sourceforge.net/projects/pywin32"
 
 # import du module path.py pour simplifier la gestion des fichiers/repertoires:
 try:
     from path import path
 except:
-    raise ImportError, "the path module is not installed: see http://www.jorendorff.com/articles/python/path/"
+    raise ImportError, "the path module is not installed: "\
+                       "see http://www.jorendorff.com/articles/python/path/"
 
 # modules d'ExeFilter:
 from commun import *
@@ -147,14 +193,14 @@ transfert_termine = False
 parametres = {}
 
 #--- REPERTOIRES ---
-Parametres.Parametre("rep_rapports", str, nom="Répertoire des fichiers rapports",
-    description="Répertoire où sont stockés tous les fichiers rapports",
+Parametres.Parametre("rep_rapports", str, nom=_(u"Répertoire des fichiers rapports"),
+    description=_(u"Répertoire où sont stockés tous les fichiers rapports"),
     valeur_defaut = REP_RAPPORT).ajouter(parametres)
-Parametres.Parametre("rep_journaux", str, nom="Répertoire des fichiers journaux",
-    description="Répertoire où sont stockés tous les fichiers journaux",
+Parametres.Parametre("rep_journaux", str, nom=_(u"Répertoire des fichiers journaux"),
+    description=_(u"Répertoire où sont stockés tous les fichiers journaux"),
     valeur_defaut = REP_LOG).ajouter(parametres)
-Parametres.Parametre("rep_temp", str, nom="Répertoire des fichiers temporaires",
-    description="Répertoire où sont stockés tous les fichiers temporaires",
+Parametres.Parametre("rep_temp", str, nom=_(u"Répertoire des fichiers temporaires"),
+    description=_(u"Répertoire où sont stockés tous les fichiers temporaires"),
     valeur_defaut = REP_TEMP).ajouter(parametres)
 Parametres.Parametre("rep_archives", str, nom="Répertoire des fichiers archivés",
     description="Répertoire où sont archivés tous les fichiers transférés",
@@ -188,6 +234,11 @@ Parametres.Parametre("serveur_syslog", str, nom="Serveur syslog (nom ou adresse 
 Parametres.Parametre("port_syslog", int, nom="Port syslog (numéro de port UDP)",
     description="Numéro de port UDP du serveur syslog: 514 pour un serveur syslog standard.",
     valeur_defaut = 514).ajouter(parametres)
+
+#--- AUTRES PARAMETRES ---
+Parametres.Parametre("archive_after", bool, nom=_(u"Archiver tous les fichiers apres filtrage"),
+    description=_(u"Pour archiver une copie de chaque fichier filtré dans un répertoire d'archivage."),
+    valeur_defaut = True).ajouter(parametres)
 
 #--- ANTIVIRUS ---
 
@@ -329,6 +380,64 @@ def get_compteur_avancement ():
     if commun.transfert_commence == True : return commun.compteur_avancement
     else : return None
 
+
+def init_archivage(politique, taille_src):
+    """
+    Preparation du repertoire d'archivage avant transfert.
+
+    @param politique: objet Politique employe pour le transfert
+    @param taille_src: taille totale des fichiers source a nettoyer, en octets
+    """
+    # si le repertoire d'archivage n'existe pas, on le cree:
+    chem_arc = path(politique.parametres['rep_archives'].valeur)
+    try:
+        os.makedirs(chem_arc)
+    except:
+        pass
+    # calcul de la taille actuelle du répertoire archivage
+    taille_arc = 0
+    for f in chem_arc.walkfiles():
+        taille_arc += f.size
+
+    # test si la taille des fichiers source est supérieure à celle du rép d'archivage
+    # si c'est le cas, on génère une exception
+    if taille_src >    politique.parametres['taille_archives'].valeur:
+        msg = _(u"La taille des fichiers source est superieure a la taille du repertoire d'archivage.")
+        Journal.error(msg)
+        raise RuntimeError, msg
+
+    # boucle pour effacer les sous-rép les plus anciens dans le cas où il n'y a pas assez
+    # d'espace disque dans le rép archivage pour copier les fichiers source
+    while politique.parametres['taille_archives'].valeur < taille_arc + taille_src:
+        date_archive = 0
+        taille_rep_archive = 0
+        # boucle pour déterminer quel est le sous-rép archive le plus ancien
+        for rep in chem_arc.dirs():
+            if date_archive == 0:
+                # on récupère la date du 1er sous-rép archive lu
+                date_archive = os.path.getmtime(rep)
+                rep_archive = rep
+            # si la date du sous-rép archive lu est inférieure à date_archive,
+            # ce sous-rép devient le plus ancien
+            elif date_archive > os.path.getmtime(rep):
+                date_archive = os.path.getmtime(rep)
+                rep_archive = rep
+        if os.path.exists(rep_archive):
+            # calcul de la taille du sous-rép archive le plus ancien
+            for rep in rep_archive.walkfiles():
+                taille_rep_archive += rep.size
+            # on met à jour la taille du rép temp principal
+            taille_arc = taille_arc - taille_rep_archive
+            # on efface le sous-rép temp le plus ancien
+            rep_archive.rmtree()
+        else:
+            # s'il n'y a plus de sous-rép archive à effacer, on génère une exception
+            msg = _(u"repertoire d'archivage deja vide => taille source trop grande")
+            Journal.error(msg)
+            raise RuntimeError, msg
+
+
+
 #------------------------------------------------------------------------------
 # TRANSFERT
 #-------------------
@@ -410,12 +519,12 @@ def transfert(liste_source, destination, type_transfert="entree", handle=None,
     # domaine (ou de machine) sous Windows:
     user = get_username(with_domain=True)
 
-    Journal.important(u"ExeFilter v%s lancé par utilisateur %s sur la machine %s" %
+    Journal.important(_(u"ExeFilter v%s lancé par utilisateur %s sur la machine %s") %
         (XF_VERSION, user, nom_machine))
 
     # on ajoute la politique dans le journal:
     p.journaliser()
-    Journal.info2(u"Début de l'analyse")
+    Journal.info2(_(u"Début de l'analyse"))
 
     Rapport.liste_resultats = []
 
@@ -455,12 +564,6 @@ def transfert(liste_source, destination, type_transfert="entree", handle=None,
         # on incrémente le compteur nombre de fichiers total
         commun.nb_fichiers += rep_source.compter_nb_fichiers()
 
-    # calcul de ta taille du répertoire archivage
-    taille_rep = 0
-    chem_src = path(commun.politique.parametres['rep_archives'].valeur)
-    for rep in chem_src.walkfiles():
-        taille_rep += os.stat(rep).st_size
-
     # test si la taille des fichiers source est supérieure à celle du rép temp
     # si c'est le cas, on génère une exception
     #if taille_src > taille_temp:
@@ -469,43 +572,7 @@ def transfert(liste_source, destination, type_transfert="entree", handle=None,
         Journal.error(msg)
         raise RuntimeError, msg
 
-    # test si la taille des fichiers source est supérieure à celle du rép d'archivage
-    # si c'est le cas, on génère une exception
-    if taille_src >    p.parametres['taille_archives'].valeur:
-        msg = "La taille des fichiers source est superieure a la taille du repertoire d'archivage."
-        Journal.error(msg)
-        raise RuntimeError, msg
-
-    # boucle pour effacer les sous-rép les plus anciens dans le cas où il n'y a pas assez
-    # d'espace disque dans le rép archivage pour copier les fichiers source
-    while p.parametres['taille_archives'].valeur < taille_rep + taille_src:
-        date_archive = 0
-        taille_rep_archive = 0
-        # boucle pour déterminer quel est le sous-rép archive le plus ancien
-        for rep in chem_src.dirs():
-            if date_archive == 0:
-                # on récupère la date du 1er sous-rép archive lu
-                date_archive = os.path.getmtime(rep)
-                rep_archive = rep
-            # si la date du sous-rép archive lu est inférieure à date_archive,
-            # ce sous-rép devient le plus ancien
-            elif date_archive > os.path.getmtime(rep):
-                date_archive = os.path.getmtime(rep)
-                rep_archive = rep
-        if os.path.exists(rep_archive):
-            # calcul de la taille du sous-rép archive le plus ancien
-            for rep in rep_archive.walkfiles():
-                taille_rep_archive += os.stat(rep).st_size
-            # on met à jour la taille du rép temp principal
-            taille_rep = taille_rep - taille_rep_archive
-            # on efface le sous-rép temp le plus ancien
-            rep_archive.rmtree()
-        else:
-            # s'il n'y a plus de sous-rép archive à effacer, on génère une exception
-            msg = "repertoire d'archivage deja vide => taille source trop grande"
-            Journal.error(msg)
-            raise RuntimeError, msg
-
+    init_archivage(p, taille_src)
     commun.transfert_commence = True
 
     # boucle d'analyse de chaque conteneur source contenu dans la liste
@@ -521,14 +588,17 @@ def transfert(liste_source, destination, type_transfert="entree", handle=None,
             # s'il n'y a pas d'interruption, on lance le nettoyage
             liste_resultat = conteneur_source.nettoyer(p)
         # s'il y a eu une interruption pendant nettoyer(), on s'arrête
-        if commun.continuer_transfert == False:break
+        if commun.continuer_transfert == False:
+            break
 
     # génération du rapport
     nom_rapport = "rapport_" + nom_commun
     Journal.info2(u"Génération du rapport: %s ..." % nom_rapport)
-    resume = Rapport.generer_rapport(p.parametres['rep_rapports'].valeur + nom_rapport,
+    chemin_rapport = p.parametres['rep_rapports'].valeur + nom_rapport
+    resume = Rapport.generer_rapport(chemin_rapport,
                                       ', '.join(liste_source),  destination ,
                                       XF_VERSION,  XF_DATE, commun.continuer_transfert)
+    plx.display_html_file(os.path.abspath(chemin_rapport+'.html'))
     Journal.info2(u"Fin de l'analyse")
     # log du résumé de la dépollution
     Journal.important(u'Résumé : %d fichiers analysés ; '\
@@ -547,15 +617,16 @@ def transfert(liste_source, destination, type_transfert="entree", handle=None,
 # PROGRAMME PRINCIPAL
 #=====================
 # ne sert que si on appelle le module ExeFilter.py directement, sans passer par
-# le module go.py qui lance la méthode transfert du module ExeFilter.py dans un 
+# le module go.py qui lance la méthode transfert du module ExeFilter.py dans un
 # thread.
 
 if __name__ == '__main__':
     # si compilation py2exe, il faut fixer ici le codec par défaut, car il n'y
     # a pas de sitecustomize.py:
     if hasattr(sys,"setdefaultencoding"):
-            sys.setdefaultencoding("latin-1")
+            sys.setdefaultencoding("iso-8859-1")
 
+    # Banniere
     print "-"*79
     print "ExeFilter v" + XF_VERSION + " du " + XF_DATE
     print "-"*79

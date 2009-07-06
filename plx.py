@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# -*- coding: latin-1 -*-
+# -*- coding: iso-8859-1 -*-
 """
 plx - Python portability layer extensions
 
@@ -214,7 +214,7 @@ def str_console (string, errors='strict', initial_encoding='latin_1'):
 
 def print_console (string, errors='strict', initial_encoding='latin_1'):
     """
-    To print any string (unicode or 8-bit str) on console with a suitable 
+    To print any string (unicode or 8-bit str) on console with a suitable
     encoding ("CP850" on Windows, "UTF-8" on Linux or MacOSX, ...).
     If string is str, it is first decoded using initial_encoding ("Latin-1" by
     default). Any other object is converted using unicode(object) first.
@@ -310,7 +310,7 @@ def kill_process(process, log=None):
     To kill a process launched by Popen_timer, if timeout is reached
     (POPEN_TIMEOUT). This function is called by a threading.Timer object.
     The process terminates and returns EXIT_KILL_PTIMER as errorlevel code.
-    
+
     process: process object, as created by Popen.
     log: optional logging module to log eventual debug and error messages.
          (may be the standard logging module, or any compatible object with
@@ -454,7 +454,7 @@ if __name__ == "__main__":
     print 'Tests for module "%s" :' % __file__
     print '-'*79
     print ''
-    
+
     print "get_username()                 =", get_username()
     print "get_username(with_domain=True) =", get_username(with_domain=True)
     print ''
@@ -499,5 +499,5 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print '\nstopped.'
 
-    
+
 # This module was coded while listening at Spoon "Ga ga ga ga ga" album. ;-)

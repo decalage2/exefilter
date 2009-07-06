@@ -1,0 +1,525 @@
+"Project-Id-Version: ExeFilter v1.1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2008-03-28 10:44+0100\n"
+"PO-Revision-Date: \n"
+"Last-Translator: Philippe Lagadec <decalage(a)laposte.net>\n"
+"Language-Team: Philippe Lagadec <decalage(a)laposte.net>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-Language: English\n"
+"X-Poedit-SourceCharset: iso-8859-1\n"
+"X-Poedit-Basepath: \n"
+"X-Poedit-SearchPath-0: \n"
+
+#: ExeFilter_NG/Conteneur.py:164
+msgid "Conteneur generique"
+msgstr "Generic Container"
+
+#: ExeFilter_NG/Conteneur.py:262
+#, python-format
+msgid "FICHIER: %s"
+msgstr "FILE: %s"
+
+#: ExeFilter_NG/Conteneur_Fichier.py:129
+msgid "Fichier"
+msgstr "File"
+
+#: ExeFilter_NG/Conteneur_Repertoire.py:137
+msgid "Repertoire"
+msgstr "Directory"
+
+#: ExeFilter_NG/Conteneur_Repertoire.py:185
+#, python-format
+msgid "Copie temporaire: \"%s\" -> \"%s\"..."
+msgstr "Temporary copy: \"%s\" -> \"%s\"..."
+
+#: ExeFilter_NG/Conteneur_Repertoire.py:209
+#, python-format
+msgid "Copie vers la destination: \"%s\" -> \"%s\"..."
+msgstr "Copy to destination: \"%s\" -> \"%s\"..."
+
+#: ExeFilter_NG/Conteneur_Repertoire.py:217
+#, python-format
+msgid "Copie: \"%s\" -> \"%s\"..."
+msgstr "Copy: \"%s\" -> \"%s\"..."
+
+#: ExeFilter_NG/Conteneur_Zip.py:148
+msgid "Archive Zip"
+msgstr "Zip Archive"
+
+#: ExeFilter_NG/Conteneur_Zip.py:150
+msgid "Ouverture du fichier ZIP grâce au module zipfile."
+msgstr "Opening the ZIP archive using the zipfile module."
+
+#: ExeFilter_NG/Conteneur_Zip.py:177
+msgid "Lecture de la liste des fichiers du fichier ZIP:"
+msgstr "Reading list of files in the ZIP archive:"
+
+#: ExeFilter_NG/Conteneur_Zip.py:183
+#, python-format
+msgid "- fichier: %s"
+msgstr "- file: %s"
+
+#: ExeFilter_NG/Conteneur_Zip.py:201
+msgid "  Répertoire."
+msgstr "  Directory."
+
+#: ExeFilter_NG/Conteneur_Zip.py:204
+msgid "  Cette entrée est un label de volume MS-DOS, on l'ignore."
+msgstr "  This entry is a MS-DOS volume label, ignored."
+
+#: ExeFilter_NG/Conteneur_Zip.py:228
+#, python-format
+msgid "Décompression: \"%s\" -> \"%s\"..."
+msgstr "Uncompressing: \"%s\" -> \"%s\"..."
+
+#: ExeFilter_NG/Conteneur_Zip.py:260
+msgid "Recompression du fichier Zip après nettoyage des fichiers..."
+msgstr "Zip archive recompression after files cleaning..."
+
+#: ExeFilter_NG/Conteneur_Zip.py:302
+msgid "Aucun fichier accepté dans le Zip: suppression."
+msgstr "No file is accepted in the Zip archive: deleted."
+
+#: ExeFilter_NG/ExeFilter.py:187
+msgid "Répertoire des fichiers rapports"
+msgstr "Reports directory"
+
+#: ExeFilter_NG/ExeFilter.py:188
+msgid "Répertoire où sont stockés tous les fichiers rapports"
+msgstr "Directory where all the report files are written"
+
+#: ExeFilter_NG/ExeFilter.py:190
+msgid "Répertoire des fichiers journaux"
+msgstr "Logs directory"
+
+#: ExeFilter_NG/ExeFilter.py:191
+msgid "Répertoire où sont stockés tous les fichiers journaux"
+msgstr "Directory where all the log files are written"
+
+#: ExeFilter_NG/ExeFilter.py:193
+msgid "Répertoire des fichiers temporaires"
+msgstr "Temp directory"
+
+#: ExeFilter_NG/ExeFilter.py:194
+msgid "Répertoire où sont stockés tous les fichiers temporaires"
+msgstr "Directory where all the temporary files are written"
+
+#: ExeFilter_NG/ExeFilter.py:230
+msgid "Archiver tous les fichiers apres filtrage"
+msgstr "Archive all files after filtering"
+
+#: ExeFilter_NG/ExeFilter.py:231
+msgid "Pour archiver une copie de chaque fichier filtré dans un répertoire d'archivage."
+msgstr "To store a copy of each filtered file in an archive directory"
+
+#: ExeFilter_NG/ExeFilter.py:391
+msgid "La taille des fichiers source est superieure a la taille du repertoire d'archivage."
+msgstr "Size of source files exceeds the archive directory."
+
+#: ExeFilter_NG/ExeFilter.py:421
+msgid "repertoire d'archivage deja vide => taille source trop grande"
+msgstr "archive directory is already empy => size of source files is too large"
+
+#: ExeFilter_NG/ExeFilter.py:508
+#, python-format
+msgid "ExeFilter v%s lancé par utilisateur %s sur la machine %s"
+msgstr "ExeFilter v%s launched by user %s on computer %s"
+
+#: ExeFilter_NG/ExeFilter.py:513
+msgid "Début de l'analyse"
+msgstr "Starting analysis"
+
+#: ExeFilter_NG/Fichier.py:188
+#, python-format
+msgid "chemin relatif incorrect: %s"
+msgstr "incorrect relative file path: %s"
+
+#: ExeFilter_NG/Fichier.py:189
+msgid "Nom de fichier non relatif ou incorrect"
+msgstr "Incorrect or non-relative file path"
+
+#: ExeFilter_NG/Fichier.py:226
+#, python-format
+msgid "Impossible de supprimer un fichier temporaire: %s"
+msgstr "Impossible to remove a temporary file: %s"
+
+#: ExeFilter_NG/Fichier.py:289
+#, python-format
+msgid "%s : Le fichier est chiffré, il ne peut être analysé."
+msgstr "%s : File is encrypted, it cannot be analyzed."
+
+#: ExeFilter_NG/Fichier.py:307
+#, python-format
+msgid "%s : Erreur lors de l'analyse du format (%s)"
+msgstr "%s : Error during format analysis (%s)"
+
+#: ExeFilter_NG/Fichier.py:318
+msgid " : Reconnu"
+msgstr " : Recognized"
+
+#: ExeFilter_NG/Fichier.py:337
+#, python-format
+msgid "%s : Erreur lors du nettoyage (%s)"
+msgstr "%s : Error while cleaning (%s)"
+
+#: ExeFilter_NG/Fichier.py:365
+msgid " : Format de fichier non reconnu ou non autorisé"
+msgstr " : Unauthorized or unknown file format"
+
+#: ExeFilter_NG/Fichier.py:443
+#, python-format
+msgid "Connexion au serveur clamd %s:%d..."
+msgstr "Connection to clamd server %s:%d..."
+
+#: ExeFilter_NG/Fichier.py:447
+#, python-format
+msgid "Connexion au service clamd (%s:%d) impossible."
+msgstr "Impossible to connect to clamd service (%s:%d)."
+
+#: ExeFilter_NG/Fichier.py:451
+msgid "Appel de clamd pour l'analyse antivirus..."
+msgstr "Call to clamd for antivirus scanning..."
+
+#: ExeFilter_NG/Fichier.py:454
+#, python-format
+msgid "analyse de %s"
+msgstr "analysis of %s"
+
+#: ExeFilter_NG/Fichier.py:459
+#: ExeFilter_NG/Fichier.py:533
+#: ExeFilter_NG/Fichier.py:598
+msgid "Temps dépassé lors de la vérification antivirus"
+msgstr "Timeout during antivirus scanning"
+
+#: ExeFilter_NG/Fichier.py:462
+#: ExeFilter_NG/Fichier.py:541
+#: ExeFilter_NG/Fichier.py:602
+msgid "Erreur lors de la vérification antivirus"
+msgstr "Error during antivirus scanning"
+
+#: ExeFilter_NG/Fichier.py:467
+#: ExeFilter_NG/Fichier.py:528
+#: ExeFilter_NG/Fichier.py:590
+msgid "Pas de virus détecté."
+msgstr "No virus detected."
+
+#: ExeFilter_NG/Fichier.py:474
+#, python-format
+msgid "fichier=%s resultat=%s"
+msgstr "file=%s result=%s"
+
+#: ExeFilter_NG/Fichier.py:476
+#, python-format
+msgid "Virus détecté ou fichier suspect: %s"
+msgstr "Virus detected or suspicious file: %s"
+
+#: ExeFilter_NG/Fichier.py:495
+msgid "Lancement de fpscan pour l'analyse antivirus..."
+msgstr "Launching fpscan for antivirus scanning..."
+
+#: ExeFilter_NG/Fichier.py:526
+#, python-format
+msgid "resultat F-Prot fpscan: %d"
+msgstr "F-Prot fpscan result : %d"
+
+#: ExeFilter_NG/Fichier.py:537
+#: ExeFilter_NG/Fichier.py:594
+msgid "Virus détecté ou fichier suspect"
+msgstr "Virus detected or suspicious file"
+
+#: ExeFilter_NG/Fichier.py:546
+#: ExeFilter_NG/Fichier.py:607
+msgid "Antivirus non supporte ou implemente pour ce systeme."
+msgstr "Antivirus not supported or not implemented on this platform."
+
+#: ExeFilter_NG/Fichier.py:564
+msgid "Lancement de fpcmd pour l'analyse antivirus..."
+msgstr "Launching fpcmd for antivirus scanning..."
+
+#: ExeFilter_NG/Rapport.py:190
+msgid "Rapport ExeFilter\n"
+msgstr "ExeFilter report\n"
+
+#: ExeFilter_NG/Rapport.py:197
+#, python-format
+msgid "Rapport ExeFilter v%(version)s"
+msgstr "ExeFilter report v%(version)s"
+
+#: ExeFilter_NG/Rapport.py:199
+#, python-format
+msgid "généré le %(date)s sur la machine %(hostname)s par l'utilisateur %(user)s"
+msgstr "generated on the %(date)s on computer %(hostname)s by user %(user)s"
+
+#: ExeFilter_NG/Rapport.py:202
+msgid "Répertoire de destination : "
+msgstr "Destination directory : "
+
+#: ExeFilter_NG/Rapport.py:204
+msgid "Répertoire(s) et/ou fichier(s) analysé(s) : "
+msgstr "Analyzed dir(s) and/or file(s) : "
+
+#: ExeFilter_NG/Rapport.py:210
+msgid "ATTENTION ! L'analyse a été interrompue pendant son exécution : "
+msgstr "WARNING ! Analyze was interrupted during execution : "
+
+#: ExeFilter_NG/Rapport.py:211
+msgid "tous les fichiers n'ont pas été analysés."
+msgstr "not all the files have been analyzed."
+
+#: ExeFilter_NG/Rapport.py:215
+msgid "RESUME :"
+msgstr "SUMMARY :"
+
+#: ExeFilter_NG/Rapport.py:216
+msgid "Nombre de fichiers analysés : "
+msgstr "Analyzed files : "
+
+#: ExeFilter_NG/Rapport.py:217
+msgid "Nombre de fichiers acceptés : "
+msgstr "Accepted files : "
+
+#: ExeFilter_NG/Rapport.py:218
+msgid "Nombre de fichiers nettoyés : "
+msgstr "Cleaned files : "
+
+#: ExeFilter_NG/Rapport.py:219
+msgid "Nombre de fichiers refusés  : "
+msgstr "Blocked files : "
+
+#: ExeFilter_NG/Rapport.py:220
+msgid "Nombre d'erreurs            : "
+msgstr "Number of errors : "
+
+#: ExeFilter_NG/Rapport.py:225
+msgid "Fichier analysé"
+msgstr "File"
+
+#: ExeFilter_NG/Rapport.py:226
+msgid "Résultat"
+msgstr "Result"
+
+#: ExeFilter_NG/Rapport.py:227
+msgid "Commentaire"
+msgstr "Details"
+
+#: ExeFilter_NG/Rapport.py:238
+msgid "Accepté"
+msgstr "Accepted"
+
+#: ExeFilter_NG/Rapport.py:241
+msgid "Nettoyé"
+msgstr "Cleaned"
+
+#: ExeFilter_NG/Rapport.py:247
+msgid "Refusé"
+msgstr "Blocked"
+
+#: ExeFilter_NG/Rapport.py:251
+msgid "Erreur"
+msgstr "Error"
+
+#: ExeFilter_NG/Resultat.py:104
+msgid "Extension non autorisée"
+msgstr "Unauthorized file extension"
+
+#: ExeFilter_NG/Resultat.py:105
+msgid "Format incorrect ou incompatible avec l'extension"
+msgstr "Incorrect format or not compatible with file extension"
+
+#: ExeFilter_NG/Resultat.py:106
+msgid "Fichier accepté"
+msgstr "Accepted file"
+
+#: ExeFilter_NG/Resultat.py:107
+msgid "Fichier nettoyé"
+msgstr "Cleaned file"
+
+#: ExeFilter_NG/Resultat.py:108
+msgid "Erreur de lecture"
+msgstr "Read error"
+
+#: ExeFilter_NG/Resultat.py:109
+msgid "Erreur lors de l'analyse"
+msgstr "Error during analysis"
+
+#: ExeFilter_NG/Resultat.py:110
+msgid "Fichier refusé (analyse ou nettoyage impossible)"
+msgstr "Rejected file (impossible to scan or clean)"
+
+#: ExeFilter_NG/Resultat.py:111
+msgid "Fichier infecté par un virus"
+msgstr "Infected by a virus"
+
+#: ExeFilter_NG/Filtres/Copy of Filtre_Office.py:239
+msgid "Document MS Office generique"
+msgstr "Generic MS Office Document"
+
+#: ExeFilter_NG/Filtres/Copy of Filtre_Office.py:346
+msgid "Contient un objet OLE Package"
+msgstr "Contains an OLE Package object"
+
+#: ExeFilter_NG/Filtres/Copy of Filtre_Office.py:388
+#: Filtre_Office.py:417
+msgid "Macro(s) VBA supprimée(s)"
+msgstr "VBA Macros were removed"
+
+#: ExeFilter_NG/Filtres/Copy of Filtre_Office.py:432
+msgid "erreur lors du nettoyage des macros VBA"
+msgstr "Error during VBA Macros cleaning"
+
+#: ExeFilter_NG/Filtres/Filtre.py:123
+msgid "Filtre Generique"
+msgstr "Generic Filter"
+
+#: ExeFilter_NG/Filtres/Filtre.py:147
+msgid "Format autorisé"
+msgstr "Allowed format"
+
+#: ExeFilter_NG/Filtres/Filtre.py:148
+msgid "indique si ce format est autorisé ou non par la politique de filtrage"
+msgstr "Specifies whether this file format is allowed by the filtering policy or not"
+
+#: ExeFilter_NG/Filtres/Filtre.py:184
+msgid " : Pas de contenu actif détecté"
+msgstr " : No active content was detected"
+
+#: ExeFilter_NG/Filtres/Filtre.py:194
+msgid " : Contenu actif détecté et nettoyé"
+msgstr " : Active content was detected and cleaned"
+
+#: ExeFilter_NG/Filtres/Filtre.py:205
+msgid " : Format de fichier incorrect ou non supporté, ne peut être analysé."
+msgstr " : Incorrect or unsupported file format, cannot be analyzed."
+
+#: ExeFilter_NG/Filtres/Filtre.py:222
+msgid "Analyse impossible."
+msgstr "Cannot be analyzed"
+
+#: ExeFilter_NG/Filtres/Filtre.py:237
+msgid "Fichier chiffré"
+msgstr "Encrypted file"
+
+#: ExeFilter_NG/Filtres/Filtre.py:251
+msgid "Nettoyage impossible."
+msgstr "Cannot be cleaned."
+
+#: ExeFilter_NG/Filtres/Filtre_AVI.py:116
+msgid "Fichier Video AVI"
+msgstr "AVI Video file"
+
+#: ExeFilter_NG/Filtres/Filtre_BMP.py:116
+msgid "Fichier Image BMP"
+msgstr "BMP Picture"
+
+#: ExeFilter_NG/Filtres/Filtre_GIF.py:114
+msgid "Fichier Image GIF"
+msgstr "GIF Picture"
+
+#: ExeFilter_NG/Filtres/Filtre_HTML.py:173
+msgid "Double charset dans une balise META"
+msgstr "Double charset in META tag"
+
+#: ExeFilter_NG/Filtres/Filtre_HTML.py:183
+msgid "Double encodage META incoherent."
+msgstr "Several different encodings in META tags"
+
+#: ExeFilter_NG/Filtres/Filtre_HTML.py:186
+msgid "Encodages BOM et META incoherents."
+msgstr "Different encoding in BOM and META tag"
+
+#: ExeFilter_NG/Filtres/Filtre_HTML.py:222
+#, python-format
+msgid "<!-- balise %s supprimee -->"
+msgstr "<!-- %s tag removed -->"
+
+#: ExeFilter_NG/Filtres/Filtre_HTML.py:255
+#, python-format
+msgid "attribut interdit: %s=..."
+msgstr "forbidden attribute: %s=..."
+
+#: ExeFilter_NG/Filtres/Filtre_HTML.py:267
+#, python-format
+msgid "attribut interdit: %s=%s:..."
+msgstr "forbidden attribute: %s=%s:..."
+
+#: ExeFilter_NG/Filtres/Filtre_HTML.py:406
+msgid "Document HTML"
+msgstr "HTML Document"
+
+#: ExeFilter_NG/Filtres/Filtre_HTML.py:443
+#, python-format
+msgid "encodage d'après le BOM: %s"
+msgstr "Encoding according to BOM: %s"
+
+#: ExeFilter_NG/Filtres/Filtre_HTML.py:463
+#: ExeFilter_NG/Filtres/Filtre_HTML.py:471
+msgid "Erreur lors de l'analyse des balises META"
+msgstr "Error during META tags analysis"
+
+#: ExeFilter_NG/Filtres/Filtre_HTML.py:466
+#: ExeFilter_NG/Filtres/Filtre_HTML.py:521
+msgid "Syntaxe HTML incorrecte"
+msgstr "Incorrect HTML syntax"
+
+#: ExeFilter_NG/Filtres/Filtre_HTML.py:474
+#: ExeFilter_NG/Filtres/Filtre_HTML.py:529
+msgid "Encodage du fichier incorrect"
+msgstr "Incorrect file encoding"
+
+#: ExeFilter_NG/Filtres/Filtre_HTML.py:482
+#, python-format
+msgid "encodage d'après la balise META: %s"
+msgstr "Encoding according to META tag: %s"
+
+#: ExeFilter_NG/Filtres/Filtre_HTML.py:489
+#, python-format
+msgid "Fichier HTML temporaire: %s"
+msgstr "Temporary HTML file: %s"
+
+#: ExeFilter_NG/Filtres/Filtre_HTML.py:518
+#: ExeFilter_NG/Filtres/Filtre_HTML.py:526
+msgid "Erreur lors du nettoyage HTML"
+msgstr "Error during HTML cleaning"
+
+#: ExeFilter_NG/Filtres/Filtre_JPEG.py:111
+msgid "Fichier Image JPEG"
+msgstr "JPEG Picture"
+
+#: ExeFilter_NG/Filtres/Filtre_Office.py:457
+msgid "temps dépassé lors du nettoyage des macros VBA"
+msgstr "Timeout reached during VBA Macros cleaning"
+
+#: ExeFilter_NG/Filtres/Filtre_Office.py:497
+msgid "Document MS Word"
+msgstr "MS Word Document"
+
+#: ExeFilter_NG/Filtres/Filtre_Office.py:552
+msgid "Classeur MS Excel"
+msgstr "MS Excel Spreadsheet"
+
+#: ExeFilter_NG/Filtres/Filtre_Office.py:607
+msgid "Presentation MS Powerpoint"
+msgstr "MS Powerpoint Presentation"
+
+#: ExeFilter_NG/Filtres/Filtre_Office.py:648
+msgid "Dessin MS Visio"
+msgstr "MS Visio Drawing"
+
+#: ExeFilter_NG/Filtres/Filtre_Office.py:688
+msgid "Projet MS Project"
+msgstr "MS Project file"
+
+#: ExeFilter_NG/Filtres/Filtre_PDF.py:120
+msgid "Document PDF"
+msgstr "PDF Document"
+
+#: ExeFilter_NG/Filtres/Filtre_RTF.py:141
+msgid "Document RTF"
+msgstr "RTF Document"
+
+#: ExeFilter_NG/Filtres/Filtre_Texte.py:117
+msgid "Fichier Texte ASCII"
+msgstr "ASCII Text file"
+

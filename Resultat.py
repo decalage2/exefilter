@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# -*- coding: latin-1 -*-
+# -*- coding: iso-8859-1 -*-
 """
 Resultat - ExeFilter
 
@@ -9,29 +9,33 @@ afin de décrire le résultat des filtres appliqués à un fichier.
 Ce fichier fait partie du projet ExeFilter.
 URL du projet: http://admisource.gouv.fr/projects/exefilter
 
-@organization: DGA/CELAR
+@organization: DGA/CELAR, NATO/NC3A
 @author: U{Philippe Lagadec<mailto:philippe.lagadec(a)laposte.net>}
 @author: U{Arnaud Kerréneur<mailto:arnaud.kerreneur(a)dga.defense.gouv.fr>}
 
 @contact: U{Philippe Lagadec<mailto:philippe.lagadec(a)laposte.net>}
 
-@copyright: DGA/CELAR 2004-2007
-@license: CeCILL (open-source compatible GPL) - cf. code source ou fichier LICENCE.txt joint
+@copyright: DGA/CELAR 2004-2008
+@copyright: NATO/NC3A 2008 (modifications PL apres v1.1.0)
 
-@version: 1.01
+@license: CeCILL (open-source compatible GPL)
+          cf. code source ou fichier LICENCE.txt joint
+
+@version: 1.02
 
 @status: beta
 """
+#==============================================================================
 __docformat__ = 'epytext en'
 
-#__author__  = "Arnaud Kerréneur, Philippe Lagadec"
-__date__    = "2007-09-10"
-__version__ = "1.01"
+__date__    = "2008-03-24"
+__version__ = "1.02"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
 
-# Copyright DGA/CELAR 2004-2007
+# Copyright DGA/CELAR 2004-2008
+# Copyright NATO/NC3A 2008 (PL changes after v1.1.0)
 # Auteurs:
 # - Philippe Lagadec (PL) - philippe.lagadec(a)laposte.net
 # - Arnaud Kerréneur (AK) - arnaud.kerreneur(a)dga.defense.gouv.fr
@@ -71,6 +75,7 @@ __version__ = "1.01"
 # 2005-2007     PL,AK: - nombreuses evolutions
 # 12/01/2007 v1.00 PL: - version 1.00 officielle
 # 2007-09-18 v1.01 PL: - ajout licence CeCILL
+# 2008-03-24 v1.02 PL: - ajout de _() pour traduction gettext des chaines
 
 # A FAIRE:
 #------------------------------------------------------------------------------
@@ -79,8 +84,9 @@ __version__ = "1.01"
 
 import sys, copy
 
-# modules d'ExeFilter:
+# modules du projet:
 from commun import *
+import Fichier
 
 #=== CONSTANTES ===============================================================
 
@@ -98,14 +104,14 @@ VIRUS             = 70
 
 # résultat détaillé sous forme de chaîne pour chaque code résultat:
 resultat_detaille = {
-    EXT_NON_AUTORISEE : u"Extension non autorisée",
-    FORMAT_INCORRECT :  u"Format incorrect ou incompatible avec l'extension",
-    ACCEPTE :           u"Fichier accepté",
-    NETTOYE :           u"Fichier nettoyé",
-    ERREUR_LECTURE :    u"Erreur de lecture",
-    ERREUR_ANALYSE :    u"Erreur lors de l'analyse",
-    REFUSE :            u"Fichier refusé (analyse ou nettoyage impossible)",
-    VIRUS :             u"Fichier infecté par un virus"
+    EXT_NON_AUTORISEE : _(u"Extension non autorisée"),
+    FORMAT_INCORRECT :  _(u"Format incorrect ou incompatible avec l'extension"),
+    ACCEPTE :           _(u"Fichier accepté"),
+    NETTOYE :           _(u"Fichier nettoyé"),
+    ERREUR_LECTURE :    _(u"Erreur de lecture"),
+    ERREUR_ANALYSE :    _(u"Erreur lors de l'analyse"),
+    REFUSE :            _(u"Fichier refusé (analyse ou nettoyage impossible)"),
+    VIRUS :             _(u"Fichier infecté par un virus")
     }
 
 # indique pour chaque code résultat s'il s'agit d'un refus du fichier:
@@ -151,6 +157,7 @@ class Resultat:
         # raison doit être une liste de chaînes unicode.
         self.raison = []
         self.ajouter_raison(raison)
+        assert isinstance(fichier, Fichier.Fichier)
         self.chemin_fichier = fichier.chemin_complet
 
     def ajouter_raison (self, raison):
@@ -232,3 +239,5 @@ class Resultat:
     def est_refuse (self):
         "Retourne True si le résultat correspond à un refus."
         return resultat_refuse[ self.code_resultat ]
+
+

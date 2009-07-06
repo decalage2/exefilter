@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# -*- coding: latin-1 -*-
+# -*- coding: iso-8859-1 -*-
 """
 Rapport - ExeFilter
 
@@ -14,23 +14,26 @@ URL du projet: http://admisource.gouv.fr/projects/exefilter
 
 @contact: U{Philippe Lagadec<mailto:philippe.lagadec(a)laposte.net>}
 
-@copyright: DGA/CELAR 2004-2007
-@license: CeCILL (open-source compatible GPL) - cf. code source ou fichier LICENCE.txt joint
+@copyright: DGA/CELAR 2004-2008
+@copyright: NATO/NC3A 2008 (modifications PL apres v1.1.0)
 
-@version: 1.01
+@license: CeCILL (open-source compatible GPL)
+          cf. code source ou fichier LICENCE.txt joint
+
+@version: 1.02
 
 @status: beta
 """
 __docformat__ = 'epytext en'
 
-#__author__  = "Arnaud Kerréneur, Philippe Lagadec"
-__date__    = "2007-09-10"
-__version__ = "1.01"
+__date__    = "2008-03-27"
+__version__ = "1.02"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
 
-# Copyright DGA/CELAR 2004-2007
+# Copyright DGA/CELAR 2004-2008
+# Copyright NATO/NC3A 2008 (PL changes after v1.1.0)
 # Auteurs:
 # - Philippe Lagadec (PL) - philippe.lagadec(a)laposte.net
 # - Arnaud Kerréneur (AK) - arnaud.kerreneur(a)dga.defense.gouv.fr
@@ -73,6 +76,7 @@ __version__ = "1.01"
 #                      - ajout get_username pour améliorer la portabilité
 #                      - renommage de parametres generer_rapport
 #                      - retrait date de la version ExeFilter des rapports
+# 2008-03-23 v1.02 PL: - ajout _() a chaque constante chaine pour traduction
 
 #------------------------------------------------------------------------------
 # A FAIRE:
@@ -89,7 +93,7 @@ __version__ = "1.01"
 
 #=== IMPORTS ==================================================================
 
-import sys, os, socket, codecs, xml.sax.saxutils, os.path, time
+import sys, os, socket, codecs, xml.sax.saxutils, os.path, time, locale
 from path import path
 
 # modules du projet:
@@ -177,9 +181,7 @@ def generer_rapport(nom_rapport, repertoire_src, repertoire_dest, version,
     # on récupère le nom de l'utilisateur qui lance ExeFilter, avec nom de
     # domaine (ou de machine) sous Windows:
     user = get_username(with_domain=True)
-
     hostname = socket.gethostname()
-
 
     # création du rapport HTML "nom_rapport", ouverture en écriture
     f=codecs.open(nom_rapport + ".html", 'w', 'latin_1')
@@ -188,44 +190,44 @@ def generer_rapport(nom_rapport, repertoire_src, repertoire_dest, version,
     f.write(u'<html>\n')
     f.write(u'<head>\n')
     f.write(u'<title>\n')
-    f.write(u'Rapport ExeFilter\n')
+    f.write(_(u'Rapport ExeFilter\n'))
     f.write(u'</title>\n')
     f.write(u'</head>\n\n')
     f.write(u'<body>\n')
 
     # écriture du bandeau titre
     f.write(u'<table BORDER WIDTH="100%%" BGCOLOR="#FFFFCC"><tr><td><center><b>\n')
-    f.write(u'Rapport ExeFilter v' + version + '\n<br>')
-    f.write(u'généré le '
-        + unicode(time.strftime("%d/%m/%Y à %H:%M", time.localtime()), 'latin_1')
-        + u' sur la machine ' + hostname
-        + u' à partir du compte utilisateur ' + user
-        + u'\n<br>')
-    # nom répertoire avec accent dcm2205
-    f.write(u'Répertoire de destination : ' + echap(repertoire_dest) + '\n<br>')
-    f.write(u' Répertoire(s) et/ou fichier(s) analysé(s) : ' + echap(repertoire_src))
+    f.write(_(u'Rapport ExeFilter v%(version)s') % {'version': version} + '\n<br>')
+    date = unicode(time.strftime("%c", time.localtime()), 'latin_1')
+    f.write(_(u"généré le %(date)s sur la machine %(hostname)s par l'utilisateur %(user)s")\
+        % {'date':date, 'hostname':hostname, 'user':user})
+    f.write("\n<br>")
+    f.write(_(u'Répertoire de destination : ') + echap(repertoire_dest))
+    f.write('\n<br>')
+    f.write(_(u'Répertoire(s) et/ou fichier(s) analysé(s) : ') + echap(repertoire_src))
     f.write(u'\n</b></center></td></tr></table><p>\n\n')
 
     # affichage d'un message particulier s'il y a eu une interruption pendant l'analyse
     if continuer_transfert == False:
-        f.write(u'<table BORDER WIDTH="100%%" BGCOLOR="#FF0000"><tr><td><b><center>ATTENTION !\
-            L\'analyse a été interrompue pendant son exécution : tous les\
-            fichiers n\'ont pas été analysés.</b></center></td></tr></table>')
+        f.write(u'<table BORDER WIDTH="100%%" BGCOLOR="#FF0000"><tr><td><b><center>')
+        f.write(_(u"ATTENTION ! L'analyse a été interrompue pendant son exécution : "))
+        f.write(_(u"tous les fichiers n'ont pas été analysés."))
+        f.write(u'</b></center></td></tr></table>')
 
     # écriture du résumé (nb fichiers analysés, nb fichiers acceptés, etc.)
-    f.write(u'<br><b>RESUME :</b><br>\n')
-    f.write(u'Nombre de fichiers analysés : ' + str(nb_fichier) + '<br>\n')
-    f.write(u'Nombre de fichiers acceptés : ' + str(nb_accepte) + '<br>\n')
-    f.write(u'Nombre de fichiers nettoyés : ' + str(nb_nettoye) + '<br>\n')
-    f.write(u'Nombre de fichiers refusés  : ' + str(nb_refuse) + '<br>\n')
-    f.write(u"Nombre d'erreurs            : " + str(nb_erreur) + '<br>\n\n')
+    f.write('<br><b>'+_(u'RESUME :')+'</b><br>\n')
+    f.write(_(u'Nombre de fichiers analysés : ') + str(nb_fichier) + '<br>\n')
+    f.write(_(u'Nombre de fichiers acceptés : ') + str(nb_accepte) + '<br>\n')
+    f.write(_(u'Nombre de fichiers nettoyés : ') + str(nb_nettoye) + '<br>\n')
+    f.write(_(u'Nombre de fichiers refusés  : ') + str(nb_refuse) + '<br>\n')
+    f.write(_(u"Nombre d'erreurs            : ") + str(nb_erreur) + '<br>\n\n')
 
     # écriture du tableau contenant les fichiers analysés
     f.write(u'<br><table border=1 WIDTH="100%" BGCOLOR="#FFFFFF">\n')
     f.write(u'<tr BGCOLOR="#FFCC99">\n')
-    f.write(u'<td><center><b>Fichier analysé</b></center></td>\n')
-    f.write(u'<td><center><b>Résultat</b></center></td>\n')
-    f.write(u'<td><center><b>Commentaire</b><center></td></tr>\n\n')
+    f.write(u'<td><center><b>'+_(u'Fichier analysé')+'</b></center></td>\n')
+    f.write(u'<td><center><b>'+_(u'Résultat')+'</b></center></td>\n')
+    f.write(u'<td><center><b>'+_(u'Commentaire')+'</b><center></td></tr>\n\n')
 
     # on modifie la couleur de fond de la colonne résultat suivant le code_resultat
     for resultat in liste_resultats:
@@ -236,20 +238,20 @@ def generer_rapport(nom_rapport, repertoire_src, repertoire_dest, version,
         f.write(u'<tr valign=top><td>' + chemin_fichier + '</td>\n')
         if   resultat.code_resultat == Resultat.ACCEPTE:
             # couleur verte
-            f.write(u'<td BGCOLOR="#66FF00"><center>Accepté</center></td>\n')
+            f.write(u'<td BGCOLOR="#66FF00"><center>'+_(u'Accepté')+'</center></td>\n')
         elif resultat.code_resultat == Resultat.NETTOYE:
             # couleur jaune
-            f.write(u'<td BGCOLOR="#FFFF00"><center>Nettoyé</center></td>\n')
+            f.write(u'<td BGCOLOR="#FFFF00"><center>'+_(u'Nettoyé')+'</center></td>\n')
         elif resultat.code_resultat == Resultat.REFUSE \
         or   resultat.code_resultat == Resultat.EXT_NON_AUTORISEE \
         or   resultat.code_resultat == Resultat.FORMAT_INCORRECT \
         or   resultat.code_resultat == Resultat.VIRUS :
             # couleur rouge
-            f.write(u'<td BGCOLOR="#FF0000"><center>Refusé</center></td>\n')
+            f.write(u'<td BGCOLOR="#FF0000"><center>'+_(u'Refusé')+'</center></td>\n')
         elif resultat.code_resultat == Resultat.ERREUR_LECTURE \
         or   resultat.code_resultat == Resultat.ERREUR_ANALYSE:
             # couleur orange
-            f.write(u'<td BGCOLOR="#FF9900"><center>Erreur</center></td>\n')
+            f.write(u'<td BGCOLOR="#FF9900"><center>'+_(u'Erreur')+'</center></td>\n')
         f.write('<td>')
         if resultat.code_resultat == Resultat.EXT_NON_AUTORISEE:
             f.write(echap(resultat.details()) + '<br>')
@@ -320,9 +322,9 @@ def generer_rapport(nom_rapport, repertoire_src, repertoire_dest, version,
     f.write(u'</rapport>')
     f.close()
 
-    # ouverture auto du rapport si on est en mode debug (ne marche que sous Windows)
-    if mode_debug() and sys.platform == 'win32' :
-        os.startfile(nom_rapport + ".html")
+##    # ouverture auto du rapport si on est en mode debug (ne marche que sous Windows)
+##    if mode_debug() and sys.platform == 'win32' :
+##        os.startfile(nom_rapport + ".html")
 
     # on retourne le résumé de l'analyse dans une liste
     resume = (nb_fichier, nb_accepte, nb_nettoye, nb_refuse, nb_erreur)
