@@ -31,7 +31,7 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 @license: CeCILL (open-source compatible GPL)
           cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.02
+@version: 1.03
 
 @status: beta
 """
@@ -40,14 +40,14 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 __docformat__ = 'epytext en'
 
 #__author__  = "Philippe Lagadec, Tanguy Vinceleux, Arnaud Kerréneur (DGA/CELAR)"
-__date__    = "2008-03-23"
-__version__ = "1.02"
+__date__    = "2009-10-05"
+__version__ = "1.03"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
 
 # Copyright DGA/CELAR 2004-2008
-# Copyright NATO/NC3A 2008 (modifications PL apres v1.1.0)
+# Copyright NATO/NC3A 2008-2009 (modifications PL apres v1.1.0)
 # Auteurs:
 # - Philippe Lagadec (PL) - philippe.lagadec(a)laposte.net
 # - Arnaud Kerréneur (AK) - arnaud.kerreneur(a)dga.defense.gouv.fr
@@ -96,6 +96,8 @@ __version__ = "1.02"
 #                      - ajout _() a chaque constante chaine pour traduction
 #                      - ajout parametre pour activer l'archivage (non par défaut)
 #                      - code archivage deplace de transfert vers init_archivage
+# 2009-10-05 v1.03 PL: - set default encoding to Latin-1 to avoid unicode errors
+
 #------------------------------------------------------------------------------
 # A FAIRE :
 # + gettext quand importe comme module
@@ -140,6 +142,10 @@ if __name__ == '__main__':
 
 # modules standards Python:
 import os, sys, time, socket, optparse, tempfile, os.path
+
+# hack to change default encoding to Latin-1 instead of ASCII:
+reload(sys)
+sys.setdefaultencoding( "latin-1" )
 
 # modules spécifiques à Windows:
 if sys.platform == 'win32':
