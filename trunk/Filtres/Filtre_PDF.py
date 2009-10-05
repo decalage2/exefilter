@@ -29,8 +29,8 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 #==============================================================================
 __docformat__ = 'epytext en'
 
-__date__    = "2008-03-24"
-__version__ = "1.02"
+__date__    = "2009-10-05"
+__version__ = "1.04"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
@@ -79,19 +79,26 @@ __version__ = "1.02"
 #                      - ajout suppression de mots-cles actifs (Javascript, ...)
 # 2008-03-24 v1.02 PL: - ajout de _() pour traduction gettext des chaines
 #                      - simplification dans nettoyer() en appelant resultat_*
+# 2009-09-30 v1.03 PL: - initial origapy integration, to improve PDF cleaning
+# 2009-10-05 v1.04 PL: - added parameters to select clean method
 
 # A FAIRE:
+# ? test Didier Stevens scripts?
 #------------------------------------------------------------------------------
 
 #=== IMPORTS ==================================================================
 
-import os, tempfile
+import os, tempfile, sys
 import RechercherRemplacer
 
 # modules du projet:
 from commun import *
 import Filtre, Resultat, Parametres
 
+# add Origapy (3rd party module) to sys.path:
+ORIGAPY_PATH = os.path.join('thirdparty', 'origapy')
+sys.path.append(ORIGAPY_PATH)
+import origapy
 
 #=== CONSTANTES ===============================================================
 
@@ -142,21 +149,35 @@ class Filtre_PDF (Filtre.Filtre):
         # on commence par appeler le constructeur de la classe de base
         Filtre.Filtre.__init__(self, politique, parametres)
         # ensuite on ajoute les paramètres par défaut
-        Parametres.Parametre(u"supprimer_javascript", bool,
-            nom=u"Supprimer le code Javascript",
-            description=u"Supprimer tout code Javascript, qui peut declencher "
-                        +"des actions a l'insu de l'utilisateur.",
+        # Origami: disabled by default
+        Parametres.Parametre(u"use_origami", bool,
+            nom=u"Remove active content using Origami engine",
+            description=u"Remove all active content using Origami pdfclean "
+                        +"engine. (EXPERIMENTAL: not all PDFs are supported yet)",
+            valeur_defaut=False).ajouter(self.parametres)
+        # Builtin simple replace method: enabled by default
+        Parametres.Parametre(u"use_simple_replace", bool,
+            nom=u"Remove active content using simple replace",
+            description=u"Remove all active content using builtin simple replace "
+                        +"method. (Only effective against non obfuscated PDFs)",
             valeur_defaut=True).ajouter(self.parametres)
-        Parametres.Parametre(u"supprimer_embeddedfile", bool,
-            nom=u"Supprimer les fichiers inclus",
-            description=u"Supprimer tout fichier inclus, qui peut camoufler "
-                        +"du code executable.",
+        Parametres.Parametre(u"disable_javascript", bool,
+            nom=u"Disable Javascript",
+            description=u"Disable all Javascript code, which may trigger "
+                        +"actions without user confirmation. (simple replace)",
             valeur_defaut=True).ajouter(self.parametres)
-        Parametres.Parametre(u"supprimer_fileattachment", bool,
-            nom=u"Supprimer les fichiers attaches",
-            description=u"Supprimer tout fichier attache, qui peut camoufler "
-                        +"du code executable.",
+        Parametres.Parametre(u"disable_embeddedfile", bool,
+            nom=u"Disable embedded files",
+            description=u"Disable all embedded files, which may hide "
+                        +"executable code. (simple replace)",
             valeur_defaut=True).ajouter(self.parametres)
+        Parametres.Parametre(u"disable_fileattachment", bool,
+            nom=u"Disable attached files",
+            description=u"Disable all file attachments, which may hide "
+                        +"executable code. (simple replace)",
+            valeur_defaut=True).ajouter(self.parametres)
+        # launching Origapy PDFClean:
+        self.pdfclean = origapy.PDF_Cleaner()#logger=Journal)
 
     def reconnait_format(self, fichier):
         """
@@ -170,21 +191,58 @@ class Filtre_PDF (Filtre.Filtre):
         if debut.startswith("%PDF-"):
             return True
 
-    def nettoyer (self, fichier):
+    def clean_origami (self, fichier):
         """
-        analyse et modifie le fichier pour supprimer tout code
-        exécutable qu'il peut contenir, si cela est possible.
-        Retourne un code résultat suivant l'action effectuée.
+        Clean PDF file using origapy/origami.
+        To be called from nettoyer() method.
+        Return Result object according to result.
+        Trigger an exception if an error occurs.
+        """
+        # source file: temp copy of input file on disk:
+        src_path = os.path.abspath(fichier.copie_temp())
+        # output file: new temp file
+        f_temp, temp_path = tempfile.mkstemp(dir=self.politique.parametres['rep_temp'].valeur)
+        # close file because we only need the file path:
+        os.close(f_temp)
+        Journal.info2 (u"Fichier temporaire: %s" % temp_path)
+        try:
+            result = self.pdfclean.clean(src_path, temp_path)
+        except:
+            # an error occured during PDF parsing by origami
+            erreur=str(sys.exc_info()[1])
+            # delete temp file:
+            try: os.remove(temp_path)
+            except: pass
+            return self.resultat_format_incorrect(fichier, erreur=erreur)
+        if result == origapy.CLEANED:
+            Journal.info2 (u"Des objets PDF actifs ont ete trouves et desactives.")
+            # replace temp copy by cleaned file:
+            fichier.remplacer_copie_temp(temp_path)
+            return self.resultat_nettoye(fichier)
+        else:
+            # file is clean
+            Journal.info2 (u"Aucun contenu PDF actif n'a ete trouve.")
+            # delete temp file:
+            os.remove(temp_path)
+            return self.resultat_accepte(fichier)
+
+
+    def clean_simple_replace (self, fichier):
+        """
+        Clean PDF file using builtin simple replace method.
+        To be called from nettoyer() method.
+        Return Result object according to result.
+        Trigger an exception if an error occurs.
         """
         # liste de motifs pour nettoyer certains mots cles PDF:
         motifs = []
-        if self.parametres["supprimer_javascript"].valeur == True:
+        if self.parametres["disable_javascript"].valeur == True:
             motifs.append( RechercherRemplacer.Motif(case_sensitive=False,
                 regex=r'/Javascript', remplacement='/NOjvscript'))
-        if self.parametres["supprimer_embeddedfile"].valeur == True:
+        if self.parametres["disable_embeddedfile"].valeur == True:
             motifs.append( RechercherRemplacer.Motif(case_sensitive=False,
                 regex=r'/EmbeddedFile', remplacement='/NO_EmbedFile'))
-        if self.parametres["supprimer_fileattachment"].valeur == True:
+        if self.parametres["disable_fileattachment"].valeur == True:
             motifs.append( RechercherRemplacer.Motif(case_sensitive=False,
                 regex=r'/FileAttachment', remplacement='/NOFileAttachmt'))
         if len(motifs)>0:
@@ -215,5 +273,20 @@ class Filtre_PDF (Filtre.Filtre):
         else:
             resultat = self.resultat_accepte(fichier)
         return resultat
+
+
+    def nettoyer (self, fichier):
+        """
+        analyse et modifie le fichier pour supprimer tout code
+        exécutable qu'il peut contenir, si cela est possible.
+        Retourne un code résultat suivant l'action effectuée.
+        """
+        if self.parametres["use_origami"].valeur == True:
+            return self.clean_origami(fichier)
+        if self.parametres["use_simple_replace"].valeur == True:
+            return self.clean_simple_replace(fichier)
+        # if no clean method is enabled, return file as is:
+        return self.resultat_accepte(fichier)
+
 
 
