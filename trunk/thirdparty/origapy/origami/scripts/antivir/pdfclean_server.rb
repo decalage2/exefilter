@@ -30,9 +30,10 @@
 #                - parse PDF file here instead of within getop.rb
 # 2009-09-30 PL: - added logging with "[CLEANED]" keyword when PDF is actually 
 #                  cleaned, to detect it from the client.
+# 2009-10-07 PL: - avoid asking for password when parsing encrypted PDF
+#                - delinearize PDF docs if necessary
 
 # TODO:
-# - avoid asking for password when parsing encrypted PDF
 # - add a cleaner way to close the input file in clean_pdf (instead of calling GC.start)
 # - catch exceptions to avoid exiting the process when a parsing error occurs
 # - read options from command-line, to allow setting "type"
@@ -90,7 +91,8 @@ def disable_form_actions(pdf) ; disable_actions(pdf, FORM_PATTERNS); end
 
 def clean_pdf (input_name, output_name, type)
   if not input_name.nil?
-    pdf = PDF.read(input_name, :verbose => Parser::VERBOSE_INFO )
+    # parse PDF: if it is protected by a password, use an empty one instead of waiting for user input
+    pdf = PDF.read(input_name, :verbose => Parser::VERBOSE_INFO, :prompt_password => Proc.new { return "" } )
   else
     pdf = PDF.new.append_page
   end
@@ -107,7 +109,8 @@ def clean_pdf (input_name, output_name, type)
     disable_form_actions(pdf)
   end
   
-  pdf.saveas(output_name)
+  # save PDF: delinearize option ensures output is correct even if source is linearized
+  pdf.saveas(output_name, :delinearize => true)
   
   # This is apparently necessary to make sure that input file is closed:
   # (ref: http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-talk/9184)
