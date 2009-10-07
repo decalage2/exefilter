@@ -222,6 +222,9 @@ class Filtre_PDF (Filtre.Filtre):
         try:
             result = self.pdfclean.clean(src_path, temp_path)
         except:
+            # delete temp file:
+            try: os.remove(temp_path)
+            except: pass
             # raise exceptions to the caller for the ignore_origami_errors option
             raise
 ##            # an error occured during PDF parsing by origami
