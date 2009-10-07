@@ -22,21 +22,21 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 @license: CeCILL (open-source compatible GPL)
           cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.02
+@version: 1.05
 
 @status: beta
 """
 #==============================================================================
 __docformat__ = 'epytext en'
 
-__date__    = "2009-10-05"
-__version__ = "1.04"
+__date__    = "2009-10-07"
+__version__ = "1.05"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
 
 # Copyright DGA/CELAR 2004-2008
-# Copyright NATO/NC3A 2008 (PL changes after v1.1.0)
+# Copyright NATO/NC3A 2008-2009 (PL changes after v1.1.0)
 # Auteurs:
 # - Philippe Lagadec (PL) - philippe.lagadec(a)laposte.net
 # - Arnaud Kerréneur (AK) - arnaud.kerreneur(a)dga.defense.gouv.fr
@@ -81,9 +81,13 @@ __version__ = "1.04"
 #                      - simplification dans nettoyer() en appelant resultat_*
 # 2009-09-30 v1.03 PL: - initial origapy integration, to improve PDF cleaning
 # 2009-10-05 v1.04 PL: - added parameters to select clean method
+# 2009-10-07 v1.05 PL: - launch origami engine only if policy requires it
+#                      - new option to ignore origami errors
 
-# A FAIRE:
-# ? test Didier Stevens scripts?
+# TODO:
+# + when origami fails, include warning text into result, without blocking
+# - import thirdparty.origapy as a package
+# ? test Didier Stevens' python scripts: pdfid, pdf-parser
 #------------------------------------------------------------------------------
 
 #=== IMPORTS ==================================================================
@@ -155,6 +159,13 @@ class Filtre_PDF (Filtre.Filtre):
             description=u"Remove all active content using Origami pdfclean "
                         +"engine. (EXPERIMENTAL: not all PDFs are supported yet)",
             valeur_defaut=False).ajouter(self.parametres)
+        Parametres.Parametre(u"ignore_origami_errors", bool,
+            nom=u"Ignore PDF parsing errors in Origami engine",
+            description=u"The current version of Origami does not support all "
+                        +"PDF features, and may block legitimate files. "
+                        +"With this option ExeFilter will fall back to the "
+                        +"simple replace method in case of error.",
+            valeur_defaut=True).ajouter(self.parametres)
         # Builtin simple replace method: enabled by default
         Parametres.Parametre(u"use_simple_replace", bool,
             nom=u"Remove active content using simple replace",
@@ -176,8 +187,8 @@ class Filtre_PDF (Filtre.Filtre):
             description=u"Disable all file attachments, which may hide "
                         +"executable code. (simple replace)",
             valeur_defaut=True).ajouter(self.parametres)
-        # launching Origapy PDFClean:
-        self.pdfclean = origapy.PDF_Cleaner()#logger=Journal)
+        # Origapy engine, not launched by default:
+        self.pdfclean = None
 
     def reconnait_format(self, fichier):
         """
@@ -198,6 +209,9 @@ class Filtre_PDF (Filtre.Filtre):
         Return Result object according to result.
         Trigger an exception if an error occurs.
         """
+        if self.pdfclean is None:
+            # launching Origapy PDFClean the first time:
+            self.pdfclean = origapy.PDF_Cleaner(logger=Journal)
         # source file: temp copy of input file on disk:
         src_path = os.path.abspath(fichier.copie_temp())
         # output file: new temp file
@@ -208,12 +222,14 @@ class Filtre_PDF (Filtre.Filtre):
         try:
             result = self.pdfclean.clean(src_path, temp_path)
         except:
-            # an error occured during PDF parsing by origami
-            erreur=str(sys.exc_info()[1])
-            # delete temp file:
-            try: os.remove(temp_path)
-            except: pass
-            return self.resultat_format_incorrect(fichier, erreur=erreur)
+            # raise exceptions to the caller for the ignore_origami_errors option
+            raise
+##            # an error occured during PDF parsing by origami
+##            erreur=str(sys.exc_info()[1])
+##            # delete temp file:
+##            try: os.remove(temp_path)
+##            except: pass
+##            return self.resultat_format_incorrect(fichier, erreur=erreur)
         if result == origapy.CLEANED:
             Journal.info2 (u"Des objets PDF actifs ont ete trouves et desactives.")
             # replace temp copy by cleaned file:
@@ -282,7 +298,17 @@ class Filtre_PDF (Filtre.Filtre):
         Retourne un code résultat suivant l'action effectuée.
         """
         if self.parametres["use_origami"].valeur == True:
-            return self.clean_origami(fichier)
+            try:
+                return self.clean_origami(fichier)
+            except RuntimeError:
+                # an error occurred, most likely an origami parsing error:
+                if self.parametres["ignore_origami_errors"].valeur == True:
+                    # ignore exception, fall back to other methods:
+                    Journal.warning("PDF parsing error in Origami: fall back to other methods.")
+                    pass
+                else:
+                    # raise exception to caller (file will be blocked)
+                    raise
         if self.parametres["use_simple_replace"].valeur == True:
             return self.clean_simple_replace(fichier)
         # if no clean method is enabled, return file as is:
