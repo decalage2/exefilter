@@ -22,15 +22,15 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 @license: CeCILL (open-source compatible GPL)
           cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.05
+@version: 1.06
 
 @status: beta
 """
 #==============================================================================
 __docformat__ = 'epytext en'
 
-__date__    = "2009-10-07"
-__version__ = "1.05"
+__date__    = "2009-10-09"
+__version__ = "1.06"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
@@ -83,12 +83,20 @@ __version__ = "1.05"
 # 2009-10-05 v1.04 PL: - added parameters to select clean method
 # 2009-10-07 v1.05 PL: - launch origami engine only if policy requires it
 #                      - new option to ignore origami errors
+# 2009-10-09 v1.06 PL: - added pdfid engine to improve PDF cleaning
 
 # TODO:
 # + when origami fails, include warning text into result, without blocking
-# - import thirdparty.origapy as a package
-# ? test Didier Stevens' python scripts: pdfid, pdf-parser
+
 #------------------------------------------------------------------------------
+# REFERENCES:
+# http://www.adobe.com/devnet/pdf/pdf_reference.html
+# http://www.adobe.com/devnet/pdf/pdf_reference_archive.html
+# http://www.decalage.info/sstic03
+# http://blog.didierstevens.com/2008/04/29/pdf-let-me-count-the-ways/
+# http://www.security-labs.org/origami/
+# http://michaeldaw.org/md-hacks/backdooring-pdf-files
+
 
 #=== IMPORTS ==================================================================
 
@@ -99,10 +107,9 @@ import RechercherRemplacer
 from commun import *
 import Filtre, Resultat, Parametres
 
-# add Origapy (3rd party module) to sys.path:
-ORIGAPY_PATH = os.path.join('thirdparty', 'origapy')
-sys.path.append(ORIGAPY_PATH)
-import origapy
+# 3rd party modules:
+import thirdparty.origapy.origapy as origapy
+import thirdparty.pdfid.pdfid_PL as pdfid
 
 #=== CONSTANTES ===============================================================
 
@@ -166,6 +173,12 @@ class Filtre_PDF (Filtre.Filtre):
                         +"With this option ExeFilter will fall back to the "
                         +"simple replace method in case of error.",
             valeur_defaut=True).ajouter(self.parametres)
+        # method using pdfid: enabled by default
+        Parametres.Parametre(u"use_pdfid", bool,
+            nom=u"Remove active content using pdfid",
+            description=u"Remove all active content using pdfid. "
+                        +"(EXPERIMENTAL: Effective against obfuscated PDFs)",
+            valeur_defaut=True).ajouter(self.parametres)
         # Builtin simple replace method: enabled by default
         Parametres.Parametre(u"use_simple_replace", bool,
             nom=u"Remove active content using simple replace",
@@ -175,18 +188,33 @@ class Filtre_PDF (Filtre.Filtre):
         Parametres.Parametre(u"disable_javascript", bool,
             nom=u"Disable Javascript",
             description=u"Disable all Javascript code, which may trigger "
-                        +"actions without user confirmation. (simple replace)",
+                        +"actions without user confirmation. (simple replace, pdfid)",
             valeur_defaut=True).ajouter(self.parametres)
         Parametres.Parametre(u"disable_embeddedfile", bool,
             nom=u"Disable embedded files",
             description=u"Disable all embedded files, which may hide "
-                        +"executable code. (simple replace)",
+                        +"executable code. (simple replace, pdfid)",
             valeur_defaut=True).ajouter(self.parametres)
         Parametres.Parametre(u"disable_fileattachment", bool,
             nom=u"Disable attached files",
             description=u"Disable all file attachments, which may hide "
-                        +"executable code. (simple replace)",
+                        +"executable code. (simple replace, pdfid)",
             valeur_defaut=True).ajouter(self.parametres)
+        Parametres.Parametre(u"disable_aa", bool,
+            nom=u"Disable AA objects (additional actions)",
+            description=u"Disable all AA objects, which may trigger "
+                        +"active content. (pdfid)",
+            valeur_defaut=True).ajouter(self.parametres)
+        Parametres.Parametre(u"disable_openaction", bool,
+            nom=u"Disable OpenAction objects",
+            description=u"Disable all OpenAction objects, which may trigger "
+                        +"active content. (pdfid)",
+            valeur_defaut=True).ajouter(self.parametres)
+        Parametres.Parametre(u"disable_jbig2decode", bool,
+            nom=u"Disable JBIG2Decode objects",
+            description=u"Disable all JBIG2Decode objects, subject to vulnerabilities "
+                        +"in some applications. (pdfid)",
+            valeur_defaut=False).ajouter(self.parametres)
         # Origapy engine, not launched by default:
         self.pdfclean = None
 
@@ -209,6 +237,7 @@ class Filtre_PDF (Filtre.Filtre):
         Return Result object according to result.
         Trigger an exception if an error occurs.
         """
+        Journal.info2('Cleaning PDF file with origami')
         if self.pdfclean is None:
             # launching Origapy PDFClean the first time:
             self.pdfclean = origapy.PDF_Cleaner(logger=Journal)
@@ -234,6 +263,64 @@ class Filtre_PDF (Filtre.Filtre):
 ##            except: pass
 ##            return self.resultat_format_incorrect(fichier, erreur=erreur)
         if result == origapy.CLEANED:
+            Journal.info2 (u"Des objets PDF actifs ont ete trouves et desactives.")
+            # replace temp copy by cleaned file:
+            fichier.remplacer_copie_temp(temp_path)
+            return self.resultat_nettoye(fichier)
+        else:
+            # file is clean
+            Journal.info2 (u"Aucun contenu PDF actif n'a ete trouve.")
+            # delete temp file:
+            os.remove(temp_path)
+            return self.resultat_accepte(fichier)
+
+
+    def clean_pdfid (self, fichier):
+        """
+        Clean PDF file using pdfid.
+        To be called from nettoyer() method.
+        Return Result object according to result.
+        Trigger an exception if an error occurs.
+        """
+        Journal.info2('Cleaning PDF file with pdfid')
+        # source file: temp copy of input file on disk:
+        src_path = os.path.abspath(fichier.copie_temp())
+        # output file: new temp file
+        f_temp, temp_path = tempfile.mkstemp(dir=self.politique.parametres['rep_temp'].valeur)
+        # close file because we only need the file path:
+        os.close(f_temp)
+        Journal.info2 (u"Fichier temporaire: %s" % temp_path)
+        # default active keywords to be cleaned:
+        active_keywords = []
+        if self.parametres["disable_javascript"].valeur == True:
+            active_keywords += ['/JS', '/JavaScript']
+        if self.parametres["disable_embeddedfile"].valeur == True:
+            active_keywords += ['/EmbeddedFile', '/EmbeddedFiles']
+        if self.parametres["disable_fileattachment"].valeur == True:
+            active_keywords.append('/FileAttachment')
+        if self.parametres["disable_aa"].valeur == True:
+            active_keywords.append('/AA')
+        if self.parametres["disable_openaction"].valeur == True:
+            active_keywords.append('/OpenAction')
+        if self.parametres["disable_jbig2decode"].valeur == True:
+            active_keywords.append('/JBIG2Decode')
+        try:
+            xmldoc, cleaned = pdfid.PDFiD(src_path, disarm=True,
+                output_file=temp_path, raise_exceptions=True,
+                return_cleaned=True, active_keywords=active_keywords)
+        except:
+            # delete temp file:
+            try: os.remove(temp_path)
+            except: pass
+            # raise exceptions to the caller
+            raise
+##            # an error occured during PDF parsing by pdfid
+##            erreur=str(sys.exc_info()[1])
+##            # delete temp file:
+##            try: os.remove(temp_path)
+##            except: pass
+##            return self.resultat_format_incorrect(fichier, erreur=erreur)
+        if cleaned:
             Journal.info2 (u"Des objets PDF actifs ont ete trouves et desactives.")
             # replace temp copy by cleaned file:
             fichier.remplacer_copie_temp(temp_path)
@@ -312,6 +399,8 @@ class Filtre_PDF (Filtre.Filtre):
                 else:
                     # raise exception to caller (file will be blocked)
                     raise
+        if self.parametres["use_pdfid"].valeur == True:
+            return self.clean_pdfid(fichier)
         if self.parametres["use_simple_replace"].valeur == True:
             return self.clean_simple_replace(fichier)
         # if no clean method is enabled, return file as is:
