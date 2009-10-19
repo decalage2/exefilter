@@ -7,7 +7,7 @@ Source code put in public domain by Didier Stevens, no Copyright
 https://DidierStevens.com
 Use at your own risk
 
-Version modified by Philippe Lagadec for easier integration
+Version modified by Philippe Lagadec for easier integration as a Python module.
 
 History:
   2009/03/27: start
@@ -20,7 +20,10 @@ History:
   2009/04/22: added disarm
   2009/04/29: finished disarm
   2009/05/13: V0.0.7: added cPDFEOF
-  2009-10-09: v0.0.7_PL modified for easier integration
+  2009/07/24: V0.0.8: added /AcroForm and /RichMedia, simplified %PDF header regex, extra date format (without TZ)
+  2009/07/25: added input redirection, option --force
+  2009/10/13: V0.0.9: added detection for CVE-2009-3459; added /RichMedia to disarm
+  2009/10/19: v0.0.9_PL modified for easier integration as Python module
 
 Todo:
   - update XML example (entropy, EOF)
@@ -28,8 +31,8 @@ Todo:
 """
 
 __author__ = 'Didier Stevens, Philippe Lagadec'
-__version__ = '0.0.7_PL'
-__date__ = '2009-10-08'
+__version__ = '0.0.9_PL'
+__date__ = '2009/10/19'
 
 import optparse
 import os
@@ -39,14 +42,18 @@ import traceback
 import math
 import operator
 import os.path
+import sys
 
 #[PL] Keywords to be cleaned:
-ACTIVE_KEYWORDS = ('/JS', '/JavaScript', '/AA', '/OpenAction', '/JBIG2Decode')
+ACTIVE_KEYWORDS = ('/JS', '/JavaScript', '/AA', '/OpenAction', '/JBIG2Decode', '/RichMedia')
 
 class cBinaryFile:
     def __init__(self, file):
         self.file = file
-        self.infile = open(file, 'rb')
+        if file == "":
+            self.infile = sys.stdin
+        else:
+            self.infile = open(file, 'rb')
         self.ungetted = []
 
     def byte(self):
@@ -90,6 +97,10 @@ class cPDFDate:
                 self.TZ = char
                 return None
             elif char == '"':
+                self.state = 0
+                self.date = 'D:' + self.digits1
+                return self.date
+            elif char < '0' or char > '9':
                 self.state = 0
                 self.date = 'D:' + self.digits1
                 return self.date
@@ -193,7 +204,8 @@ class cPDFEOF:
 def FindPDFHeader(oBinaryFile):
     byte = oBinaryFile.byte()
     comment = ''
-    rePDF = re.compile('^%PDF\-\d\.\d\s*$')
+#    rePDF = re.compile('^%PDF\-\d\.\d\s*$')
+    rePDF = re.compile('^%PDF')
     bytes = []
     while byte != None:
         bytes.append(byte)
@@ -272,8 +284,17 @@ def UpdateWords(word, wordExact, slash, words, hexcode, allNames, lastName,
                 fOut.write(HexcodeName2String(wordExact))
     return ('', [], False, lastName, insideStream)
 
-def PDFiD(file, allNames=False, extraData=False, disarm=False, output_file=None,
-    raise_exceptions=False, return_cleaned=False, active_keywords=ACTIVE_KEYWORDS):
+class cCVE_2009_3459:
+    def __init__(self):
+        self.count = 0
+
+    def Check(self, lastName, word):
+        if (lastName == '/Colors' and word.isdigit() and int(word) > 2^24): # decided to alert when the number of colors is expressed with more than 3 bytes
+            self.count += 1
+
+def PDFiD(file, allNames=False, extraData=False, disarm=False, force=False,
+    output_file=None, raise_exceptions=False, return_cleaned=False,
+    active_keywords=ACTIVE_KEYWORDS):
     """Example of XML output:
     <PDFiD ErrorOccured="False" ErrorMessage="" Filename="test.pdf" Header="%PDF-1.1" IsPDF="True" Version="0.0.4" Entropy="4.28">
             <Keywords>
@@ -283,7 +304,7 @@ def PDFiD(file, allNames=False, extraData=False, disarm=False, output_file=None,
                     <Keyword Count="1" HexcodeCount="0" Name="endstream"/>
                     <Keyword Count="1" HexcodeCount="0" Name="xref"/>
                     <Keyword Count="1" HexcodeCount="0" Name="trailer"/>
--                    <Keyword Count="1" HexcodeCount="0" Name="startxref"/>
+                    <Keyword Count="1" HexcodeCount="0" Name="startxref"/>
                     <Keyword Count="1" HexcodeCount="0" Name="/Page"/>
                     <Keyword Count="0" HexcodeCount="0" Name="/Encrypt"/>
                     <Keyword Count="1" HexcodeCount="0" Name="/JS"/>
@@ -317,7 +338,9 @@ def PDFiD(file, allNames=False, extraData=False, disarm=False, output_file=None,
                 '/JavaScript',
                 '/AA',
                 '/OpenAction',
+                '/AcroForm',
                 '/JBIG2Decode',
+                '/RichMedia',
                )
     words = {}
     dates = []
@@ -341,6 +364,7 @@ def PDFiD(file, allNames=False, extraData=False, disarm=False, output_file=None,
     oPDFDate = None
     oEntropy = None
     oPDFEOF = None
+    oCVE_2009_3459 = cCVE_2009_3459()
     try:
         attIsPDF = xmlDoc.createAttribute('IsPDF')
         xmlDoc.documentElement.setAttributeNode(attIsPDF)
@@ -363,13 +387,17 @@ def PDFiD(file, allNames=False, extraData=False, disarm=False, output_file=None,
         if oEntropy != None:
             for byteHeader in bytesHeader:
                 oEntropy.add(byteHeader, insideStream)
-        if pdfHeader == None:
+        if pdfHeader == None and not force:
             attIsPDF.nodeValue = 'False'
             return xmlDoc
         else:
-            attIsPDF.nodeValue = 'True'
+            if pdfHeader == None:
+                attIsPDF.nodeValue = 'False'
+                pdfHeader = ''
+            else:
+                attIsPDF.nodeValue = 'True'
             att = xmlDoc.createAttribute('Header')
-            att.nodeValue = pdfHeader
+            att.nodeValue = repr(pdfHeader[0:10]).strip("'")
             xmlDoc.documentElement.setAttributeNode(att)
         byte = oBinaryFile.byte()
         while byte != None:
@@ -404,6 +432,8 @@ def PDFiD(file, allNames=False, extraData=False, disarm=False, output_file=None,
                     if disarm:
                         fOut.write(char)
             else:
+                oCVE_2009_3459.Check(lastName, word)
+
                 (word, wordExact, hexcode, lastName, insideStream) = UpdateWords(word, wordExact, slash, words, hexcode, allNames, lastName, insideStream, oEntropy, fOut, active_keywords)
                 if char == '/':
                     slash = '/'
@@ -485,6 +515,17 @@ def PDFiD(file, allNames=False, extraData=False, disarm=False, output_file=None,
         att = xmlDoc.createAttribute('HexcodeCount')
         att.nodeValue = str(words[keyword][1])
         eleKeyword.setAttributeNode(att)
+    eleKeyword = xmlDoc.createElement('Keyword')
+    eleKeywords.appendChild(eleKeyword)
+    att = xmlDoc.createAttribute('Name')
+    att.nodeValue = '/Colors > 2^24'
+    eleKeyword.setAttributeNode(att)
+    att = xmlDoc.createAttribute('Count')
+    att.nodeValue = str(oCVE_2009_3459.count)
+    eleKeyword.setAttributeNode(att)
+    att = xmlDoc.createAttribute('HexcodeCount')
+    att.nodeValue = str(0)
+    eleKeyword.setAttributeNode(att)
     if allNames:
         keys = words.keys()
         keys.sort()
@@ -524,11 +565,11 @@ def PDFiD(file, allNames=False, extraData=False, disarm=False, output_file=None,
         return xmlDoc, cleaned
     return xmlDoc
 
-def PDFiD2String(xmlDoc):
+def PDFiD2String(xmlDoc, force):
     result = 'PDFiD %s %s\n' % (xmlDoc.documentElement.getAttribute('Version'), xmlDoc.documentElement.getAttribute('Filename'))
     if xmlDoc.documentElement.getAttribute('ErrorOccured') == 'True':
         return result + '***Error occured***\n%s\n' % xmlDoc.documentElement.getAttribute('ErrorMessage')
-    if xmlDoc.documentElement.getAttribute('IsPDF') == 'False':
+    if not force and xmlDoc.documentElement.getAttribute('IsPDF') == 'False':
         return result + ' Not a PDF document\n'
     result += ' PDF Header: %s\n' % xmlDoc.documentElement.getAttribute('Header')
     for node in xmlDoc.documentElement.getElementsByTagName('Keywords')[0].childNodes:
@@ -550,13 +591,13 @@ def PDFiD2String(xmlDoc):
         result += ' Entropy outside streams: %s (%10s bytes)\n' % (xmlDoc.documentElement.getAttribute('NonStreamEntropy'), xmlDoc.documentElement.getAttribute('NonStreamCount'))
     return result
 
-def Scan(directory, allNames, extraData, disarm):
+def Scan(directory, allNames, extraData, disarm, force):
     try:
         if os.path.isdir(directory):
             for entry in os.listdir(directory):
-                Scan(os.path.join(directory, entry), allNames, extraData, disarm)
+                Scan(os.path.join(directory, entry), allNames, extraData, disarm, force)
         else:
-            result = PDFiD2String(PDFiD(directory, allNames, extraData, disarm))
+            result = PDFiD2String(PDFiD(directory, allNames, extraData, disarm, force), force)
             print result
             logfile = open('PDFiD.log', 'a')
             print >> logfile, result
@@ -565,18 +606,24 @@ def Scan(directory, allNames, extraData, disarm):
         pass
 
 def Main():
-    oParser = optparse.OptionParser(usage='usage: %prog [options] pdf-file', version='%prog ' + __version__)
+    oParser = optparse.OptionParser(usage='usage: %prog [options] [pdf-file]', version='%prog ' + __version__)
     oParser.add_option('-s', '--scan', action='store_true', default=False, help='scan the given directory')
     oParser.add_option('-a', '--all', action='store_true', default=False, help='display all the names')
     oParser.add_option('-e', '--extra', action='store_true', default=False, help='display extra data, like dates')
+    oParser.add_option('-f', '--force', action='store_true', default=False, help='force the scan of the file, even without proper %PDF header')
     oParser.add_option('-d', '--disarm', action='store_true', default=False, help='disable JavaScript and auto launch')
     (options, args) = oParser.parse_args()
 
-    if len(args) == 1:
+    if len(args) == 0:
+        if options.disarm:
+            print 'Option disarm not supported with stdin'
+            options.disarm = False
+        print PDFiD2String(PDFiD('', options.all, options.extra, options.disarm, options.force), options.force)
+    elif len(args) == 1:
         if options.scan:
-            Scan(args[0], options.all, options.extra, options.disarm)
+            Scan(args[0], options.all, options.extra, options.disarm, options.force)
         else:
-            print PDFiD2String(PDFiD(args[0], options.all, options.extra, options.disarm))
+            print PDFiD2String(PDFiD(args[0], options.all, options.extra, options.disarm, options.force), options.force)
     else:
         oParser.print_help()
         print ''
