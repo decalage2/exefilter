@@ -1,0 +1,121 @@
+%PDF-1.4
+1 0 obj
+<<
+	/Pages 2 0 R
+	/Type /Catalog
+	/AA <<
+		/WC <<
+			/JS (app.alert\('Document is closing'\);)
+			/S /JavaScript
+		>>
+	>>
+>>
+endobj
+2 0 obj
+<<
+	/Kids [ 3 0 R ]
+	/Type /Pages
+	/Count 1
+>>
+endobj
+3 0 obj
+<<
+	/MediaBox [ 0 0 795 842 ]
+	/Resources <<
+		/Font <<
+			/F1 5 0 R
+		>>
+	>>
+	/Annots [ <<
+	/Subtype /Screen
+	/Rect [ 350 700 415 640 ]
+	/P 3 0 R
+	/AA <<
+		/D <<
+			/JS (app.alert\('Mouse down'\);)
+			/S /JavaScript
+		>>
+		/E <<
+			/JS (app.alert\('Mouse over'\);)
+			/S /JavaScript
+		>>
+		/PC <<
+			/JS (app.alert\('Parent page has closed'\);)
+			/S /JavaScript
+		>>
+		/X <<
+			/JS (app.alert\('Mouse left'\);)
+			/S /JavaScript
+		>>
+		/PV <<
+			/JS (app.alert\('Parent page is visible'\);)
+			/S /JavaScript
+		>>
+		/U <<
+			/JS (app.alert\('Mouse up'\);)
+			/S /JavaScript
+		>>
+		/PI <<
+			/JS (app.alert\('Parent page is no more visible'\);)
+			/S /JavaScript
+		>>
+		/PO <<
+			/JS (app.alert\('Parent page has opened'\);)
+			/S /JavaScript
+		>>
+	>>
+>> <<
+	/Subtype /Square
+	/Rect [ 350 700 415 640 ]
+	/IC [ 255 255 0 ]
+	/P 3 0 R
+>> ]
+	/Contents 4 0 R
+	/Type /Page
+	/Parent 2 0 R
+	/AA <<
+		/C <<
+			/JS (app.alert\('Page Closed'\);)
+			/S /JavaScript
+		>>
+		/O <<
+			/JS (app.alert\('Page Opened'\);)
+			/S /JavaScript
+		>>
+	>>
+>>
+endobj
+4 0 obj
+<<
+	/Length 77
+>>stream
+BT
+/F1 15 Tf 250 750 Td 20 TL
+(Pass your mouse over the yellow square) Tj 
+ET
+endstream
+endobj
+5 0 obj
+<<
+	/Name /F1
+	/Subtype /Type1
+	/Type /Font
+	/BaseFont /Helvetica
+>>
+endobj
+xref
+0 6
+0000000000 65535 f
+0000000010 00000 n
+0000000162 00000 n
+0000000231 00000 n
+0000001347 00000 n
+0000001481 00000 n
+trailer
+<<
+	/Root 1 0 R
+	/Size 6
+>>
+startxref
+1573
+%%EOF
