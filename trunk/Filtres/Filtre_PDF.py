@@ -92,6 +92,7 @@ __version__ = "1.06"
 # REFERENCES:
 # http://www.adobe.com/devnet/pdf/pdf_reference.html
 # http://www.adobe.com/devnet/pdf/pdf_reference_archive.html
+# http://www.adobe.com/products/acrobat/pdfs/OpenFilenAttach.pdf
 # http://www.decalage.info/sstic03
 # http://blog.didierstevens.com/2008/04/29/pdf-let-me-count-the-ways/
 # http://www.security-labs.org/origami/
