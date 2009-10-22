@@ -145,11 +145,11 @@ module Origami
                 pa, pb, pc = (p - left).abs, (p - up).abs, (p - upleft).abs
 
                 thisrow[i] = ((line[i] + 
-                case [ pa, pb, pc ].min
-                  when pa then left
-                  when pb then up
-                  when pc then upleft
-                end
+                  case [ pa, pb, pc ].min
+                    when pa then left
+                    when pb then up
+                    when pc then upleft
+                  end
                 ) & 0xFF).chr
             else
               puts "Unknown PNG predictor : #{predictor}"
@@ -463,14 +463,14 @@ module Origami
           char = byte.chr
           
           case table.size
-          when 512 then codesize = 10
-          when 1024 then codesize = 11
-          when 2048 then codesize = 12
-          when 4096
-            codesize = 9
-            result << byte2binary(CLEARTABLE,codesize)
-            clear table
-            redo
+            when 512 then codesize = 10
+            when 1024 then codesize = 11
+            when 2048 then codesize = 12
+            when 4096
+              result << byte2binary(CLEARTABLE,codesize)
+              codesize = 9
+              clear table
+              redo
           end
          
           it = s + char
@@ -506,14 +506,14 @@ module Origami
           byte = binary2byte(bstring, codesize)
 
           case table.size
-          when 510 then codesize = 10
-          when 1022 then codesize = 11
-          when 2046 then codesize = 12
-          when 4094
-            if byte != CLEARTABLE
-            then
-              raise InvalidLZWData, "LZW table is full and no clear flag was set"
-            end
+            when 510 then codesize = 10
+            when 1022 then codesize = 11
+            when 2046 then codesize = 12
+            when 4094
+              if byte != CLEARTABLE
+              then
+                raise InvalidLZWData, "LZW table is full and no clear flag was set"
+              end
           end
 
           if byte == CLEARTABLE
@@ -749,7 +749,7 @@ module Origami
     end
     
     #
-    # Class representing  a Filter used to encode and decode data with CCITT-facsimile compression algorithm.
+    # Class representing a Filter used to encode and decode data with CCITT-facsimile compression algorithm.
     #
     class CCITTFax
       
@@ -888,6 +888,24 @@ module Origami
         nil
       end
       
+    end
+
+    #
+    # Class representing a Crypt Filter.
+    # TODO.
+    #
+    class Crypt
+
+      include Filter
+
+      class DecodeParms < Dictionary
+        include Configurable
+
+        field   :Type,      :Type => Name, :Default => :Crypt
+        field   :Name,      :Type => Name, :Default => :Identity
+
+      end
+
     end
     
   end

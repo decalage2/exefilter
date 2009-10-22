@@ -93,7 +93,8 @@ module Origami
     @@regexp_xref = Regexp.new('\A' + WHITESPACES + XREF_TOKEN + WHITESPACES + "(\\d+)" + WHITESPACES + TOKENS.last + WHITESPACES)
     
     attr_accessor :pdf
-    attr_accessor :startxref, :dictionary
+    attr_accessor :startxref
+    attr_reader :dictionary
 
     field   :Size,      :Type => Integer, :Required => true
     field   :Prev,      :Type => Integer
@@ -110,9 +111,7 @@ module Origami
     #
     def initialize(startxref = 0, dictionary = {})
      
-      @startxref, @dictionary = startxref, dictionary.nil? ? nil : Dictionary.new(dictionary)
-      
-      @dictionary.parent = self if has_dictionary? 
+      @startxref, self.dictionary = startxref, dictionary.nil? ? nil : Dictionary.new(dictionary)
     end
     
     def self.parse(stream) #:nodoc:
@@ -140,6 +139,10 @@ module Origami
       @dictionary[key] = val
     end
 
+    def dictionary=(dict)
+      dict.parent = self if dict
+      @dictionary = dict
+    end
     
     def has_dictionary?
       not @dictionary.nil?

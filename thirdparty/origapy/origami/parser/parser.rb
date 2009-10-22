@@ -67,7 +67,7 @@ module Origami
     end
   end
 
-  def set_fg_color(color, bright = false) #:nodoc:
+  def set_fg_color(color, bright = false, fd = STDOUT) #:nodoc:
     if RUBY_PLATFORM =~ /win32/
       if bright then color |= Colors::WHITE end
       @@setConsoleTextAttribute.call(@@hOut, color)
@@ -75,15 +75,15 @@ module Origami
       @@setConsoleTextAttribute.call(@@hOut, Colors::GREY)
     else
       col, nocol = [color, Colors::GREY].map { |key| "\033[#{key}m" }
-      print col
+      fd << col
       yield
-      print nocol
+      fd << nocol
     end
   end
 
-  def colorprint(text, color, bright = false) #:nodoc:
-    set_fg_color(color, bright) {
-      print text
+  def colorprint(text, color, bright = false, fd = STDOUT) #:nodoc:
+    set_fg_color(color, bright, fd) {
+      fd << text
     }    
   end
 
@@ -138,16 +138,22 @@ module Origami
     # Parse the given file and returns a PDF object, or nil if the parsing process failed.
     # _filename_:: The path to the PDF file to parse.
     #
-    def parse(filename)
+    def parse(file)
       
       # Read PDF file contents
       begin
+
+        if file.respond_to?(:read)
+          filename = nil
+          data = file.read
+        else
+          filename = file
+          data = File.open(filename, "r").binmode.read
+        end
         
-        fd = File.open(filename, "r").binmode
-        stream = StringScanner.new(fd.read)
+        stream = StringScanner.new(data)
         
         info "...Start parsing file ..."
-        
         info "...Reading header..."
 
         hdr = nil
@@ -252,11 +258,12 @@ module Origami
           passwd = ""
           begin
             pdf.decrypt(passwd)
-          rescue EncryptionInvalidPasswordError
-            if passwd.empty?
-              passwd = @options[:prompt_password].call
-              retry unless passwd.empty?
-            end
+# PL 2009-10-03: disabled password prompt to avoid blocking           
+#           rescue EncryptionInvalidPasswordError
+#             if passwd.empty?
+#               passwd = @options[:prompt_password].call
+#               retry unless passwd.empty?
+#             end
           end
         end
           
@@ -396,23 +403,23 @@ module Origami
     end
  
     def error(str = "") #:nodoc:
-      colorprint("[error] #{str}\n", Colors::RED)
+      colorprint("[error] #{str}\n", Colors::RED, false, STDERR)
     end
 
     def warn(str = "") #:nodoc:
-      colorprint("[info ] Warning: #{str}\n", Colors::YELLOW) if @options[:verbosity] >= VERBOSE_INFO
+      colorprint("[info ] Warning: #{str}\n", Colors::YELLOW, false, STDERR) if @options[:verbosity] >= VERBOSE_INFO
     end
 
     def info(str = "") #:nodoc:
-      (colorprint("[info ] ", Colors::GREEN); puts str) if @options[:verbosity] >= VERBOSE_INFO
+      (colorprint("[info ] ", Colors::GREEN, false, STDERR); STDERR << "#{str}\n") if @options[:verbosity] >= VERBOSE_INFO
     end
     
     def debug(str = "") #:nodoc:
-      (colorprint("[debug] ", Colors::MAGENTA); puts str) if @options[:verbosity] >= VERBOSE_DEBUG
+      (colorprint("[debug] ", Colors::MAGENTA, false, STDERR); STDERR << "#{str}\n") if @options[:verbosity] >= VERBOSE_DEBUG
     end
     
     def trace(str = "") #:nodoc:
-      (colorprint("[trace] ", Colors::CYAN); puts str) if @options[:verbosity] >= VERBOSE_INSANE
+      (colorprint("[trace] ", Colors::CYAN, false, STDERR); STDERR << "#{str}\n") if @options[:verbosity] >= VERBOSE_INSANE
     end
     
   end

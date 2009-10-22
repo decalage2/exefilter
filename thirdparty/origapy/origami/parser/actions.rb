@@ -52,12 +52,12 @@ module Origami
       # Creates a new GoTo Action.
       # _hash_:: A hash of options to set for this jump.
       #
-      def initialize(hash = {}, indirect = false)
+      def initialize(hash = {})
         
         if hash.is_a? Destination
-          super({:S => :GoTo, :D => hash}, indirect)
+          super(:S => :GoTo, :D => hash)
         else
-          super(hash, indirect)
+          super(hash)
         end
         
       end
@@ -78,9 +78,9 @@ module Origami
       # _uri_:: The URI to launch.
       # _ismap_::
       #
-      def initialize(uri, ismap = false, indirect = false) 
+      def initialize(uri, ismap = false)
        
-        super({:URI => uri, :IsMap => ismap}, indirect)
+        super(:URI => uri, :IsMap => ismap)
         
       end
     
@@ -98,47 +98,14 @@ module Origami
       # Creates a new JavaScript Action.
       # _script_:: The script to be executed.
       #
-      def initialize(script, indirect = false)
+      def initialize(script)
        
-        super({:JS => script}, indirect)
+        super(:JS => script)
         
       end
       
     end
 
-    class WindowsApplication < Dictionary
-      
-      include Configurable
-     
-      field   :F,         :Type => ByteString, :Required => true
-      field   :D,         :Type => ByteString
-      field   :O,         :Type => ByteString, :Default => "open"
-      field   :P,         :Type => ByteString
-
-      #
-      # Creates a new Windows application definition.
-      # _app_:: Path to the executable.
-      # _params_:: Parameters to pass on the command-line.
-      # _dir_:: Starting directory.
-      #
-      def initialize(app = "", params = "", dir = "", indirect = false)
-        
-        hash = { :F => app }
-      
-        if not params.empty?
-          hash[:P] = params
-        end
-        
-        if not dir.empty?
-          hash[:D] = dir
-        end
-        
-        super(hash, indirect)
-        
-      end
-      
-    end
-    
     #
     # Class representing an Action which run a command on the current system.
     #
@@ -151,6 +118,19 @@ module Origami
       field   :Unix,      :Type => Object
       field   :NewWindow, :Type => Boolean
 
+      #
+      # Dictionary for passing parameter to Windows applications during Launch.
+      #
+      class WindowsLaunchParams < Dictionary
+        
+        include Configurable
+       
+        field   :F,         :Type => ByteString, :Required => true
+        field   :D,         :Type => ByteString
+        field   :O,         :Type => ByteString, :Default => "open"
+        field   :P,         :Type => ByteString
+
+      end
     end
     
     #
@@ -168,8 +148,8 @@ module Origami
       field   :S,         :Type => Name, :Default => :Named, :Required => true
       field   :N,         :Type => Name, :Required => true
 
-      def initialize(type, indirect = false)
-        super({ :N => type }, indirect)
+      def initialize(type)
+        super(:N => type)
       end
 
     end
@@ -190,9 +170,9 @@ module Origami
       # _dest_:: A Destination in the file.
       # _newwindow_:: Specifies whether the file has to be opened in a new window.
       #
-      def initialize(file, dest = Destination::GlobalFit.new(0), newwindow = false, indirect = false)
+      def initialize(file, dest = Destination::GlobalFit.new(0), newwindow = false)
        
-        super({:F => file, :D => dest, :NewWindow => newwindow}, indirect)
+        super(:F => file, :D => dest, :NewWindow => newwindow)
         
       end
       
@@ -209,9 +189,9 @@ module Origami
       field   :NewWindow, :Type => Boolean
       field   :T,         :Type => Dictionary
 
-      def initialize(filespec, dest, newwindow = false, indirect = false)
+      def initialize(filespec, dest, newwindow = false)
        
-        super({:F => filespec, :D => dest, :NewWindow => newwindow}, indirect)
+        super(:F => filespec, :D => dest, :NewWindow => newwindow)
         
       end
       
@@ -263,13 +243,13 @@ module Origami
       field   :Fields,      :Type => Array
       field   :Flags,       :Type => Integer, :Default => 0
 
-      def initialize(url, fields = [], flags = 0, indirect = false)
+      def initialize(url, fields = [], flags = 0)
                
         if not url.is_a? FileSpec
-          url = FileSpec.new( { :FS => :URL, :F => url } )
+          url = FileSpec.new(:FS => :URL, :F => url)
         end
         
-        super({:F => url, :Fields => fields, :Flags => flags}, indirect)
+        super(:F => url, :Fields => fields, :Flags => flags)
         
       end
       
@@ -280,13 +260,13 @@ module Origami
       field   :S,           :Type => Name, :Default => :ImportData, :Required => true
       field   :F,           :Type => Dictionary, :Required => true
 
-      def initialize(file, indirect = false)
+      def initialize(file)
        
         if not file.is_a? FileSpec
-          file = FileSpec.new( { :FS => :File, :F => file } )
+          file = FileSpec.new(:FS => :File, :F => file)
         end
         
-        super({:F => file}, indirect)
+        super(:F => file)
         
       end
     

@@ -42,6 +42,16 @@ module Origami
       self
     end
 
+    def insert_page(index, page)
+      
+      treeroot = self.Catalog.Pages
+      raise InvalidPDF, "No page tree" if treeroot.nil?
+
+      treeroot.insert_page(index, page)
+
+      self
+    end
+
     #
     # Returns an array of Page
     #
@@ -74,14 +84,49 @@ module Origami
     field   :Font,        :Type => Dictionary
     field   :ProcSet,     :Type => Array
     field   :Properties,  :Type => Dictionary, :Version => "1.2"
+
+    def add_extgstate(name, extgstate)
+      self.ExtGState ||= {}
+      self.ExtGState[name] = extgstate
+    end
+
+    def add_colorspace(name, colorspace)
+      self.ColorSpace ||= {}
+      self.ColorSpace[name] = colorspace
+    end
+    
+    def add_pattern(name, pattern)
+      self.Pattern ||= {}
+      self.Pattern[name] = pattern
+    end
+    
+    def add_shading(name, shading)
+      self.Shading ||= {}
+      self.Shading[name] = shading
+    end
+
+    def add_xobject(name, xobject)
+      self.XObject ||= {}
+      self.XObject[name] = xobject
+    end
+    
+    def add_font(name, font)
+      self.Font ||= {}
+      self.Font[name] = font
+    end
+
+    def add_properties(name, properties)
+      self.Properties ||= {}
+      self.Properties[name] = properties
+    end
     
     def pre_build
       
       unless self.Font
-        fnt = Font.new.set_indirect(true).pre_build
+        fnt = Font::Type1::Standard::Helvetica.new.pre_build
         fnt.Name = :F1
         
-        self.Font = { :F1 => fnt }
+        add_font(fnt.Name, fnt)
       end
       
       super
@@ -101,11 +146,62 @@ module Origami
     field   :Kids,          :Type => Array, :Default => [], :Required => true
     field   :Count,         :Type => Integer, :Default => 0, :Required => true
 
+    def initialize(hash = {})
+      self.Count = 0
+      self.Kids = []
+
+      super(hash)
+      
+      set_indirect(true)
+    end
+
     def pre_build #:nodoc:
       self.Count = self.children.length     
          
-      set_indirect(true)
       super
+    end
+
+    def insert_page(index, page)
+      
+      if index > self.Count
+        raise IndexError, "Invalid index for page tree"
+      end
+
+      count = 0
+      kids = self.Kids
+
+      kids.length.times { |n|
+        if count == index
+          kids.insert(n, page)
+          self.Count = self.Count + 1
+          return self
+        else
+          node = kids[n].is_a?(Reference) ? kids[n].solve : kids[n]
+          case node
+            when Page
+              count = count + 1
+              next
+            when PageTreeNode
+              if count + node.Count > index
+                node.insert_page(index - count, page)
+                self.Count = self.Count + 1
+                return self
+              else
+                count = count + node.Count
+                next
+              end
+          end
+        end
+      }
+
+      if count == index
+        kids.push(page)
+        self.Count = self.Count + 1
+      else
+        raise IndexError, "An error occured while inserting page"
+      end
+
+      self
     end
 
     #
@@ -119,8 +215,8 @@ module Origami
           if n < self.Kids.length
             node = self.Kids[n].is_a?(Reference) ? self.Kids[n].solve : self.Kids[n]
             case node
-            when PageTreeNode then pageset.concat(node.children) 
-            when Page then pageset << node
+              when PageTreeNode then pageset.concat(node.children) 
+              when Page then pageset << node
             end
           end      
         }
@@ -184,20 +280,14 @@ module Origami
     field   :UserUnit,              :Type => Number, :Default => 1.0, :Version => "1.6"
     field   :VP,                    :Type => Dictionary, :Version => "1.6"
 
-    #
-    # Creates a new document Page.
-    # _hash_:: A hash of attributes to set to this Page.
-    #
-    def initialize(hash = {}, indirect = true)
-     
-      super(hash, indirect)
+    def initialize(hash = {})
+      super(hash)
       
+      set_indirect(true)
     end
 
     def pre_build
-      unless self.Resources
-        self.Resources = Resources.new.pre_build
-      end
+      self.Resources = Resources.new.pre_build unless has_field?(:Resources)
 
       super
     end
@@ -205,17 +295,17 @@ module Origami
     #
     # Add an Annotation to the Page.
     #
-    def add_annot(annotation)
+    def add_annot(*annotations)
       
-      unless annotation.is_a?(Annotation::Annotation)
+      unless annotations.all?{|annot| annot.is_a?(Annotation::Annotation)}
         raise TypeError, "An Annotation object must be passed."
       end
       
       self.Annots ||= Array.new
-      self.Annots << annotation
-      
-      annotation.P = self if is_indirect?
-      
+      annotations.each do |annot| 
+        annot.P = self if is_indirect?
+        self.Annots << annot 
+      end
     end
     
     def onOpen(action)

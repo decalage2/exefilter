@@ -5,6 +5,6 @@ all:
 	ruby detectsig.rb $(EICARSIG) *.pdf
 	ruby detectsig.rb $(CALCSIG) *.pdf
 	@echo
-	ruby detectjs.rb *.pdf
+	ruby extractjs.rb *.pdf
 	@echo
-	ruby cleaner.rb -i calc.pdf -o clean_calc.pdf -t all
+	ruby pdfclean.rb -i calc.pdf -o clean_calc.pdf -t all

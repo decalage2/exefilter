@@ -1,0 +1,173 @@
+=begin
+
+= File
+	graphics/state.rb
+
+= Info
+	This file is part of Origami, PDF manipulation framework for Ruby
+	Copyright (C) 2009	Guillaume Delugré <guillaume@security-labs.org>
+	All right reserved.
+	
+  Origami is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  Origami is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with Origami.  If not, see <http://www.gnu.org/licenses/>.
+
+=end
+
+require 'matrix'
+
+module Origami
+
+  module Graphics
+
+    class GraphicsStateError < Exception #:nodoc:
+    end
+
+    class State
+
+      #
+      # Device-independent parameters.
+      #
+      attr_accessor :ctm
+      attr_accessor :clipping_path
+      attr_accessor :stroking_colorspace, :nonstroking_colorspace, :stroking_color, :nonstroking_color
+      attr_accessor :text_state
+      attr_accessor :line_width, :line_cap, :line_join, :miter_limit, :dash_pattern
+      attr_accessor :rendering_intent
+      attr_accessor :stroke_adjustment
+      attr_accessor :blend_mode, :soft_mask, :alpha_constant, :alpha_source
+
+      attr_reader :current_path
+
+      def initialize
+        
+        @stack = []
+        @current_path = []
+        @text_state = Text::State.new
+
+        self.reset
+      end
+
+      def reset
+
+        @ctm = Matrix.identity(3)
+        @clipping_path = nil
+        @stroking_colorspace = @nonstroking_colorspace = Color::Space::DEVICE_GRAY
+        @stroking_color = @nonstroking_color = [ 0.0 ] #black
+        @text_state.reset
+        @line_width = 1.0
+        @line_cap = LineCapStyle::BUTT_CAP
+        @line_join = LineJoinStyle::MITER_JOIN
+        @miter_limit = 10.0
+        @dash_pattern = DashPattern.new([], 0)
+        @rendering_intent = RenderingIntent::RELATIVE_COLORIMETRIC
+        @stroke_adjustment = false
+        @blend_mode = BlendMode::NORMAL
+        @soft_mask = :None
+        @alpha_constant = 1.0
+        @alpha_source = false
+
+      end
+
+      def save  
+        context = 
+        [
+          @ctm, @clipping_path,
+          @stroking_colorspace, @nonstroking_colorspace,
+          @stroking_color, @nonstroking_color,
+          @text_state, @line_width, @line_cap, @line_join,
+          @miter_limit, @dash_pattern, @rendering_intent,
+          @stroke_adjustment,
+          @blend_mode, @soft_mask, @alpha_constant, @alpha_source
+        ]
+        @stack.push(context)
+      end
+
+      def restore
+        raise GraphicsStateError, "Cannot restore context : empty stack" if @stack.empty?
+
+        @ctm, @clipping_path,
+        @stroking_colorspace, @nonstroking_colorspace,
+        @stroking_color, @nonstroking_color,
+        @text_state, @line_width, @line_cap, @line_join,
+        @miter_limit, @dash_pattern, @rendering_intent,
+        @stroke_adjustment,
+        @blend_mode, @soft_mask, @alpha_constant, @alpha_source = @stack.pop
+      end
+
+    end
+
+    module Instruction
+      class QPush
+        include PDF::Instruction
+        def initialize; super('q') end
+
+        def update_state(gs)
+          gs.save
+          gs.reset
+          self
+        end
+      end
+
+      class QPop
+        include PDF::Instruction
+        def initialize; super('Q') end
+
+        def update_state(gs)
+          gs.restore
+          self
+        end
+      end
+    end
+
+    #
+    # Generic Graphic state
+    # 4.3.4 Graphics State Parameter Dictionaries p219
+    #
+    class ExtGState < Dictionary
+      
+      include Configurable
+
+      field   :Type,          :Type => Name, :Default => :ExtGState, :Required => true
+      field   :LW,            :Type => Integer, :Version => "1.3"
+      field   :LC,            :Type => Integer, :Version => "1.3"
+      field   :LJ,            :Type => Integer, :Version => "1.3"
+      field   :ML,            :Type => Number, :Version => "1.3"
+      field   :D,             :Type => Array, :Version => "1.3"
+      field   :RI,            :Type => Name, :Version => "1.3"
+      field   :OP,            :Type => Boolean
+      field   :op,            :Type => Boolean, :Version => "1.3"
+      field   :OPM,           :Type => Number, :Version => "1.3"
+      field   :Font,          :Type => Array, :Version => "1.3"
+      field   :BG,            :Type => Object
+      field   :BG2,           :Type => Object, :Version => "1.3"
+      field   :UCR,           :Type => Object
+      field   :UCR2,          :Type => Object, :Version => "1.3"
+      field   :TR,            :Type => Object
+      field   :TR2,           :Type => Object, :Version => "1.3" 
+      field   :HT,            :Type => [ Dictionary, Name, Stream ]
+      field   :FL,            :Type => Number, :Version => "1.3"
+      field   :SM,            :Type => Number, :Version => "1.3"
+      field   :SA,            :Type => Boolean
+      field   :BM,            :Type => [ Name, Array ], :Version => "1.4"
+      field   :SMask,         :Type => [ Dictionary, Array ], :Version => "1.4"
+      field   :CA,            :Type => Number
+      field   :ca,            :Type => Number, :Version => "1.4"
+      field   :AIS,           :Type => Boolean, :Version => "1.4"
+      field   :TK,            :Type => Boolean, :Version => "1.4"
+
+    end # class ExtGState
+
+  end #module Graphics 
+ 
+end
+

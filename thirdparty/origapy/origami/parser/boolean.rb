@@ -44,20 +44,19 @@ module Origami
     # Creates a new Boolean value.
     # _value_:: *true* or *false*.
     #
-    def initialize(value, indirect = false)
+    def initialize(value)
       
       unless value.is_a?(TrueClass) or value.is_a?(FalseClass)
         raise TypeError, "Expected type TrueClass or FalseClass, received #{value.class}."
       end
       
-      super(indirect)
+      super()
       
       @value = (value == nil || value == false) ? false : true
-      
     end
     
     def to_s #:nodoc:
-      print(@value.to_s)
+      super(@value.to_s)
     end
     
     def self.parse(stream) #:nodoc:
@@ -81,11 +80,15 @@ module Origami
     def real_type ; Boolean end
     
     def false?
-      value == false
+      @value == false
     end
     
     def true?
-      value == true
+      @value == true
+    end
+
+    def ==(bool)
+      @value == bool
     end
 
   end

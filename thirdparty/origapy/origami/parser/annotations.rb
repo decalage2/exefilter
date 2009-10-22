@@ -157,6 +157,23 @@ module Origami
       LOCKEDCONTENTS = 1 << 9
     end
 
+    module Markup
+
+      def self.included(receiver)
+        receiver.field    :T,             :Type => String, :Version => "1.1"
+        receiver.field    :Popup,         :Type => Dictionary, :Version => "1.3"
+        receiver.field    :CA,            :Type => Number, :Default => 1.0, :Version => "1.4"
+        receiver.field    :RC,            :Type => [String, Stream], :Version => "1.5"
+        receiver.field    :CreationDate,  :Type => String, :Version => "1.5"
+        receiver.field    :IRT,           :Type => Dictionary, :Version => "1.5"
+        receiver.field    :Subj,          :Type => String, :Version  => "1.5"
+        receiver.field    :RT,            :Type => Name, :Default => :R, :Version => "1.6"
+        receiver.field    :IT,            :Type => Name, :Version => "1.6"
+        receiver.field    :ExData,        :Type => Dictionary, :Version => "1.7"
+      end
+
+    end
+
     #
     # Class representing an annotation.
     # Annotations are objects which user can interact with.
@@ -180,9 +197,30 @@ module Origami
       field   :StructParent,    :Type => Integer, :Version => "1.3"
       field   :OC,              :Type => Dictionary, :Version => "1.5"
 
+      def set_normal_appearance(apstm)
+        self.AP ||= AppearanceDictionary.new
+        self.AP[:N] = apstm
+
+        self
+      end
+
+      def set_rollover_appearance(apstm)
+        self.AP ||= AppearanceDictionary.new
+        self.AP[:R] = apstm
+
+        self
+      end
+
+      def set_down_appearance(apstm)
+        self.AP ||= AppearanceStream.new
+        self.AP[:D] = apstm
+
+        self
+      end
+
     end
 
-    class AppearanceStream < Dictionary
+    class AppearanceDictionary < Dictionary
 
       include Configurable
 
@@ -191,6 +229,8 @@ module Origami
       field   :D,               :Type => [ Stream, Dictionary ]
 
     end
+
+    class AppearanceStream < Graphics::FormXObject ; end
     
     class BorderStyle < Dictionary
       
@@ -239,6 +279,8 @@ module Origami
     
     class Shape < Annotation
 
+      include Markup
+
       field   :Subtype,         :Type => Name, :Default => :Square, :Required => true
       field   :BS,              :Type => Dictionary
       field   :IC,              :Type => Array
@@ -257,9 +299,11 @@ module Origami
     end
 
     #
-    # Text annotation p621
+    # Text annotation
     #
     class Text < Annotation
+
+      include Markup
 
       module TextName
         COMMENT      = :C
@@ -291,6 +335,33 @@ module Origami
 
         super
       end
+
+    end
+
+    #
+    # FreeText Annotation
+    #
+    class FreeText < Annotation
+
+      include Markup
+
+      module Intent
+        FREETEXT            = :FreeText
+        FREETEXTCALLOUT     = :FreeTextCallout
+        FREETEXTTYPEWRITER  = :FreeTextTypeWriter
+      end
+
+      field   :Subtype,         :Type => Name, :Default => :FreeText, :Required => true
+      field   :DA,              :Type => String, :Default => "/F1 10 Tf 0 g", :Required => true
+      field   :Q,               :Type => Integer, :Default => Field::TextAlign::LEFT, :Version => "1.4"
+      field   :RC,              :Type => [String, Stream], :Version => "1.5"
+      field   :DS,              :Type => String, :Version => "1.5"
+      field   :CL,              :Type => Array, :Version => "1.6"
+      field   :IT,              :Type => Name, :Default => Intent::FREETEXT, :Version => "1.6"
+      field   :BE,              :Type => Dictionary, :Version => "1.6"
+      field   :RD,              :Type => Array, :Version => "1.6"
+      field   :BS,              :Type => Dictionary, :Version => "1.6"
+      field   :LE,              :Type => Name, :Default => :None, :Version => "1.6"
 
     end
     
@@ -330,12 +401,14 @@ module Origami
     #
     class FileAttachment < Annotation
       
+      include Markup
+
       # Icons to be displayed for file attachment.
       module Icons
-        GRAPH = :Graph
-        PAPERCLIP = :Paperclip
-        PUSHPIN = :PushPin
-        TAG = :Tag
+        GRAPH       = :Graph
+        PAPERCLIP   = :Paperclip
+        PUSHPIN     = :PushPin
+        TAG         = :Tag
       end
 
       field   :Subtype,             :Type => Name, :Default => :FileAttachment, :Required => true
@@ -362,10 +435,12 @@ module Origami
 
 
     class Sound < Annotation
+
+      include Markup
       
       module Icons
         SPEAKER = :Speaker
-        MIC = :Mic
+        MIC     = :Mic
       end
 
       field   :Subtype,             :Type => Name, :Default => :Sound, :Required => true
@@ -378,19 +453,19 @@ module Origami
     
       module Highlight
         # No highlighting
-        NONE = :N
+        NONE    = :N
         
         # Invert the contents of the annotation rectangle. 
-        INVERT = :I
+        INVERT  = :I
         
         # Invert the annotation’s border. 
         OUTLINE = :O
         
         # Display the annotation as if it were being pushed below the surface of the page
-        PUSH = :P
+        PUSH    = :P
         
         # Same as P.
-        TOGGLE = :T
+        TOGGLE  = :T
         
       end
   
@@ -410,6 +485,15 @@ module Origami
         field   :AA,                :Type => Dictionary, :Version => "1.2"
         field   :BS,                :Type => Dictionary, :Version => "1.2"
         
+        def onActivate(action)        
+          
+          unless action.is_a?(Action::Action)
+            raise TypeError, "An Action object must be passed."
+          end
+          
+          self.A = action
+        end
+      
       end
       
       class Button < Widget
@@ -468,30 +552,18 @@ module Origami
       class Text < Widget
         
         module Flags
-          MULTILINE = 1 << 12
-          PASSWORD = 1 << 13
-          FILESELECT = 1 << 20
+          MULTILINE       = 1 << 12
+          PASSWORD        = 1 << 13
+          FILESELECT      = 1 << 20
           DONOTSPELLCHECK = 1 << 22
-          DONOTSCROLL = 1 << 23
-          COMB = 1 << 24
-          RICHTEXT = 1 << 25
+          DONOTSCROLL     = 1 << 23
+          COMB            = 1 << 24
+          RICHTEXT        = 1 << 25
         end
         
-        module Align
-          LEFT = 0
-          CENTER = 1
-          RIGHT = 2
-        end
-      
         field   :FT,          :Type => Name, :Default => Field::Type::TEXT, :Required => true
         field   :MaxLen,      :Type => Integer
 
-        # Text fields
-        field   :DA,          :Type => String, :Default => "/Helv 0 Tf 0 g", :Required => true
-        field   :Q,           :Type => Integer, :Default => Align::LEFT
-        field   :DS,          :Type => ByteString, :Version => "1.5"
-        field   :RV,          :Type => [ String, Stream ], :Version => "1.5"
-        
       end
       
       class Choice < Widget

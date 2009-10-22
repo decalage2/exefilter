@@ -19,7 +19,6 @@
 
 =end
 
-require 'ps.rb'
 require 'object.rb'
 require 'null.rb'
 require 'name.rb'
@@ -34,17 +33,19 @@ require 'filters.rb'
 require 'trailer.rb'
 require 'xreftable.rb'
 require 'header.rb'
+require 'functions.rb'
 require 'catalog.rb'
-require 'misc.rb'
+require 'font.rb'
 require 'page.rb'
+require 'graphics.rb'
 require 'destinations.rb'
+require 'outline.rb'
 require 'actions.rb'
 require 'file.rb'
 require 'acroform.rb'
 require 'annotations.rb'
 require 'signature.rb'
 require 'webcapture.rb'
-require 'graphics.rb'
 require 'metadata.rb'
 require 'export.rb'
 require 'webcapture.rb'
@@ -54,8 +55,8 @@ require 'obfuscation.rb'
 
 module Origami
 
-  VERSION = "1.0.0-beta0"
-  REVISION = "$Revision: rev 624/devel, 2009/07/06 13:56:13 darko $" #:nodoc:
+  VERSION = "1.0.0-beta1"
+  REVISION = "$Revision: rev 711/devel, 2009/08/28 14:19:40 darko $" #:nodoc:
   
   @@dict_special_types = 
   { 
@@ -69,6 +70,7 @@ module Origami
     :Encoding => Encoding,
     :Annot => Annotation::Annotation,
     :Border => Annotation::BorderStyle,
+    :Outlines => Outline,
     :Sig => Signature::DigitalSignature,
     :SigRef => Signature::Reference,
     :SigFieldLock => Field::SignatureLock,
@@ -195,24 +197,27 @@ module Origami
     #
     # Saves the current file as its current filename.
     #
-    def save(filename = nil, params = {})
+    def save(file, params = {})
       
-      name = filename || @filename
-      fail "No filename specified for saving." unless name
-
       options = 
       {
+        :delinearize => false,
         :recompile => true,
       }
       options.update(params)
+
+      if file.respond_to?(:write)
+        fd = file
+      else
+        fd = File.open(file, 'w').binmode
+      end
       
-      fd = File.open(name, "w").binmode
-   
-        self.compile if options[:recompile] == true
-        bin = self.to_bin(options)
-        fd << bin
+      self.delinearize! if options[:delinearize] == true and is_linearized?
+      self.compile if options[:recompile] == true
+
+      fd.write self.to_bin(options)
         
-      fd.close
+      fd.close unless file.respond_to?(:write)
       
       self
     end
@@ -241,24 +246,7 @@ module Origami
     # _filename_:: The path where to save this PDF.
     #
     def save_upto(revision, filename)
-      
-      fd = File.open(filename, "w").binmode
-      
-      fd << @header
-      
-      nrev = 0
-      while nrev < revision && nrev < @revisions.size
-
-        fd << @revisions[nrev].body.values
-        fd << @revisions[nrev].xreftable
-        fd << @revisions[nrev].trailer
-        
-        nrev = nrev.succ
-      end
-      
-      fd.close
-     
-      self
+      saveas(filename, :up_to_revision => revision)  
     end
 
     #
@@ -425,6 +413,14 @@ module Origami
       no = 1
       no = no + 1 while get_object(no)
 
+      objset = indirect_objects
+
+      no = 
+      if objset.size == 0 then 1
+      else 
+        indirect_objects.keys.max.refno + 1
+      end
+
       [ no, 0 ]
     end
     
@@ -470,10 +466,13 @@ module Origami
         :rebuildxrefs => true,
         :obfuscate => false,
         :use_xrefstm => has_objstm,
-        :use_xreftable => (not has_objstm)
+        :use_xreftable => (not has_objstm),
+        :up_to_revision => @revisions.size
         #todo linearize
       }
       options.update(params)
+
+      options[:up_to_revision] = @revisions.size if options[:up_to_revision] > @revisions.size
 
       # Reset to default params if no xrefs are chosen (hybrid files not supported yet)
       if options[:use_xrefstm] == options[:use_xreftable]
@@ -497,7 +496,7 @@ module Origami
       bin << @header.to_s
       
       # For each revision
-      @revisions.each do |rev|
+      @revisions[0, options[:up_to_revision]].each do |rev|
         
         if options[:rebuildxrefs] == true
           lastno_table, lastno_stm = 0, 0
@@ -511,8 +510,8 @@ module Origami
           end
 
           if options[:use_xrefstm] == true
-            xrefstm = XRefStream.new
-            add_to_revision(xrefstm, rev)
+            xrefstm = rev.xrefstm || XRefStream.new
+            add_to_revision(xrefstm, rev) unless xrefstm == rev.xrefstm
           end
         end
        
@@ -568,6 +567,8 @@ module Origami
               xrefstm_offset = bin.size
    
               xrefs_stm.each do |xref| xrefstm << xref end
+
+              xrefstm.W = [ 1, (xrefstm_offset.to_s(2).size + 7) >> 3, 2 ]
               xrefstm.Index ||= []
               xrefstm.Index << brange_stm << xrefs_stm.size
    
@@ -659,24 +660,50 @@ module Origami
 
       self
     end
-    
+
     #
-    # Remove last Revisions.
-    # _level_:: The number of revisions to remove.
+    # Removes a whole document revision.
+    # _index_:: Revision index, first is 0.
     #
-    def remove_last_revision(level = 1)
-      
-      @revisions.pop(level)
-      
+    def remove_revision(index)
+      if index < 0 or index > @revisions.size
+        raise IndexError, "Not a valid revision index"
+      end
+
+      if @revisions.size == 1
+        raise InvalidPDF, "Cannot remove last revision"
+      end
+
+      @revisions.delete_at(index)
       self
     end
-  
+    
     #
     # Looking for an object present at a specified file offset.
     #
     def get_object_by_offset(offset) #:nodoc:
       self.indirect_objects.values.find { |obj| obj.file_offset == offset }
     end   
+
+    #
+    # Remove an object.
+    #
+    def delete_object(no, generation = 0)
+      
+      case no
+        when Reference
+          target = no
+        when ::Integer
+          target = Reference.new(no, generation)
+      else
+        raise TypeError, "Invalid parameter type : #{no.class}" 
+      end
+      
+      @revisions.each do |rev|
+        rev.body.delete(target)
+      end
+
+    end
 
     #
     # Search for an indirect object in the document.
@@ -686,12 +713,14 @@ module Origami
     def get_object(no, generation = 0, use_xrefstm = true) #:nodoc:
        
       case no
-      when Reference
-        target = no
-      when ::Integer
-         target = Reference.new(no, generation)
-      when Origami::Object
-        return no
+        when Reference
+          target = no
+        when ::Integer
+           target = Reference.new(no, generation)
+        when Origami::Object
+          return no
+      else
+        raise TypeError, "Invalid parameter type : #{no.class}" 
       end
       
       set = self.indirect_objects
@@ -753,14 +782,14 @@ module Origami
       #
       # Indirect objects are added to the revision and assigned numbers.
       #
-      def build(obj, revision, embedded = false) #:nodoc:
+      def build(obj, revision) #:nodoc:
 
         #
         # Finalize any subobjects before building the stream.
         #
         if obj.is_a?(ObjectStream)
           obj.each { |subobj|
-            build(subobj, revision, true)
+            build(subobj, revision)
           }
         end
   
@@ -786,6 +815,8 @@ module Origami
               build(subobj, revision)
             }
             
+        elsif obj.is_a?(Stream)
+          build(obj.dictionary, revision)
         end
 
         obj.post_build

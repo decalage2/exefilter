@@ -21,6 +21,38 @@
 
 module Origami
 
+  class PDF
+   
+    #
+    # Tries to strip any xrefs information off the document.
+    #
+    def remove_xrefs
+      def delete_xrefstm(xrefstm)
+        prev = xrefstm.Prev
+        delete_object(xrefstm.reference)
+
+        if prev.is_a?(Integer) and (prev_stm = get_object_by_offset(prev)).is_a?(XRefStream)
+          delete_xrefstm(prev_stm)
+        end
+      end
+
+      @revisions.reverse_each do |rev|
+        if rev.has_xrefstm?
+          delete_xrefstm(rev.xrefstm)
+        end
+        
+        if rev.trailer.has_dictionary? and rev.trailer.XRefStm.is_a?(Integer)
+          xrefstm = get_object_by_offset(rev.trailer.XRefStm)
+
+          delete_xrefstm(xrefstm) if xrefstm.is_a?(XRefStream)
+        end
+
+        rev.xrefstm = rev.xreftable = nil
+      end
+    end
+
+  end
+
   class InvalidXRef < Exception #:nodoc:
   end
 
@@ -72,10 +104,20 @@ module Origami
       "#{off} #{gen} #{@state}" + EOL
     end
 
-    def to_xrefstm_data
-      type = (@state == FREE) ? 0 : 1
+    def to_xrefstm_data(type_w, field1_w, field2_w)
 
-      [ type, @offset, @generation ].pack("Cnn")
+      type_w <<= 3
+      field1_w <<= 3
+      field2_w <<= 3
+
+      type = ((@state == FREE) ? "\000" : "\001").unpack("B#{type_w}")[0]
+
+      offset = @offset.to_s(2)
+      offset = '0' * (field1_w - offset.size) + offset
+      generation = @generation.to_s(2)
+      generation = '0' * (field2_w - generation.size) + generation
+
+      [ type , offset, generation ].pack("B#{type_w}B#{field1_w}B#{field2_w}")
     end
     
     class InvalidSubsection < Exception #:nodoc:
@@ -242,8 +284,19 @@ module Origami
       @index = index
     end
 
-    def to_xrefstm_data
-      [ 2, @objstmno, @index ].pack("Cnn")
+    def to_xrefstm_data(type_w, field1_w, field2_w)
+
+      type_w <<= 3
+      field1_w <<= 3
+      field2_w <<= 3
+
+      type = "\002".unpack("B#{type_w}")[0]
+      objstmno = @objstmno.to_s(2)
+      objstmno = '0' * (field1_w - objstmno.size) + objstmno
+      index = @index.to_s(2)
+      index = '0' * (field2_w - index.size) + index
+
+      [ type , objstmno, index ].pack("B#{type_w}B#{field1_w}B#{field2_w}")
     end
 
   end
@@ -288,7 +341,9 @@ module Origami
     end
 
     def pre_build #:nodoc:
-      self.W = [ 1, 2, 2 ]
+      load! if @xrefs.nil?
+
+      self.W = [ 1, 2, 2 ] unless has_field?(:W)
       self.Size = @xrefs.length + 1
 
       save!
@@ -337,42 +392,47 @@ module Origami
     private
 
     def load! #:nodoc:
-      widths = self.W
+      if (@data.nil? or @data.empty?) and has_field?(:W)
+        widths = self.W
 
-      if not widths.is_a?(Array) or widths.length != 3 or widths.any?{|width| not width.is_a?(Integer) }
-        raise InvalidXRefStream, "W field must be an array of 3 integers"
-      end
-
-      decode!
-
-      type_w = self.W[0]
-      field1_w = self.W[1]
-      field2_w = self.W[2]
-      
-      entrymask = "B#{type_w << 3}B#{field1_w << 3}B#{field2_w << 3}"
-      size = @data.size / (type_w + field1_w + field2_w)
-
-      entries = @data.unpack(entrymask * size).map!{|field| field.to_i(2) }
-
-      @xrefs = []
-      size.times do |i|
-        type,field1,field2 = entries[i*3],entries[i*3+1],entries[i*3+2]
-        case type
-          when XREF_FREE
-            @xrefs << XRef.new(field1, field2, XRef::FREE)
-          when XREF_USED
-            @xrefs << XRef.new(field1, field2, XRef::USED)
-          when XREF_COMPRESSED
-            @xrefs << XRefToCompressedObj.new(field1, field2)
+        if not widths.is_a?(Array) or widths.length != 3 or widths.any?{|width| not width.is_a?(Integer) }
+          raise InvalidXRefStream, "W field must be an array of 3 integers"
         end
+
+        decode!
+
+        type_w = self.W[0]
+        field1_w = self.W[1]
+        field2_w = self.W[2]
+        
+        entrymask = "B#{type_w << 3}B#{field1_w << 3}B#{field2_w << 3}"
+        size = @data.size / (type_w + field1_w + field2_w)
+
+        entries = @data.unpack(entrymask * size).map!{|field| field.to_i(2) }
+
+        @xrefs = []
+        size.times do |i|
+          type,field1,field2 = entries[i*3],entries[i*3+1],entries[i*3+2]
+          case type
+            when XREF_FREE
+              @xrefs << XRef.new(field1, field2, XRef::FREE)
+            when XREF_USED
+              @xrefs << XRef.new(field1, field2, XRef::USED)
+            when XREF_COMPRESSED
+              @xrefs << XRefToCompressedObj.new(field1, field2)
+          end
+        end
+      else
+        @xrefs = []
       end
     end
 
     def save! #:nodoc:
       @data = ""
 
-      @xrefs.each do |xref| @data << xref.to_xrefstm_data end
-      
+      type_w, field1_w, field2_w = self.W
+      @xrefs.each do |xref| @data << xref.to_xrefstm_data(type_w, field1_w, field2_w) end
+
       encode!
     end
 

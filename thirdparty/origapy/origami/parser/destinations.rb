@@ -47,11 +47,11 @@ module Origami
       # _left_, _top_:: Coords in the Page.
       # _zoom_:: Zoom factor.
       #
-      def initialize(pageref, left = 0, top = 0, zoom = 0, indirect = false)
+      def initialize(pageref, left = 0, top = 0, zoom = 0)
         
         @left, @top, @zoom = left, top, zoom
         
-        super([pageref, :XYZ, left, top, zoom], indirect)
+        super([pageref, :XYZ, left, top, zoom])
         
       end
       
@@ -68,8 +68,8 @@ module Origami
       # Creates a new global fit Destination.
       # _pageref_:: A Reference to a Page.
       #
-      def initialize(pageref,  indirect = false)
-        super([pageref, :Fit], indirect)
+      def initialize(pageref)
+        super([pageref, :Fit])
       end
       
     end
@@ -86,10 +86,10 @@ module Origami
       # _pageref_:: A Reference to a Page.
       # _top_:: The vertical coord in the Page.
       #
-      def initialize(pageref, top = 0, indirect = false)
+      def initialize(pageref, top = 0)
         
         @top = top
-        super([pageref, :FitH, top], indirect)
+        super([pageref, :FitH, top])
         
       end
     
@@ -104,10 +104,10 @@ module Origami
       
       include Destination
       
-      def initialize(pageref, left = 0, indirect = false)
+      def initialize(pageref, left = 0)
         
         @left = left
-        super([pageref, :FitV, left], indirect)
+        super([pageref, :FitV, left])
         
       end
       
@@ -125,10 +125,10 @@ module Origami
       # _pageref_:: A Reference to a Page.
       # _left_, _bottom_, _right_, _top_:: The rectangle to fit in.
       #
-      def initialize(pageref, left = 0, bottom = 0, right = 0, top = 0, indirect = false)
+      def initialize(pageref, left = 0, bottom = 0, right = 0, top = 0)
         
         @left, @bottom, @right, @top = left, bottom, right, top
-        super([pageref, :FitR, left, bottom, right, top], indirect)
+        super([pageref, :FitR, left, bottom, right, top])
         
       end
       
@@ -145,8 +145,8 @@ module Origami
       # Creates a new bounding box fit Destination.
       # _pageref_:: A Reference to a Page.
       #
-      def initialize(pageref, indirect = false)
-        super([pageref, :FitB], indirect)
+      def initialize(pageref)
+        super([pageref, :FitB])
       end
       
     end
@@ -163,10 +163,10 @@ module Origami
       # _pageref_:: A Reference to a Page.
       # _top_:: The vertical coord.
       #
-      def initialize(pageref, top = 0, indirect = false)
+      def initialize(pageref, top = 0)
         
         @top = top
-        super([pageref, :FitBH, top], indirect)
+        super([pageref, :FitBH, top])
         
       end
       
@@ -184,10 +184,10 @@ module Origami
       # _pageref_:: A Reference to a Page.
       # _left_:: The horizontal coord.
       #
-      def initialize(pageref, left = 0, indirect = false)
+      def initialize(pageref, left = 0)
         
         @left = left
-        super([pageref, :FitBV, left], indirect)
+        super([pageref, :FitBV, left])
       
       end
     

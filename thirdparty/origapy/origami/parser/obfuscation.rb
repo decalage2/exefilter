@@ -123,7 +123,7 @@ module Origami
       }
 
       content << TOKENS.last
-      print(content)
+      super(content)
     end
 
   end
@@ -137,7 +137,7 @@ module Origami
 
       content << TOKENS.last
 
-      print(content)
+      super(content)
     end
   end
 
@@ -161,7 +161,7 @@ module Origami
     def to_obfuscated_str
       refstr = refno.to_s + Obfuscator.junk_spaces + refgen.to_s + Obfuscator.junk_spaces + "R"
 
-      print(refstr)
+      super(refstr)
     end
   end
 
@@ -194,7 +194,7 @@ module Origami
         end
       end
 
-      print(TOKENS.first + name)
+      super(TOKENS.first + name)
     end
   end
 
@@ -207,7 +207,7 @@ module Origami
       content << self.rawdata
       content << EOL << TOKENS.last
       
-      print(content)
+      super(content)
     end
   end
 

@@ -248,7 +248,7 @@ module Origami
       field   :Contents,        :Type => String, :Required => true
       field   :Cert,            :Type => [ Array, String ]
       field   :ByteRange,       :Type => Array
-      field   :Reference,       :Type => Dictionary, :Version => "1.5"
+      field   :Reference,       :Type => Array, :Version => "1.5"
       field   :Changes,         :Type => Array
       field   :Name,            :Type => String
       field   :M,               :Type => String
@@ -263,6 +263,7 @@ module Origami
       
       def pre_build #:nodoc:
         self.M = Origami::Date.now
+        self.Prop_Build ||= BuildProperties.new.pre_build
         
         super
       end
@@ -273,17 +274,14 @@ module Origami
         content = TOKENS.first + EOL
         
         pairs.sort_by{ |k| k.to_s }.reverse.each { |pair|
-          
-            key, value = pair[0].to_o, pair[1].to_o
+          key, value = pair[0].to_o, pair[1].to_o
             
-            content << "\t" * base + key.to_s + " " + (value.is_a?(Dictionary) ? value.to_s(base+1) : value.to_s) + EOL
-          
+          content << "\t" * base + key.to_s + " " + (value.is_a?(Dictionary) ? value.to_s(base+1) : value.to_s) + EOL
         }
         
         content << "\t" * (base-1) + TOKENS.last
         
-        print(content)
-        
+        output(content)
       end
       
       def sigOffset #:nodoc:
@@ -308,12 +306,6 @@ module Origami
         nil
       end
       
-      def pre_build #:nodoc:
-        self.Prop_Build ||= BuildProperties.new.pre_build
-        
-        super
-      end
-      
     end
     
     #
@@ -333,9 +325,10 @@ module Origami
       field   :DigestLocation,  :Type => Array
 
       def initialize(hash = {})
-        super(hash, false)
+        set_indirect(false)
+
+        super(hash)
       end
-      
     end
     
     class BuildProperties < Dictionary
@@ -348,9 +341,11 @@ module Origami
       field   :SigQ,            :Type => Dictionary, :Version => "1.7"
 
       def initialize(hash = {})
-        super(hash, false)
+        set_indirect(false)
+
+        super(hash)
       end
-      
+
       def pre_build #:nodoc:
         
         self.Filter ||= BuildData.new
@@ -392,21 +387,19 @@ module Origami
       field   :V,                 :Type => Number, :Version => "1.5"
 
       def initialize(hash = {})
-        super(hash, false)
+        set_indirect(false)
+
+        super(hash)
       end
       
     end
     
     class AppData < BuildData
-     
       field   :REx,               :Type => String, :Version => "1.6"
-
     end
     
     class SigQData < BuildData
-    
       field   :Preview,           :Type => Boolean, :Default => false, :Version => "1.7"
-      
     end
 
   end
@@ -471,9 +464,11 @@ module Origami
       field   :P,                 :Type => Boolean, :Default => false, :Version => "1.6"
 
       def initialize(hash = {})
-        super(hash, false)
+        set_indirect(false)
+
+        super(hash)
       end
-      
+
     end
     
   end

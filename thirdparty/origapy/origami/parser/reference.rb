@@ -32,8 +32,8 @@ module Origami
     
     include Origami::Object
 
-    TOKENS = [ "(\\d+)" + WHITESPACES +  "(\\d+)" + WHITESPACES + "R" ] #:nodoc:
-    
+    TOKENS = [ "(\\d+)" + WHITESPACES +  "(\\d+)" + WHITESPACES + "R" ] #:nodoc:   
+    REGEXP_TOKEN = Regexp.new(TOKENS.first, Regexp::MULTILINE)
     @@regexp = Regexp.new('\A' + WHITESPACES + TOKENS.first + WHITESPACES)
     
     attr_accessor :refno, :refgen
@@ -91,7 +91,7 @@ module Origami
     end
     
     def to_s #:nodoc:
-      print("#{@refno} #{@refgen} R")
+      super("#{@refno} #{@refgen} R")
     end
     
     #

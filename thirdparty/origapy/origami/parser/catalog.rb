@@ -171,14 +171,10 @@ module Origami
     field   :Collection,          :Type => Dictionary, :Version => "1.7"
     field   :NeedsRendering,      :Type => Boolean, :Version => "1.7", :Default => false
 
-    #
-    # Creates a new Catalog.
-    # _hash_:: A hash of attributes to set to the Catalog.
-    #
-    def initialize(hash = {}, indirect = true)
-             
-      super(hash, indirect)
-    
+    def initialize(hash = {})
+      set_indirect(true)
+
+      super(hash)
     end
     
   end
@@ -256,17 +252,44 @@ module Origami
     # Creates a new leaf in a Name tree.
     # _hash_:: A hash of couples, associating a Name with an Reference.
     #
-    def initialize(hash = {}, indirect = false)
+    def initialize(hash = {})
       
       names = []
       hash.each_pair { |k,v|
         names << k.to_o << v.to_o
       }
       
-      super(names, indirect)
-      
+      super(names)
     end
     
   end
 
+  #
+  # Class representing the ViewerPreferences Dictionary of a PDF.
+  # This dictionary modifies the way the UI looks when the file is opened in a viewer.
+  #
+  class ViewerPreferences < Dictionary
+    
+    include Configurable
+
+    field   :HideToolbar,             :Type => Boolean, :Default => false
+    field   :HideMenubar,             :Type => Boolean, :Default => false
+    field   :HideWindowUI,            :Type => Boolean, :Default => false
+    field   :FitWindow,               :Type => Boolean, :Default => false
+    field   :CenterWindow,            :Type => Boolean, :Default => false
+    field   :DisplayDocTitle,         :Type => Boolean, :Default => false, :Version => "1.4"
+    field   :NonFullScreenPageMode,   :Type => Name, :Default => :UseNone
+    field   :Direction,               :Type => Name, :Default => :L2R
+    field   :ViewArea,                :Type => Name, :Default => :CropBox, :Version => "1.4"
+    field   :ViewClip,                :Type => Name, :Default => :CropBox, :Version => "1.4"
+    field   :PrintArea,               :Type => Name, :Default => :CropBox, :Version => "1.4"
+    field   :PrintClip,               :Type => Name, :Default => :CropBox, :Version => "1.4"
+    field   :PrintScaling,            :Type => Name, :Default => :AppDefault, :Version => "1.6"
+    field   :Duplex,                  :Type => Name, :Default => :Simplex, :Version => "1.7"
+    field   :PickTrayByPDFSize,       :Type => Boolean, :Version => "1.7"
+    field   :PrintPageRange,          :Type => Array, :Version => "1.7"
+    field   :NumCopies,               :Type => Integer, :Version => "1.7"
+    
+  end
+  
 end
