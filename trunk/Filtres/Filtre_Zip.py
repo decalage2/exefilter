@@ -22,15 +22,15 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 @license: CeCILL (open-source compatible GPL)
           cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.02
+@version: 1.03
 
 @status: beta
 """
 #==============================================================================
 __docformat__ = 'epytext en'
 
-__date__    = "2008-03-24"
-__version__ = "1.02"
+__date__    = "2008-04-20"
+__version__ = "1.03"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
@@ -78,6 +78,7 @@ __version__ = "1.02"
 # 2008-02-25 v1.01 PL: - licence CeCILL
 # 2008-03-24 v1.02 PL: - ajout de _() pour traduction gettext des chaines
 #                      - simplification dans nettoyer() en appelant resultat_*
+# 2008-04-20 v1.03 PL: - ajout politique dans appel Conteneur_Zip
 
 #------------------------------------------------------------------------------
 # A FAIRE:
@@ -155,7 +156,7 @@ class Filtre_Zip (Filtre.Filtre):
         # un conteneur, il faut nettoyer tous les fichiers qu'il contient:
         try:
             conteneur_zip = Conteneur_Zip.Conteneur_Zip (fichier.copie_temp(),
-                "", fichier)
+                "", fichier, politique=self.politique)
         except zipfile.BadZipfile:
             # si on obtient cette exception, c'est que le module zipfile ne
             # supporte pas le format de ce fichier zip.

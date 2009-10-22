@@ -26,12 +26,12 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 @contact: U{Philippe Lagadec<mailto:philippe.lagadec(a)laposte.net>}
 
 @copyright: DGA/CELAR 2004-2008
-@copyright: NATO/NC3A 2008 (modifications PL apres v1.1.0)
+@copyright: NATO/NC3A 2008-2009 (modifications PL apres v1.1.0)
 
 @license: CeCILL (open-source compatible GPL)
           cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.03
+@version: 1.04
 
 @status: beta
 """
@@ -40,8 +40,8 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 __docformat__ = 'epytext en'
 
 #__author__  = "Philippe Lagadec, Tanguy Vinceleux, Arnaud Kerréneur (DGA/CELAR)"
-__date__    = "2009-10-05"
-__version__ = "1.03"
+__date__    = "2009-10-22"
+__version__ = "1.04"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
@@ -97,11 +97,11 @@ __version__ = "1.03"
 #                      - ajout parametre pour activer l'archivage (non par défaut)
 #                      - code archivage deplace de transfert vers init_archivage
 # 2009-10-05 v1.03 PL: - set default encoding to Latin-1 to avoid unicode errors
+# 2009-10-22 v1.04 PL: - archiving disabled by default
 
 #------------------------------------------------------------------------------
 # A FAIRE :
 # + gettext quand importe comme module
-# + parametre archivage false par defaut
 # + finir traduction gettext
 # + traduire codes parametres en anglais (pour avoir une config homogene)
 # + decouper transfert() en plusieurs fonctions pour une utilisation plus generique
@@ -244,7 +244,7 @@ Parametres.Parametre("port_syslog", int, nom="Port syslog (numéro de port UDP)",
 #--- AUTRES PARAMETRES ---
 Parametres.Parametre("archive_after", bool, nom=_(u"Archiver tous les fichiers apres filtrage"),
     description=_(u"Pour archiver une copie de chaque fichier filtré dans un répertoire d'archivage."),
-    valeur_defaut = True).ajouter(parametres)
+    valeur_defaut = False).ajouter(parametres)
 
 #--- ANTIVIRUS ---
 
@@ -551,7 +551,8 @@ def transfert(liste_source, destination, type_transfert="entree", handle=None,
             # si source est G:/tutu/tata, rep_relatif_source = tata
             (head, tail) = os.path.split(source)
             rep_relatif_source = tail
-            rep_source = Conteneur_Repertoire.Conteneur_Repertoire (source, destination, rep_relatif_source)
+            rep_source = Conteneur_Repertoire.Conteneur_Repertoire (source,
+                destination, rep_relatif_source, politique=p)
 
             # calcul de la taille du répertoire source
             taille_src += rep_source.compter_taille_rep()
@@ -560,7 +561,8 @@ def transfert(liste_source, destination, type_transfert="entree", handle=None,
             #rep_source = Conteneur_Fichier.Conteneur_Fichier (source, destination)
 
             rep_relatif_source = ""
-            rep_source = Conteneur_Fichier.Conteneur_Fichier (source, destination, rep_relatif_source)
+            rep_source = Conteneur_Fichier.Conteneur_Fichier (source,
+                destination, rep_relatif_source, politique=p)
 
             # calcul de la taille du fichier source
             taille_src += os.stat(source).st_size
@@ -578,7 +580,9 @@ def transfert(liste_source, destination, type_transfert="entree", handle=None,
         Journal.error(msg)
         raise RuntimeError, msg
 
-    init_archivage(p, taille_src)
+    # initialisation de l'archivage:
+    if parametres['archive_after'].valeur:
+        init_archivage(p, taille_src)
     commun.transfert_commence = True
 
     # boucle d'analyse de chaque conteneur source contenu dans la liste

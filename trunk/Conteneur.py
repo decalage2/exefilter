@@ -19,15 +19,15 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 @copyright: NATO/NC3A 2008 (PL changes after v1.1.0)
 @license: CeCILL (open-source compatible GPL) - cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.02
+@version: 1.03
 
 @status: beta
 """
 #==============================================================================
 __docformat__ = 'epytext en'
 
-__date__    = "2008-03-24"
-__version__ = "1.02"
+__date__    = "2008-04-20"
+__version__ = "1.03"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
@@ -76,6 +76,7 @@ __version__ = "1.02"
 # 2007-10-28 v1.01 PL: - ajout licence CeCILL
 #                      - amelioration portabilite creer_rep_temp avec os.path.join
 # 2008-03-24 v1.02 PL: - ajout de _() pour traduction gettext des chaines
+# 2008-04-20 v1.03 PL: - ajout parametre politique a Conteneur.__init__
 
 #------------------------------------------------------------------------------
 # A FAIRE:
@@ -126,7 +127,8 @@ class Conteneur:
         - type: chaîne (str) décrivant le type de conteneur.
     """
 
-    def __init__(self, nom_source, nom_destination, rep_relatif_source, fichier=None):
+    def __init__(self, nom_source, nom_destination, rep_relatif_source,
+        fichier=None, politique=None):
         """
         Constructeur de la classe abstraite Conteneur.
 
@@ -137,8 +139,11 @@ class Conteneur:
         @param nom_destination: nom de fichier/répertoire du conteneur nettoyé.
         @type nom_destination : str
 
-        @param fichier: objet Fichier du conteneur, ou bien None si c'est le 1er répertoire.
+        @param fichier: objet Fichier du conteneur, ou bien None si c'est le
+                        premier répertoire.
         @type  fichier: objet L{Fichier.Fichier} ou  None
+        @param politique: objet Politique contenant les parametres.
+        @type  fichier: objet L{Politique.Politique} ou  None
         """
         self.nom_src   = nom_source
         self.nom_dest  = nom_destination
@@ -147,8 +152,11 @@ class Conteneur:
         self.fichier = fichier
         self.liste_fichiers = []
         self.rep_relatif_source = rep_relatif_source
-        self.rep_temp = commun.politique.parametres['rep_temp'].valeur
-        self.rep_archive = commun.politique.parametres['rep_archives'].valeur
+        #TODO: test a supprimer quand tous les appels sont corriges:
+        assert politique != None, 'Conteneur.__init__ requires politique'
+        self.politique = politique
+        self.rep_temp = politique.parametres['rep_temp'].valeur
+        self.rep_archive = politique.parametres['rep_archives'].valeur
         # on construit le chemin complet:
         if fichier == None:
             # on est dans le 1er répertoire, le chemin complet est vide:
