@@ -21,15 +21,15 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 @license: CeCILL (open-source compatible GPL)
           cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.02
+@version: 1.03
 
 @status: beta
 """
 #==============================================================================
 __docformat__ = 'epytext en'
 
-__date__    = "2008-03-24"
-__version__ = "1.02"
+__date__    = "2008-04-20"
+__version__ = "1.03"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
@@ -77,6 +77,7 @@ __version__ = "1.02"
 # 12/01/2007 v1.00 PL: - version 1.00 officielle
 # 2007-11-03 v1.01 PL: - ajout licence CeCILL
 # 2008-03-24 v1.02 PL: - ajout de _() pour traduction gettext des chaines
+# 2008-04-20 v1.03 PL: - ajout parametre politique a Conteneur_Fichier.__init__
 
 #------------------------------------------------------------------------------
 # A FAIRE:
@@ -111,7 +112,8 @@ class Conteneur_Fichier (Conteneur_Repertoire.Conteneur_Repertoire):
     (nécessaire quand on ne veut analyser qu'un fichier)
     """
 
-    def __init__(self, nom_fichier, repertoire_destination, rep_relatif_source, fichier=None):
+    def __init__(self, nom_fichier, repertoire_destination, rep_relatif_source,
+        fichier=None, politique=None):
         """
         Constructeur d'objet Conteneur_Fichier.
 
@@ -128,7 +130,7 @@ class Conteneur_Fichier (Conteneur_Repertoire.Conteneur_Repertoire):
         # on appelle d'abord le constructeur de base
         #self.type = "Fichier"
         Conteneur.Conteneur.__init__(self, chem_source, repertoire_destination,
-            rep_relatif_source, fichier)
+            rep_relatif_source, fichier, politique)
         self.type = _(u"Fichier")
         # on sauve le nom de fichier:
         self.nom_fichier = path(nom_fichier).name

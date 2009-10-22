@@ -87,6 +87,8 @@ __version__ = "1.06"
 
 # TODO:
 # + when origami fails, include warning text into result, without blocking
+# - add options disable_richmedia and detect_cve_2009_xxxx for pdfid
+# + improve AA and OpenAction removal to avoid false positives
 
 #------------------------------------------------------------------------------
 # REFERENCES:

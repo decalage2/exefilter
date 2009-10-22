@@ -21,15 +21,15 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 @license: CeCILL (open-source compatible GPL)
           cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.02
+@version: 1.03
 
 @status: beta
 """
 #==============================================================================
 __docformat__ = 'epytext en'
 
-__date__    = "2008-03-24"
-__version__ = "1.02"
+__date__    = "2008-04-20"
+__version__ = "1.03"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
@@ -77,6 +77,8 @@ __version__ = "1.02"
 # 12/01/2007 v1.00 PL: - version 1.00 officielle
 # 2007-11-03 v1.01 PL: - ajout licence CeCILL
 # 2008-03-24 v1.02 PL: - ajout de _() pour traduction gettext des chaines
+# 2008-04-20 v1.03 PL: - ajout parametre politique a Conteneur_Repertoire.__init__
+#                      - archivage en fonction du parametre 'archive_after'
 
 #------------------------------------------------------------------------------
 # A FAIRE:
@@ -117,7 +119,7 @@ class Conteneur_Repertoire (Conteneur.Conteneur):
     """
 
     def __init__(self, nom_repertoire, nom_destination, rep_relatif_source,
-                fichier=None):
+                fichier=None, politique=None):
         """
         Constructeur d'objet Conteneur_Repertoire.
 
@@ -136,7 +138,8 @@ class Conteneur_Repertoire (Conteneur.Conteneur):
         # nom source est le chemin absolu du répertoire source:
         chem_source = path(nom_repertoire).abspath().normpath()
         # on appelle d'abord le constructeur de base
-        Conteneur.Conteneur.__init__(self, chem_source, nom_destination, rep_relatif_source, fichier)
+        Conteneur.Conteneur.__init__(self, chem_source, nom_destination,
+            rep_relatif_source, fichier, politique)
         self.type = _(u"Repertoire")
         self.taille_rep = 0
         print self
@@ -200,7 +203,9 @@ class Conteneur_Repertoire (Conteneur.Conteneur):
         reconstruit le Conteneur à partir des fichiers nettoyés.
         """
         for fichier in self.liste_fichiers:
+            # si le fichier n'est pas refuse, on le recopie a destination:
             if not fichier.resultat_fichier.est_refuse():
+                #TODO: code a simplifier
                 chem_dest_fich = self.chem_dest / self.rep_relatif_source / fichier.chemin.parent
                 Journal.debug(u"self.chem_dest = %s" % self.chem_dest)
                 Journal.debug(u"fichier.chemin.parent = %s" % fichier.chemin.parent)
@@ -212,13 +217,16 @@ class Conteneur_Repertoire (Conteneur.Conteneur):
                 Journal.info2(_(u'Copie vers la destination: "%s" -> "%s"...') % (fichier._copie_temp, fichier_dest))
                 fichier._copie_temp.copy2(fichier_dest)
 
-                # on copie les fichiers nettoyés vers le répertoire archivage
-                chem_dest_fich = path(self.rep_archive) / path(commun.sous_rep_archive) / self.rep_relatif_source / fichier.chemin.parent
-                if not chem_dest_fich.exists():
-                    chem_dest_fich.makedirs()
-                fichier_dest = path(self.rep_archive) / path(commun.sous_rep_archive) / self.rep_relatif_source / fichier.chemin
-                debug(_(u'Copie: "%s" -> "%s"...') % (fichier._copie_temp, fichier_dest))
-                fichier._copie_temp.copy2(fichier_dest)
+                # Si l'option archivage (archive_after) est activee:
+                if self.politique.parametres['archive_after'].valeur:
+                    # on copie les fichiers nettoyés vers le répertoire archivage
+                    #TODO: code a simplifier
+                    chem_dest_fich = path(self.rep_archive) / path(commun.sous_rep_archive) / self.rep_relatif_source / fichier.chemin.parent
+                    if not chem_dest_fich.exists():
+                        chem_dest_fich.makedirs()
+                    fichier_dest = path(self.rep_archive) / path(commun.sous_rep_archive) / self.rep_relatif_source / fichier.chemin
+                    debug(_(u'Copie: "%s" -> "%s"...') % (fichier._copie_temp, fichier_dest))
+                    fichier._copie_temp.copy2(fichier_dest)
 
         # puis détruire le répertoire temporaire !
         debug ("effacement du rep temp partiel %s" % self.rep_temp_partiel)

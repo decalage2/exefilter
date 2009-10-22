@@ -21,15 +21,15 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 @license: CeCILL (open-source compatible GPL)
           cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.02
+@version: 1.03
 
 @status: beta
 """
 #==============================================================================
 __docformat__ = 'epytext en'
 
-__date__    = "2008-03-24"
-__version__ = "1.02"
+__date__    = "2008-04-20"
+__version__ = "1.03"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
@@ -77,6 +77,7 @@ __version__ = "1.02"
 # 12/01/2007 v1.00 PL: - version 1.00 officielle
 # 2007-11-03 v1.01 PL: - ajout licence CeCILL
 # 2008-03-24 v1.02 PL: - ajout de _() pour traduction gettext des chaines
+# 2008-04-20 v1.03 PL: - ajout parametre politique a Conteneur_Zip.__init__
 
 #------------------------------------------------------------------------------
 # A FAIRE:
@@ -128,7 +129,7 @@ class Conteneur_Zip (Conteneur.Conteneur):
     La classe Conteneur_Zip correspond à une archive Zip.
     """
 
-    def __init__(self, nom_archive, nom_destination, fichier):
+    def __init__(self, nom_archive, nom_destination, fichier, politique):
         """
         Constructeur d'objet Conteneur_Zip.
 
@@ -147,7 +148,8 @@ class Conteneur_Zip (Conteneur.Conteneur):
         @type  fichier: objet L{Fichier.Fichier} ou None
         """
         # on appelle d'abord le constructeur de base
-        Conteneur.Conteneur.__init__(self, nom_archive, nom_destination, "", fichier)
+        Conteneur.Conteneur.__init__(self, nom_archive, nom_destination, "",
+            fichier, politique)
         self.type = _(u"Archive Zip")
         # on ouvre le fichier Zip:
         Journal.info2(_(u"Ouverture du fichier ZIP grâce au module zipfile."))
