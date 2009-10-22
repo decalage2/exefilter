@@ -45,16 +45,18 @@ module Origami
     # Creates a new PDF Array Object.
     # _data_:: An array of objects.
     #
-    def initialize(data = [], indirect = false)
+    def initialize(data = [])
       
       unless data.is_a?(::Array)
         raise TypeError, "Expected type Array, received #{data.class}."
       end
       
-      super(indirect)
+      super()
 
-      for i in 0..data.size-1 do
+      i = 0
+      while i < data.size
         self[i] = data[i].to_o
+        i = i + 1
       end
       
     end
@@ -104,7 +106,7 @@ module Origami
       }
       content << TOKENS.last
       
-      print(content)
+      super(content)
     end
 
     def +(other)
@@ -135,6 +137,31 @@ module Origami
 
     def real_type ; Origami::Array end
 
+  end
+
+  #
+  # Class representing a location on a page or a bounding box.
+  #
+  class Rectangle < Array
+    
+    class << self
+      
+      def [](coords)
+        corners = coords.values_at(:llx, :lly, :urx, :ury)
+        
+        unless corners.all? { |corner| corner.is_a?(Numeric) }
+          raise TypeError, "All coords must be numbers"
+        end
+        
+        Rectangle.new(*corners)
+      end
+      
+    end
+    
+    def initialize(lowerleftx, lowerlefty, upperrightx, upperrighty)
+      super([ lowerleftx, lowerlefty, upperrightx, upperrighty ])
+    end
+    
   end
 
 end

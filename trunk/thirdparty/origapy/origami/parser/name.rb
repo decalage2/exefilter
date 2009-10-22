@@ -48,7 +48,7 @@ module Origami
     # Creates a new Name.
     # _name_:: A symbol representing the new Name value.
     #
-    def initialize(name = "", indirect = false)
+    def initialize(name = "")
       
       unless name.is_a?(Symbol) or name.is_a?(::String)
         raise TypeError, "Expected type Symbol or String, received #{name.class}."
@@ -56,8 +56,7 @@ module Origami
       
       value = (name.to_s.empty?) ? :" " : name.to_sym
       
-      super(indirect, value)
-      
+      super(value)
     end
 
     def set(value)
@@ -80,7 +79,7 @@ module Origami
       
       name = (self.value == :" ") ? "" : self.id2name
       
-      print(TOKENS.first + Name.expand(name))
+      super(TOKENS.first + Name.expand(name))
     end
     
     def self.parse(stream) #:nodoc:
@@ -89,29 +88,23 @@ module Origami
         raise InvalidName, "Bad name format"
       else
         value = stream[2]
-
-        Name.new(contract(value))
+        
+        Name.new(value.include?('#') ? contract(value) : value)
       end
       
     end
     
     def self.contract(name) #:nodoc:
-      
-      name.length.times { |i|
-        if i >= name.length then break end
-        
-        if name[i].chr == "#"
+     
+      i = 0
+      while i < name.length
+
+        if name[i,1] == "#"
           digits = name[i+1, 2]
           
-          if digits.length != 2
+          unless /^[A-Za-z0-9]{2}$/ === digits
             raise InvalidName, "Irregular use of # token"
           end
-          
-          digits.each_byte { |d|
-            if not ("a".."z") === d.chr and not ("A".."Z") === d.chr and not ( "0".."9" ) === d.chr
-              raise InvalidName, "Irregular use of # token"
-            end
-          }
           
           char = digits.hex.chr
           
@@ -120,11 +113,11 @@ module Origami
           end
           
           name[i, 3] = char
-          
         end
-        
-      }
-      
+          
+        i = i + 1
+      end
+
       name
     end
     

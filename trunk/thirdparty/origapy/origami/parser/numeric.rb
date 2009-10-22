@@ -33,59 +33,59 @@ module Origami
     include Origami::Object
     
     def ~
-      self.class.new(~self.to_i, is_indirect?)
+      self.class.new(~self.to_i)
     end
     
     def |(val)
-      self.class.new(self.to_i | val, is_indirect?)
+      self.class.new(self.to_i | val)
     end
     
     def &(val)
-      self.class.new(self.to_i & val, is_indirect?)
+      self.class.new(self.to_i & val)
     end
     
     def ^(val)
-      self.class.new(self.to_i ^ val, is_indirect?)
+      self.class.new(self.to_i ^ val)
     end
     
     def <<(val)
-      self.class.new(self.to_i << val, is_indirect?)
+      self.class.new(self.to_i << val)
     end
     
     def >>(val)
-      self.class.new(self.to_i >> val, is_indirect?)
+      self.class.new(self.to_i >> val)
     end
     
     def +(val)
-      self.class.new(self.to_i + val, is_indirect?)
+      self.class.new(self.to_i + val)
     end
     
     def -(val)
-      self.class.new(self.to_i - val, is_indirect?)
+      self.class.new(self.to_i - val)
     end
     
     def -@
-      self.class.new(-self.to_i, is_indirect?)
+      self.class.new(-self.to_i)
     end
     
     def *(val)
-      self.class.new(self.to_i * val, is_indirect?)
+      self.class.new(self.to_i * val)
     end
     
     def /(val)
-      self.class.new(self.to_i / val, is_indirect?)
+      self.class.new(self.to_i / val)
     end
     
     def abs
-      self.class.new(self.to_i.abs, is_indirect?)
+      self.class.new(self.to_i.abs)
     end
     
     def **(val)
-      self.class.new(self.to_i ** val, is_indirect?)
+      self.class.new(self.to_i ** val)
     end
     
     def to_s
-      print(super)
+      super(value.to_s)
     end
     
     def real_type ; Number end
@@ -99,21 +99,22 @@ module Origami
     include Number
     
     TOKENS = [ "(\\+|-)?[\\d]+[^.]?" ] #:nodoc:
-    
+
+    REGEXP_TOKEN = Regexp.new(TOKENS.first)
+
     @@regexp = Regexp.new('\A' + WHITESPACES + "((\\+|-)?[\\d]+)")
 
     #
     # Creates a new Integer from  a Ruby Fixnum / Bignum.
     # _i_:: The Integer value.
     #
-    def initialize(i = 0, indirect = false)
+    def initialize(i = 0)
       
       unless i.is_a?(::Integer)
         raise TypeError, "Expected type Fixnum or Bignum, received #{i.class}."
       end
-      
-      super(indirect, i)
-      
+
+      super(i)
     end
       
     def self.parse(stream) #:nodoc:
@@ -141,6 +142,8 @@ module Origami
     include Number
     
     TOKENS = [ "(\\+|-)?([\\d]*\\.[\\d]+|[\\d]+\\.[\\d]*)" ] #:nodoc:
+
+    REGEXP_TOKEN = Regexp.new(TOKENS.first)
     
     @@regexp = Regexp.new('\A' + WHITESPACES + "(" + TOKENS.first + ")")
     
@@ -148,14 +151,13 @@ module Origami
     # Creates a new Real from a Ruby Float.
     # _f_:: The new Real value.
     #
-    def initialize(f = 0, indirect = false)
+    def initialize(f = 0)
       
       unless f.is_a?(Float)
         raise TypeError, "Expected type Float, received #{f.class}."
       end
       
-      super(indirect, f)
-    
+      super(f)
     end
   
     def self.parse(stream) #:nodoc:

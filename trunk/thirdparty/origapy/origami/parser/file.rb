@@ -135,12 +135,9 @@ module Origami
     
       field   :Type,        :Type => Name, :Default => :URL, :Required => true
 
-      def initialize(url, indirect = false)
-               
-        super({:F => url }, indirect)
-        
+      def initialize(url)
+        super(:F => url)
       end
-      
     end
     
     #
@@ -156,12 +153,12 @@ module Origami
       # _mac_:: The MacOS path to this file.
       # _unix_:: The UNIX path to this file.
       #
-      def initialize(dos, mac = "", unix = "", indirect = false)
+      def initialize(dos, mac = "", unix = "")
         
         if not mac.empty? or not unix.empty?
-          super({:DOS => Filename.DOS(dos), :Mac => Filename.Mac(mac), :Unix => Filename.Unix(unix)}, indirect)
+          super(:DOS => Filename.DOS(dos), :Mac => Filename.Mac(mac), :Unix => Filename.Unix(unix))
         else
-         super({:F => dos}, indirect)
+         super(:F => dos)
         end
         
       end

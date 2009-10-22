@@ -31,7 +31,16 @@ module Origami
     # Returns true if the document contains an acrobat form.
     #
     def has_form?
-      not self.Catalog.nil? and not self.Catalog.AcroForm.nil?
+      not self.Catalog.nil? and not self.Catalog.has_field? :AcroForm
+    end
+
+    def create_acroform(*fields)
+      acroform = self.Catalog.AcroForm ||= InteractiveForm.new.set_indirect(true)
+
+      acroform.Fields ||= []
+      acroform.Fields.concat(fields)
+
+      acroform
     end
 
     #
@@ -105,6 +114,12 @@ module Origami
       NOEXPORT = 1 << 2
     end
    
+    module TextAlign
+      LEFT = 0
+      CENTER = 1
+      RIGHT = 2
+    end
+      
     def self.included(receiver)
 
       receiver.field   :FT,     :Type => Name, :Default => Type::TEXT, :Required => true
@@ -118,6 +133,12 @@ module Origami
       receiver.field   :DV,     :Type => Object
       receiver.field   :AA,     :Type => Dictionary, :Version => "1.2"
 
+      # Variable text fields
+      receiver.field   :DA,     :Type => String, :Default => "/F1 10 Tf 0 g", :Required => true
+      receiver.field   :Q,      :Type => Integer, :Default => TextAlign::LEFT
+      receiver.field   :DS,     :Type => ByteString, :Version => "1.5"
+      receiver.field   :RV,     :Type => [ String, Stream ], :Version => "1.5"
+        
     end
    
     def pre_build
@@ -127,6 +148,61 @@ module Origami
       end
       
       super
+    end
+
+    def onKeyStroke(action)
+    
+      unless action.is_a?(Action::Action)
+        raise TypeError, "An Action object must be passed."
+      end
+      
+      self.AA ||= AdditionalActions.new
+      self.AA.K = action
+        
+    end
+
+    def onFormat(action)
+    
+      unless action.is_a?(Action::Action)
+        raise TypeError, "An Action object must be passed."
+      end
+      
+      self.AA ||= AdditionalActions.new
+      self.AA.F = action
+        
+    end
+
+    def onValidate(action)
+    
+      unless action.is_a?(Action::Action)
+        raise TypeError, "An Action object must be passed."
+      end
+      
+      self.AA ||= AdditionalActions.new
+      self.AA.V = action
+        
+    end
+
+    def onCalculate(action)
+    
+      unless action.is_a?(Action::Action)
+        raise TypeError, "An Action object must be passed."
+      end
+      
+      self.AA ||= AdditionalActions.new
+      self.AA.C = action
+        
+    end
+
+
+    class AdditionalActions < Dictionary
+      
+      include Configurable
+
+      field   :K,     :Type => Dictionary, :Version => "1.3"
+      field   :F,     :Type => Dictionary, :Version => "1.3"
+      field   :V,     :Type => Dictionary, :Version => "1.3"
+      field   :C,     :Type => Dictionary, :Version => "1.3"
     end
     
     class SignatureLock < Dictionary

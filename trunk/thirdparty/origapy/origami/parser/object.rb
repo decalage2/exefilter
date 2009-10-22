@@ -98,7 +98,10 @@ module Origami
 	EOL = "\r\n" #:nodoc:
   DEFINED_TOKENS = "[<\\[(%\\/)\\]>]" #:nodoc:
   WHITESPACES = "([ \\f\\t\\r\\n\\0]|%[^\\n]*\\n)*" #:nodoc:
+  WHITECHARS = "[ \\f\\t\\r\\n\\0]*" #:nodoc:
   
+  REGEXP_WHITESPACES = Regexp.new(WHITESPACES) #:nodoc:
+
   #
   # Mixin' module for objects which can store their options into an inner Dictionary.
   #
@@ -247,22 +250,17 @@ module Origami
     @@regexp_obj = Regexp.new('\A' + WHITESPACES + "(\\d+)" + WHITESPACES + "(\\d+)" + WHITESPACES + TOKENS.first + WHITESPACES)
     @@regexp_endobj = Regexp.new('\A' + WHITESPACES + TOKENS.last + WHITESPACES)
 
-    # Streams are processed apart from them
-    @@defined_types = [ :Name, :Dictionary, :Array, :Reference, :Real, :Integer, :ByteString, :HexaString, :Boolean, :Null ]
-    
     attr_accessor :no, :generation, :file_offset, :objstm_offset
     attr_accessor :parent
     
     #
     # Creates a new PDF Object.
     #
-    def initialize(indirect, *cons)
-      
-      set_indirect(indirect)
+    def initialize(*cons)
+      @indirect = false
       @no, @generation = 0, 0
       
       super(*cons) unless cons.empty?
-      
     end
     
     #
@@ -390,29 +388,27 @@ module Origami
     class << self
 
       def typeof(stream) #:nodoc:
-        
-        @@defined_types.each { |type|
-          type = Origami.const_get(type)
-        
-          token = type::TOKENS.first
-          if token.is_a?(::Array)
-            token = "(#{token.join('|')})"
-          elsif not type.include?(Number) and type != Reference and type != Stream
-            token = Regexp.escape(token)
+        stream.skip(REGEXP_WHITESPACES)
+
+        case stream.peek(1)
+          when '/' then return Name
+          when '<'
+            return (stream.peek(2) == '<<') ? Stream : HexaString
+          when '(' then return ByteString
+          when '[' then return Origami::Array
+          when 'n' then return Null
+          when 't', 'f' then return Boolean
+        else
+          if stream.check(Reference::REGEXP_TOKEN) then return Reference
+          elsif stream.check(Real::REGEXP_TOKEN) then return Real
+          elsif stream.check(Integer::REGEXP_TOKEN) then return Integer
+          else
+            nil
           end
-        
-          if stream.check(Regexp.new('\A' + WHITESPACES + token, Regexp::MULTILINE))
-            return (type == Dictionary ? Stream : type)
-          end
-        }
-        
-        nil
+        end
+
       end
         
-      def types #:nodoc:
-        @@defined_types
-      end
-      
       def parse(stream, pdf) #:nodoc:
        
         offset = stream.pos
@@ -467,13 +463,11 @@ module Origami
     
     alias real_type type
     
-    private
-    
     #
     # Outputs this object into PDF code.
     # _data_:: The object data.
     #
-    def print(data)
+    def to_s(data)
       
       content = ""
       content << "#{no} #{generation} obj" << EOL if self.is_indirect?
@@ -482,6 +476,8 @@ module Origami
       
       content
     end
+
+    alias output to_s
     
   end
 

@@ -60,8 +60,21 @@ module Origami
         doc = REXML::Document.new(metadata_stm.data)
 
         info = {}
-        doc.elements.each("*/*/rdf:Description/*") do |element|
-          info[element.name] = element.text
+
+        doc.elements.each('*/*/rdf:Description') do |description|
+          
+          description.attributes.each_attribute do |attr|
+            case attr.prefix
+              when 'pdf','xap','pdf'
+                info[attr.name] = attr.value
+            end
+          end
+
+          description.elements.each('*') do |element|
+            value = (element.elements['.//rdf:li'] || element).text
+            info[element.name] = value.to_s
+          end
+
         end
 
         return info

@@ -14,7 +14,7 @@ License: GPL v3 (see COPYING.txt file)
 
 Project website: http://www.decalage.info/python/origapy
 """
-__version__ = '0.07'
+__version__ = '0.08'
 __author__  = 'Philippe Lagadec'
 
 #--- CHANGELOG ----------------------------------------------------------------
@@ -27,6 +27,7 @@ __author__  = 'Philippe Lagadec'
 # 2009-08-28 v0.06 PL: - added output file path
 # 2009-09-30 v0.07 PL: - detect when file is clean or cleaned
 #                      - raise an exception when an error occurs
+# 2009-10-02 v0.08 PL: - updated origami to v1.0.0-beta1
 
 #-------------------------------------------------------------------------------
 #TODO:
@@ -183,6 +184,12 @@ if __name__ == '__main__':
     # console logger with debug level:
     logging.basicConfig(level=logging.DEBUG,
                     format='%(levelname)-8s %(message)s')
+
+    # hack to change default encoding to Latin-1 instead of ASCII:
+    import sys
+    reload(sys)
+    sys.setdefaultencoding( 'latin-1' )
+
     pdfcleaner = PDF_Cleaner()
     while True:
         # read user input, expression to be evaluated:

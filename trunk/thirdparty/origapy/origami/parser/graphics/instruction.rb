@@ -1,11 +1,11 @@
 =begin
 
 = File
-	null.rb
+	graphics/instruction.rb
 
 = Info
 	This file is part of Origami, PDF manipulation framework for Ruby
-	Copyright (C) 2009	Guillaume Delugré <guillaume@security-labs.org>
+	Copyright (C) 2009	Guillaume DelugrÃ© <guillaume@security-labs.org>
 	All right reserved.
 	
   Origami is free software: you can redistribute it and/or modify
@@ -25,46 +25,21 @@
 
 module Origami
 
-  class InvalidNull < InvalidObject #:nodoc:
-  end
-  
-  #
-  # Class representing  Null Object.
-  #
-  class Null
-    
-    include Origami::Object
-    
-    TOKENS = %w{ null } #:nodoc:
-    
-    @@regexp = Regexp.new('\A' + WHITESPACES + TOKENS.first)
-    
-    def initialize
-      super
-    end
-    
-    def self.parse(stream) #:nodoc:
-      
-      if stream.skip(@@regexp).nil?
-        raise InvalidNull
-      end
-      
-      Null.new
-    end
-    
-    #
-    # Returns *nil*.
-    #
-    def value
-      nil
-    end
-    
-    def to_s #:nodoc:
-      super(TOKENS.first)
+  module PDF::Instruction
+    attr_accessor :operator
+    attr_accessor :operands
+
+    def initialize(operator, *operands)
+      @operator = operator
+      @operands = operands
     end
 
-    def real_type ; Null end
-    
+    def to_s
+      "#{operands.map!{|op| op.to_o.to_s}.join(' ')}#{' ' unless operands.empty?}#{operator}\n"
+    end
+
+    def update_state(gs); self end
   end
-  
+
 end
+

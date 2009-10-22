@@ -35,7 +35,7 @@ module Origami
     include Origami::Object
     include Configurable
     
-    TOKENS = [ "stream" + WHITESPACES  + "\\r?\\n", "endstream" ] #:nodoc:
+    TOKENS = [ "stream" + WHITECHARS  + "\\r?\\n", "endstream" ] #:nodoc:
    
     @@regexp_open = Regexp.new('\A' + WHITESPACES + TOKENS.first)
     @@regexp_close = Regexp.new(TOKENS.last)
@@ -73,15 +73,15 @@ module Origami
     # _dictionary_:: A hash representing the Stream attributes.
     #
     def initialize(data = "", dictionary = {})
-      
-        super(true)
+        super()
+        
+        set_indirect(true)
        
         @dictionary, @data = Dictionary.new(dictionary), data
         @dictionary.parent = self
     end
     
     def pre_build
-      set_indirect(true)
       encode!
      
       super
@@ -266,8 +266,7 @@ module Origami
       content << self.rawdata
       content << EOL << TOKENS.last
       
-      print(content)
-      
+      super(content)
     end
     
     def [](key) #:nodoc:
@@ -317,6 +316,19 @@ module Origami
       encoded
     end
     
+  end
+
+  #
+  # Class representing an external Stream.
+  #
+  class ExternalStream < Stream
+
+    def initialize(filespec, hash = {})
+
+      hash[:F] = filespec
+      super('', hash)
+    end
+
   end
   
   class InvalidObjectStream < InvalidStream  #:nodoc:
@@ -511,48 +523,6 @@ module Origami
       
     end
 
-  end
-  
-  #
-  # A class representing a Stream containing the contents of a Page.
-  #
-  class ContentStream < Stream
-    
-    def initialize(rawdata = "", dictionary = {})
-    
-      @contents = []
-            
-      super(rawdata, dictionary)
-    end
-    
-    #
-    # Append text to the current content stream.
-    #
-    def <<(text)
-      
-      if @contents.empty? 
-        @contents << PS::Text.new(text)
-      else
-        @contents.last.buffer << text
-      end
-      
-    end
-    
-    #
-    # Adds text to the content stream with custom formatting attributes.
-    # _text_:: Text to write.
-    # _attr_:: Formatting attributes.
-    #
-    def write(text, attr = {})
-      @contents << Origami::PS::Text.new(text, attr)
-    end
-    
-    def pre_build #:nodoc:
-      @data = @contents.join("\n")
-      
-      super
-    end
-    
   end
   
   #

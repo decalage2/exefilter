@@ -64,10 +64,43 @@ module Origami
         raise EncryptionNotSupportedError, "Unknown security handler : '#{handler.Filter.to_s}'"
       end
 
-      algorithm = 
-      case handler.V
-        when 1,2 then Encryption::ARC4
-        when 4 then Encryption::AES
+      case handler.V.to_i
+        when 1,2 then str_algo = stm_algo = Encryption::ARC4
+        when 4
+          if handler[:CF].is_a?(Dictionary)
+            cfs = handler[:CF]
+            
+            if handler[:StrF].is_a?(Name) and cfs[handler[:StrF]].is_a?(Dictionary)
+              cfdict = cfs[handler[:StrF]]
+              
+              str_algo =
+              if cfdict[:CFM] == :V2 then Encryption::ARC4
+              elsif cfdict[:CFM] == :AESV2 then Encryption::AES
+              elsif cfdict[:CFM] == :None then Encryption::Identity
+              else
+                Encryption::Identity
+              end
+            else
+              str_algo = Encryption::Identity
+            end
+
+            if handler[:StmF].is_a?(Name) and cfs[handler[:StmF]].is_a?(Dictionary)
+              cfdict = cfs[handler[:StmF]]
+
+              stm_algo =
+              if cfdict[:CFM] == :V2 then Encryption::ARC4
+              elsif cfdict[:CFM] == :AESV2 then Encryption::AES
+              elsif cfdict[:CFM] == :None then Encryption::Identity
+              else
+                Encryption::Identity
+              end
+            else
+              stm_algo = Encryption::Identity
+            end
+
+          else
+            str_algo = stm_algo = Encryption::Identity
+          end
       else
         raise EncryptionNotSupportedError, "Unsupported encryption version : #{handler.V}"
       end
@@ -90,12 +123,20 @@ module Origami
       #self.encryption_key = encryption_key
       #self.stm_algo = self.str_algo = algorithm
 
+      encrypt_metadata = (handler.EncryptMetadata != false)
       #
       # Should be fixed to exclude only the active XRefStream
       #
-      encrypted_objects = self.objects(false).find_all{ |obj| 
-        (obj.is_a?(String) and not obj.indirect_parent.is_a?(XRefStream) and not obj.equal?(encrypt_dict[:U]) and not obj.equal?(encrypt_dict[:O])) or 
-        (obj.is_a?(Stream) and not obj.is_a?(XRefStream))
+      encrypted_objects = self.objects(false).find_all{ |obj|
+
+        (obj.is_a?(String) and 
+          not obj.indirect_parent.is_a?(XRefStream) and 
+          not obj.equal?(encrypt_dict[:U]) and 
+          not obj.equal?(encrypt_dict[:O])) or 
+        
+        (obj.is_a?(Stream) and 
+          not obj.is_a?(XRefStream) and
+          (not obj.equal?(self.Catalog.Metadata) or encrypt_metadata))
       }
      
       encrypted_objects.each { |obj|
@@ -105,13 +146,18 @@ module Origami
         k = encryption_key + [no].pack("I")[0..2] + [gen].pack("I")[0..1]
         key_len = (k.length > 16) ? 16 : k.length
 
-        k << "sAlT" if algorithm == Encryption::AES
+        case obj
+          when String
+            k << "sAlT" if str_algo == Encryption::AES
+          when Stream
+            k << "sAlT" if stm_algo == Encryption::AES
+        end
 
         key = Digest::MD5.digest(k)[0, key_len]
 
         case obj
-          when String then obj.replace(algorithm.decrypt(key, obj.value))
-          when Stream then obj.rawdata = algorithm.decrypt(key, obj.rawdata) 
+          when String then obj.replace(str_algo.decrypt(key, obj.value))
+          when Stream then obj.rawdata = stm_algo.decrypt(key, obj.rawdata) 
         end
       }
 
@@ -184,7 +230,7 @@ module Origami
         cryptfilter = Encryption::CryptFilterDictionary.new
         cryptfilter.AuthEvent = :DocOpen
         cryptfilter.CFM = :AESV2
-        cryptfilter.Length = 16
+        cryptfilter.Length = params[:KeyLength] >> 3
 
         handler.CF[:StdCF] = cryptfilter
         handler.StmF = handler.StrF = :StdCF
@@ -222,13 +268,19 @@ module Origami
 
       def physicalize
 
-        def build(obj, revision) #:nodoc:
+        def build(obj, revision, embedded = false) #:nodoc:
      
+          if obj.is_a?(ObjectStream)
+            obj.each { |subobj|
+              build(subobj, revision, true)
+            }
+          end
+
           obj.pre_build
 
           case obj
           when String
-            if not obj.equal?(@encryption_dict[:U]) and not obj.equal?(@encryption_dict[:O])
+            if not obj.equal?(@encryption_dict[:U]) and not obj.equal?(@encryption_dict[:O]) and not embedded 
               obj.extend(EncryptedString)
               obj.encryption_key = @encryption_key
               obj.algorithm = @str_algo
@@ -240,14 +292,14 @@ module Origami
             obj.algorithm = @stm_algo
 
           when Dictionary, Array
-              
+
               obj.map! { |subobj|
                 if subobj.is_indirect?
                   if get_object(subobj.reference)
                     subobj.reference
                   else
                     ref = add_to_revision(subobj, revision)
-                    build(subobj, revision)
+                    build(subobj, revision, embedded)
                     ref
                   end
                 else
@@ -256,14 +308,14 @@ module Origami
               }
               
               obj.each { |subobj|
-                build(subobj, revision)
+                build(subobj, revision, embedded)
               }    
           end
 
           obj.post_build
           
         end
-        
+       
         all_indirect_objects.each { |obj, revision|
             build(obj, revision)          
         }
@@ -315,7 +367,7 @@ module Origami
         key = compute_object_key
         
         encrypted_data = 
-        if @algorithm == ARC4
+        if @algorithm == ARC4 or @algorithm == Identity
           @algorithm.encrypt(key, self.value)
         else
           iv = ::Array.new(16) { rand(255) }.pack('C*')
@@ -343,7 +395,7 @@ module Origami
         key = compute_object_key
 
         @rawdata = 
-        if @algorithm == ARC4
+        if @algorithm == ARC4 or @algorithm == Identity
           @algorithm.encrypt(key, self.rawdata)
         else
           iv = ::Array.new(16) { rand(255) }.pack('C*')
@@ -355,7 +407,22 @@ module Origami
       end
 
     end
-  
+
+    #
+    # Identity transformation.
+    #
+    module Identity
+
+      def Identity.encrypt(key, data)
+        data
+      end
+
+      def Identity.decrypt(key, data)
+        data
+      end
+
+    end
+
     #
     # Pure Ruby implementation of the aRC4 symmetric algorithm
     #
@@ -894,10 +961,10 @@ module Origami
           padded << [ self.P ].pack("i")
           
           padded << fileid
-         
-          encrypt_metadata = self.EncryptMetadata and not self.EncryptMetadata.false?
-          padded << "\xFF\xFF\xFF\xFF" if self.R >= 4 and not encrypt_metadata
           
+          encrypt_metadata = self.EncryptMetadata != false
+          padded << "\xFF\xFF\xFF\xFF" if self.R >= 4 and not encrypt_metadata
+
           key = Digest::MD5.digest(padded)
 
           50.times { key = Digest::MD5.digest(key[0, self.Length / 8]) } if self.R >= 3
@@ -907,7 +974,7 @@ module Origami
           elsif self.R >= 3
             key[0, self.Length / 8]
           end
-          
+           
         end
         
         #
@@ -922,7 +989,6 @@ module Origami
           19.times { |i| owner_key = ARC4.encrypt(xor(key,i+1), owner_key) } if self.R >= 3
           
           self.O = owner_key
-          
         end
         
         #
@@ -931,7 +997,6 @@ module Origami
         def set_user_password(userpassword, fileid = nil)
           
           self.U = compute_user_password(userpassword, fileid)
-        
         end
         
         #
@@ -953,7 +1018,7 @@ module Origami
         def is_owner_password?(pass, fileid)
         
           key = compute_owner_encryption_key(pass)
-          
+
           if self.R == 2
             user_password = ARC4.decrypt(key, self.O)
           elsif self.R >= 3
@@ -962,7 +1027,6 @@ module Origami
           end
           
           is_user_password?(user_password, fileid)
-        
         end
         
         private

@@ -1,7 +1,7 @@
 =begin
 
 = File
-	misc.rb
+	font.rb
 
 = Info
 	This file is part of Origami, PDF manipulation framework for Ruby
@@ -26,34 +26,6 @@
 module Origami
 
   #
-  # Class representing the ViewerPreferences Dictionary of a PDF.
-  # This dictionary modifies the way the UI looks when the file is opened in a viewer.
-  #
-  class ViewerPreferences < Dictionary
-    
-    include Configurable
-
-    field   :HideToolbar,             :Type => Boolean, :Default => false
-    field   :HideMenubar,             :Type => Boolean, :Default => false
-    field   :HideWindowUI,            :Type => Boolean, :Default => false
-    field   :FitWindow,               :Type => Boolean, :Default => false
-    field   :CenterWindow,            :Type => Boolean, :Default => false
-    field   :DisplayDocTitle,         :Type => Boolean, :Default => false, :Version => "1.4"
-    field   :NonFullScreenPageMode,   :Type => Name, :Default => :UseNone
-    field   :Direction,               :Type => Name, :Default => :L2R
-    field   :ViewArea,                :Type => Name, :Default => :CropBox, :Version => "1.4"
-    field   :ViewClip,                :Type => Name, :Default => :CropBox, :Version => "1.4"
-    field   :PrintArea,               :Type => Name, :Default => :CropBox, :Version => "1.4"
-    field   :PrintClip,               :Type => Name, :Default => :CropBox, :Version => "1.4"
-    field   :PrintScaling,            :Type => Name, :Default => :AppDefault, :Version => "1.6"
-    field   :Duplex,                  :Type => Name, :Default => :Simplex, :Version => "1.7"
-    field   :PickTrayByPDFSize,       :Type => Boolean, :Version => "1.7"
-    field   :PrintPageRange,          :Type => Array, :Version => "1.7"
-    field   :NumCopies,               :Type => Integer, :Version => "1.7"
-    
-  end
-  
-  #
   # Class representing a rendering font in a document.
   #
   class Font < Dictionary
@@ -71,6 +43,78 @@ module Origami
     field   :Encoding,                :Type => [ Name, Dictionary ], :Default => :MacRomanEncoding
     field   :ToUnicode,               :Type => Stream, :Version => "1.2"
    
+    #
+    # Type1 Fonts.
+    #
+    class Type1 < Font
+
+      #
+      # 14 standard Type1 fonts.
+      #
+      module Standard
+        
+        class TimesRoman < Type1
+          field   :BaseFont,          :Type => Name, :Default => :"Times-Roman", :Required => true
+        end
+
+        class Helvetica < Type1
+          field   :BaseFont,          :Type => Name, :Default => :Helvetica, :Required => true
+        end
+
+        class Courier < Type1
+          field   :BaseFont,          :Type => Name, :Default => :Courier, :Required => true
+        end
+
+        class Symbol < Type1
+          field   :BaseFont,          :Type => Name, :Default => :Symbol, :Required => true
+        end
+
+        class TimesBold < Type1
+          field   :BaseFont,          :Type => Name, :Default => :"Times-Bold", :Required => true
+        end
+
+        class HelveticaBold < Type1
+          field   :BaseFont,          :Type => Name, :Default => :"Helvetica-Bold", :Required => true
+        end
+
+        class CourierBold < Type1
+          field   :BaseFont,          :Type => Name, :Default => :"Courier-Bold", :Required => true
+        end
+
+        class ZapfDingbats < Type1
+          field   :BaseFont,          :Type => Name, :Default => :ZapfDingbats, :Required => true
+        end
+
+        class TimesItalic < Type1
+          field   :BaseFont,          :Type => Name, :Default => :"Times-Italic", :Required => true
+        end
+
+        class HelveticaOblique < Type1
+          field   :BaseFont,          :Type => Name, :Default => :"Helvetica-Oblique", :Required => true
+        end
+
+        class CourierOblique < Type1
+          field   :BaseFont,          :Type => Name, :Default => :"Courier-Oblique", :Required => true
+        end
+
+        class TimesBoldItalic < Type1
+          field   :BaseFont,          :Type => Name, :Default => :"Times-BoldItalic", :Required => true
+        end
+
+        class HelveticaBoldOblique < Type1
+          field   :BaseFont,          :Type => Name, :Default => :"Helvetica-BoldOblique", :Required => true
+        end
+
+        class CourierBoldOblique < Type1
+          field   :BaseFont,          :Type => Name, :Default => :"Courier-BoldOblique", :Required => true
+        end
+
+      end
+      
+      field   :SubType,               :Type => Name, :Default => :Type1, :Required => true
+
+    end
+
   end
   
   #
@@ -128,31 +172,4 @@ module Origami
    
   end
  
-  #
-  # Class representing a location on a page or a bounding box.
-  #
-  class Rectangle < Array
-    
-    class << self
-      
-      def [](coords)
-        corners = coords.values_at(:llx, :lly, :urx, :ury)
-        
-        unless corners.all? { |corner| corner.is_a?(Numeric) }
-          raise TypeError, "All coords must be numbers"
-        end
-        
-        Rectangle.new(*corners)
-      end
-      
-    end
-    
-    def initialize(lowerleftx, lowerlefty, upperrightx, upperrighty, indirect = false)
-      
-      super([ lowerleftx, lowerlefty, upperrightx, upperrighty ], indirect)
-      
-    end
-    
-  end
-
 end

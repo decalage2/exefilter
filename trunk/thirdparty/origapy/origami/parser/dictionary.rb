@@ -44,13 +44,13 @@ module Origami
       # Creates a new Dictionary.
       # _hash_:: The hash representing the new Dictionary.
       #
-      def initialize(hash = {}, indirect = false)
+      def initialize(hash = {})
         
         unless hash.is_a?(Hash)
           raise TypeError, "Expected type Hash, received #{hash.class}."
         end
         
-        super(indirect)
+        super()
         
         hash.each_key { |k|
           self[k.to_o] = hash[k].to_o unless k.nil?
@@ -104,8 +104,7 @@ module Origami
         
         content << "\t" * (base-1) + TOKENS.last
         
-        print(content)
-
+        super(content)
       end
       
       def map!(&b)

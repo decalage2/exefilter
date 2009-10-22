@@ -23,60 +23,11 @@
 
 =end
 
+require 'graphics/instruction.rb'
+require 'graphics/colors.rb'
+require 'graphics/path.rb'
+require 'graphics/xobject.rb'
+require 'graphics/patterns.rb'
+require 'graphics/text.rb'
+require 'graphics/state.rb'
 
-module Origami
-
-  module Graphics
-
-    #
-    # Generic Graphic state
-    # 4.3.4 Graphics State Parameter Dictionaries p219
-    #
-    class  ExtGState < Dictionary
-      
-      include Configurable
-
-      field   :Type,          :Type => Name, :Default => :ExtGState, :Required => true
-      field   :LW,            :Type => Integer, :Version => "1.3"
-      field   :LC,            :Type => Integer, :Version => "1.3"
-      field   :LJ,            :Type => Integer, :Version => "1.3"
-      field   :ML,            :Type => Number, :Version => "1.3"
-      field   :D,             :Type => Array, :Version => "1.3"
-      field   :RI,            :Type => Name, :Version => "1.3"
-      field   :OP,            :Type => Boolean
-      field   :op,            :Type => Boolean, :Version => "1.3"
-      field   :OPM,           :Type => Number, :Version => "1.3"
-      field   :Font,          :Type => Array, :Version => "1.3"
-      field   :BG,            :Type => Object
-      field   :BG2,           :Type => Object, :Version => "1.3"
-      field   :UCR,           :Type => Object
-      field   :UCR2,          :Type => Object, :Version => "1.3"
-      field   :TR,            :Type => Object
-      field   :TR2,           :Type => Object, :Version => "1.3" 
-      field   :HT,            :Type => [ Dictionary, Name, Stream ]
-      field   :FL,            :Type => Number, :Version => "1.3"
-      field   :SM,            :Type => Number, :Version => "1.3"
-      field   :SA,            :Type => Boolean
-      field   :BM,            :Type => [ Name, Array ], :Version => "1.4"
-      field   :SMask,         :Type => [ Dictionary, Array ], :Version => "1.4"
-      field   :CA,            :Type => Number
-      field   :ca,            :Type => Number, :Version => "1.4"
-      field   :AIS,           :Type => Boolean, :Version => "1.4"
-      field   :TK,            :Type => Boolean, :Version => "1.4"
-
-    end # class ExtGState
-    
-    class XObject < Stream
-
-      field   :Type,          :Type => Name, :Default => :XObject
-      field   :Subtype,       :Type => Name, :Default => :Form, :Required => true
-      field   :FormType,      :Type => Integer, :Default => 1
-      field   :Resources,     :Type => Dictionary, :Default => Resources.new
-      field   :BBox,          :Type => Array, :Required => true
-      field   :Matrix,        :Type => Array, :Default => [ 1 , 0 , 0 , 1 , 0 , 0 ]
-
-    end
-
-  end #module Graphics 
-
-end
