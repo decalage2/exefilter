@@ -17,26 +17,26 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 @contact: U{Philippe Lagadec<mailto:philippe.lagadec(a)laposte.net>}
 
 @copyright: DGA/CELAR 2004-2008
-@copyright: NATO/NC3A 2008 (modifications PL apres v1.1.0)
+@copyright: NATO/NC3A 2008-2009 (modifications PL apres v1.1.0)
 
 @license: CeCILL (open-source compatible GPL)
           cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.02
+@version: 1.03
 
 @status: beta
 """
 #==============================================================================
 __docformat__ = 'epytext en'
 
-__date__    = "2008-03-24"
-__version__ = "1.02"
+__date__    = "2009-11-02"
+__version__ = "1.03"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
 
 # Copyright DGA/CELAR 2004-2008
-# Copyright NATO/NC3A 2008 (PL changes after v1.1.0)
+# Copyright NATO/NC3A 2008-2009 (PL changes after v1.1.0)
 # Auteurs:
 # - Philippe Lagadec (PL) - philippe.lagadec(a)laposte.net
 # - Arnaud Kerréneur (AK) - arnaud.kerreneur(a)dga.defense.gouv.fr
@@ -79,6 +79,7 @@ __version__ = "1.02"
 #                      - ajout nettoyage objets OLE Package
 # 2008-03-24 v1.02 PL: - ajout de _() pour traduction gettext des chaines
 #                      - simplification dans nettoyer() en appelant resultat_*
+# 2009-11-02 v1.03 PL: - updated parameters for gettext translation
 
 #------------------------------------------------------------------------------
 # A FAIRE:
@@ -165,9 +166,9 @@ class Filtre_RTF (Filtre.Filtre):
         Filtre.Filtre.__init__(self, politique, parametres)
         # ensuite on ajoute les paramètres par défaut
         Parametres.Parametre(u"supprimer_OLE_Package", bool,
-            nom=u"Supprimer les objets OLE Package",
-            description=u"Supprimer tout objet OLE Package, qui peut camoufler "
-                        +"n'importe quel fichier executable.",
+            nom=_(u"Supprimer les objets OLE Package"),
+            description=_(u"Supprimer tout objet OLE Package, qui peut camoufler "
+                        "n'importe quel fichier executable."),
             valeur_defaut=True).ajouter(self.parametres)
 
 

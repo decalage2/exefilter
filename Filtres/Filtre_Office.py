@@ -18,26 +18,26 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 @contact: U{Philippe Lagadec<mailto:philippe.lagadec(a)laposte.net>}
 
 @copyright: DGA/CELAR 2004-2008
-@copyright: NATO/NC3A 2008 (modifications PL apres v1.1.0)
+@copyright: NATO/NC3A 2008-2009 (modifications PL apres v1.1.0)
 
 @license: CeCILL (open-source compatible GPL)
           cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.02
+@version: 1.03
 
 @status: beta
 """
 #==============================================================================
 __docformat__ = 'epytext en'
 
-__date__    = "2008-03-24"
-__version__ = "1.02"
+__date__    = "2009-11-02"
+__version__ = "1.03"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
 
 # Copyright DGA/CELAR 2004-2008
-# Copyright NATO/NC3A 2008 (PL changes after v1.1.0)
+# Copyright NATO/NC3A 2008-2009 (PL changes after v1.1.0)
 # Auteurs:
 # - Philippe Lagadec (PL) - philippe.lagadec(a)laposte.net
 # - Arnaud Kerréneur (AK) - arnaud.kerreneur(a)dga.defense.gouv.fr
@@ -82,6 +82,7 @@ __version__ = "1.02"
 # 2008-02-06 v1.02 PL: - correction bug dans Infos_OLE.__init__
 # 2008-03-24       PL: - ajout de _() pour traduction gettext des chaines
 #                      - simplification dans nettoyer() en appelant resultat_*
+# 2009-11-02 v1.03 PL: - updated parameters for gettext translation
 
 #------------------------------------------------------------------------------
 # A FAIRE:
@@ -272,36 +273,36 @@ class _Filtre_Office (Filtre.Filtre):
         Filtre.Filtre.__init__(self, politique, parametres)
         # ensuite on ajoute les paramètres par défaut
         Parametres.Parametre(u"detecter_ole_pkg", bool,
-            nom=u"Détecter les objets OLE Package",
-            description=u"Détecter les objets OLE Package, qui peuvent "
-                        +"contenir des fichiers ou des commandes.",
+            nom=_(u"Détecter les objets OLE Package"),
+            description=_(u"Détecter les objets OLE Package, qui peuvent "
+                        "contenir des fichiers ou des commandes."),
             valeur_defaut=True).ajouter(self.parametres)
         Parametres.Parametre(u"supprimer_macros", bool,
-            nom=u"Supprimer les macros",
-            description=u"Supprimer toutes les macros VBA des documents."
-                        +" Voir aussi les parametres macros_xxx pour choisir la"
-                        +" methode employee. Si aucune methode n'est active, "
-                        +" une methode simple sera employee. Cette methode est"
-                        +" portable et rapide, mais ne couvre que Word et Excel.",
+            nom=_(u"Supprimer les macros VBA"),
+            description=_(u"Supprimer toutes les macros VBA des documents."
+                        " Voir aussi les parametres macros_xxx pour choisir la"
+                        " methode employee. Si aucune methode n'est active, "
+                        " une methode simple sera employee. Cette methode est"
+                        " portable et rapide, mais ne couvre que Word et Excel."),
             valeur_defaut=True).ajouter(self.parametres)
         if self.stream_macros: Parametres.Parametre(u"macros_win32", bool,
-            nom=u"Utiliser l'API Win32 pour supprimer les macros",
-            description=u"Utiliser les fonctions de Windows pour supprimer"
-                        +" toutes les macros VBA des documents. Cette methode"
-                        +" est rapide mais ne couvre que Word et Excel, et ne"
-                        +" fonctionne que sous Windows.",
+            nom=_(u"Utiliser l'API Win32 pour supprimer les macros"),
+            description=_(u"Utiliser les fonctions de Windows pour supprimer"
+                        " toutes les macros VBA des documents. Cette methode"
+                        " est rapide mais ne couvre que Word et Excel, et ne"
+                        " fonctionne que sous Windows."),
             valeur_defaut=True).ajouter(self.parametres)
         Parametres.Parametre(u"macros_fpcmd", bool,
-            nom=u"Utiliser F-Prot 3 pour supprimer les macros",
-            description=u"Utiliser l'antivirus F-Prot 3 (fpcmd) pour supprimer"
-                        +" toutes les macros VBA des documents. Cette methode"
-                        +" est lente mais fiable pour Word, Excel et Powerpoint.",
+            nom=_(u"Utiliser F-Prot 3 pour supprimer les macros"),
+            description=_(u"Utiliser l'antivirus F-Prot 3 (fpcmd) pour supprimer"
+                        " toutes les macros VBA des documents. Cette methode"
+                        " est lente mais fiable pour Word, Excel et Powerpoint."),
             valeur_defaut=False).ajouter(self.parametres)
         Parametres.Parametre(u"macros_fpscan", bool,
-            nom=u"Utiliser F-Prot 6 pour supprimer les macros",
-            description=u"Utiliser l'antivirus F-Prot 6 (fpscan) pour supprimer"
-                        +" toutes les macros VBA des documents. Cette methode"
-                        +" est lente mais fiable pour Word, Excel et Powerpoint.",
+            nom=_(u"Utiliser F-Prot 6 pour supprimer les macros"),
+            description=_(u"Utiliser l'antivirus F-Prot 6 (fpscan) pour supprimer"
+                        " toutes les macros VBA des documents. Cette methode"
+                        " est lente mais fiable pour Word, Excel et Powerpoint."),
             valeur_defaut=False).ajouter(self.parametres)
         # si des paramètres ont été fournis au constructeur, on les met à jour
         if parametres:

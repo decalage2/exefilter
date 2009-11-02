@@ -31,7 +31,7 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 @license: CeCILL (open-source compatible GPL)
           cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.04
+@version: 1.05
 
 @status: beta
 """
@@ -40,8 +40,8 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 __docformat__ = 'epytext en'
 
 #__author__  = "Philippe Lagadec, Tanguy Vinceleux, Arnaud Kerréneur (DGA/CELAR)"
-__date__    = "2009-10-22"
-__version__ = "1.04"
+__date__    = "2009-11-02"
+__version__ = "1.05"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
@@ -98,10 +98,12 @@ __version__ = "1.04"
 #                      - code archivage deplace de transfert vers init_archivage
 # 2009-10-05 v1.03 PL: - set default encoding to Latin-1 to avoid unicode errors
 # 2009-10-22 v1.04 PL: - archiving disabled by default
+# 2009-11-02 v1.05 PL: - init_gettext always called, even when imported
+#                      - updated parameters for gettext translation
 
 #------------------------------------------------------------------------------
 # A FAIRE :
-# + gettext quand importe comme module
+# - fix init_gettext() when application is compiled with py2exe
 # + finir traduction gettext
 # + traduire codes parametres en anglais (pour avoir une config homogene)
 # + decouper transfert() en plusieurs fonctions pour une utilisation plus generique
@@ -109,13 +111,20 @@ __version__ = "1.04"
 
 #=== GETTEXT =================================================================
 
-if __name__ == '__main__':
+def init_gettext():
+    """
+    gettext initialization, in order to translate necessary strings at runtime.
+    This MUST be done before any import or usage of _() around strings.
+    """
     # Gettext pour adapter certaines chaines de caracteres a la langue du
     # systeme (traduction en anglais ou francais)
     # => DOIT etre fait avant toute constante chaine _("...") et tout import
     import gettext, locale, plx, os.path
     # repertoire "locale": normalement un sous-repertoire du script principal
-    locale_dir = os.path.join(plx.get_main_dir(), "locale")
+    #locale_dir = os.path.join(plx.get_main_dir(), "locale")
+    # locale dir is a subfolder of this script's folder:
+    #TODO: fix this when compiled with py2exe...
+    locale_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'locale')
     #print 'locale_dir =', locale_dir
     # initialisation de la locale (cf. doc Python): est-ce toujours necessaire ?
     locale.setlocale(locale.LC_ALL, '')
@@ -137,6 +146,11 @@ if __name__ == '__main__':
     else:
         # si la langue est 'fr', on n'utilise aucune traduction:
         __builtins__._ = lambda text: text
+
+
+# always init gettext first
+init_gettext()
+
 
 #=== IMPORTS ==================================================================
 
@@ -208,37 +222,34 @@ Parametres.Parametre("rep_journaux", str, nom=_(u"Répertoire des fichiers journa
 Parametres.Parametre("rep_temp", str, nom=_(u"Répertoire des fichiers temporaires"),
     description=_(u"Répertoire où sont stockés tous les fichiers temporaires"),
     valeur_defaut = REP_TEMP).ajouter(parametres)
-Parametres.Parametre("rep_archives", str, nom="Répertoire des fichiers archivés",
-    description="Répertoire où sont archivés tous les fichiers transférés",
+Parametres.Parametre("rep_archives", str, nom=_(u"Répertoire des fichiers archivés"),
+    description=_(u"Répertoire où sont archivés tous les fichiers transférés"),
     valeur_defaut = REP_ARCHIVE).ajouter(parametres)
-Parametres.Parametre("taille_temp", int, nom="Taille maximale du répertoire temporaire (en octets)",
-    description="Taille maximale du répertoire où sont stockés tous les "
-    +"fichiers temporaires",
+Parametres.Parametre("taille_temp", int, nom=_(u"Taille maximale du répertoire temporaire (en octets)"),
+    description=_(u"Taille maximale du répertoire où sont stockés tous les fichiers temporaires"),
     valeur_defaut = TAILLE_TEMP*1000000).ajouter(parametres)
-Parametres.Parametre("taille_archives", int, nom="Taille maximale des archives (en octets)",
-    description="Taille maximale du répertoire où sont archivés tous les "
-    +"fichiers transférés",
+Parametres.Parametre("taille_archives", int, nom=_(u"Taille maximale des archives (en octets)"),
+    description=_(u"Taille maximale du répertoire où sont archivés tous les fichiers transférés"),
     valeur_defaut = TAILLE_ARCHIVE*1000000).ajouter(parametres)
 
 #--- JOURNAUX ---
-Parametres.Parametre("journal_securite", bool, nom="Ecrire un journal sécurité dans un fichier",
-    description="Le journal sécurité décrit synthétiquement les évènements "
-    +"concernant la sécurité des transferts.",
+Parametres.Parametre("journal_securite", bool, nom=_(u"Ecrire un journal sécurité dans un fichier"),
+    description=_(u"Le journal sécurité décrit synthétiquement les évènements concernant la sécurité des transferts."),
     valeur_defaut = True).ajouter(parametres)
-Parametres.Parametre("journal_syslog", bool, nom="Envoyer un journal sécurité par syslog",
-    description="Le journal sécurité décrit synthétiquement les évènements "
-    +"concernant la sécurité des transferts. Syslog permet de centraliser ces "
-    +"journaux par le réseau sur un serveur",
+Parametres.Parametre("journal_syslog", bool, nom=_(u"Envoyer un journal sécurité par syslog"),
+    description=_("Le journal sécurité décrit synthétiquement les évènements "
+    "concernant la sécurité des transferts. Syslog permet de centraliser ces "
+    "journaux par le réseau sur un serveur"),
     valeur_defaut = False).ajouter(parametres)
-Parametres.Parametre("journal_debug", bool, nom="Ecrire un journal technique de débogage",
-    description="Le journal technique contient les évènements détaillés des "
-    +"transferts, pour un débogage en cas de problème.",
+Parametres.Parametre("journal_debug", bool, nom=_("Ecrire un journal technique de débogage"),
+    description=_("Le journal technique contient les évènements détaillés des "
+        "transferts, pour un débogage en cas de problème."),
     valeur_defaut = True).ajouter(parametres)
-Parametres.Parametre("serveur_syslog", str, nom="Serveur syslog (nom ou adresse IP)",
-    description="Nom ou adresse IP du serveur syslog qui centralise les journaux sécurité.",
+Parametres.Parametre("serveur_syslog", str, nom=_("Serveur syslog (nom ou adresse IP)"),
+    description=_("Nom ou adresse IP du serveur syslog qui centralise les journaux sécurité."),
     valeur_defaut = "localhost").ajouter(parametres)
-Parametres.Parametre("port_syslog", int, nom="Port syslog (numéro de port UDP)",
-    description="Numéro de port UDP du serveur syslog: 514 pour un serveur syslog standard.",
+Parametres.Parametre("port_syslog", int, nom=_("Port syslog (numéro de port UDP)"),
+    description=_("Numéro de port UDP du serveur syslog: 514 pour un serveur syslog standard."),
     valeur_defaut = 514).ajouter(parametres)
 
 #--- AUTRES PARAMETRES ---
@@ -249,41 +260,41 @@ Parametres.Parametre("archive_after", bool, nom=_(u"Archiver tous les fichiers a
 #--- ANTIVIRUS ---
 
 # ClamAV (clamd):
-Parametres.Parametre("antivirus_clamd", bool, nom="Utiliser l'antivirus ClamAV (serveur clamd)",
-    description="Utiliser la version serveur de l'antivirus ClamAV (clamd) "
-               +"pour analyser les fichiers acceptes. Clamd doit tourner en "
-               +"tant que service sur la machine locale.",
+Parametres.Parametre("antivirus_clamd", bool, nom=_("Utiliser l'antivirus ClamAV (serveur clamd)"),
+    description=_("Utiliser la version serveur de l'antivirus ClamAV (clamd) "
+               "pour analyser les fichiers acceptes. Clamd doit tourner en "
+               "tant que service sur la machine locale."),
     valeur_defaut = False).ajouter(parametres)
-Parametres.Parametre("clamd_serveur", str, nom="Adresse IP ou nom du serveur antivirus clamd",
-    description="En general le serveur clamd tourne sur la meme machine: localhost.",
+Parametres.Parametre("clamd_serveur", str, nom=_("Adresse IP ou nom du serveur antivirus clamd"),
+    description=_("En general le serveur clamd tourne sur la meme machine: localhost."),
     valeur_defaut = 'localhost').ajouter(parametres)
-Parametres.Parametre("clamd_port", int, nom="Port du serveur antivirus clamd",
-    description="En general le serveur clamd tourne sur le port 3310.",
+Parametres.Parametre("clamd_port", int, nom=_("Port du serveur antivirus clamd"),
+    description=_("En general le serveur clamd tourne sur le port 3310."),
     valeur_defaut = 3310).ajouter(parametres)
 
 # F-Prot 6.x (fpscan):
-Parametres.Parametre("antivirus_fpscan", bool, nom="Utiliser l'antivirus F-Prot 6 (fpscan)",
-    description="Utiliser la version ligne de commande de l'antivirus F-Prot 6 "
-               +"(fpscan) pour analyser les fichiers acceptes. Attention cela "
-               +"peut degrader significativement les performances.",
+Parametres.Parametre("antivirus_fpscan", bool, nom=_("Utiliser l'antivirus F-Prot 6 (fpscan)"),
+    description=_("Utiliser la version ligne de commande de l'antivirus F-Prot 6 "
+               "(fpscan) pour analyser les fichiers acceptes. Attention cela "
+               "peut degrader significativement les performances."),
     valeur_defaut = False).ajouter(parametres)
 if sys.platform == 'win32': fpscan_defaut = "c:\\Program Files\\FRISK Software\\F-PROT Antivirus for Windows\\fpscan.exe"
 else:                       fpscan_defaut = "fpscan" # on suppose qu'il est dans le PATH
-Parametres.Parametre("fpscan_executable", str, nom="Exécutable de l'antivirus F-Prot 6 (fpscan)",
-    description="Emplacement du fichier fpscan de l'antivirus F-Prot 6",
+Parametres.Parametre("fpscan_executable", str, nom=_("Exécutable de l'antivirus F-Prot 6 (fpscan)"),
+    description=_("Emplacement du fichier fpscan de l'antivirus F-Prot 6"),
     valeur_defaut = fpscan_defaut).ajouter(parametres)
 
 # F-Prot 3.x (fpcmd, obsolete):
-Parametres.Parametre("antivirus_fpcmd", bool, nom="Utiliser l'antivirus F-Prot 3 (fpcmd)",
-    description="Utiliser la version ligne de commande de l'antivirus F-Prot 3 "
-               +"(fpcmd) pour analyser les fichiers acceptes. Attention cela "
-               +"peut degrader significativement les performances.",
+Parametres.Parametre("antivirus_fpcmd", bool, nom=_("Utiliser l'antivirus F-Prot 3 (fpcmd)"),
+    description=_("Utiliser la version ligne de commande de l'antivirus F-Prot 3 "
+               "(fpcmd) pour analyser les fichiers acceptes. Attention cela "
+               "peut degrader significativement les performances."),
     valeur_defaut = False).ajouter(parametres)
 #TODO: verifier le chemin par defaut + améliorer portabilité
 if sys.platform == 'win32': fpcmd_defaut = "c:\\Program Files\\FRISK Software\\F-PROT Antivirus for Windows\\fpcmd.exe"
 else:                       fpcmd_defaut = "fpcmd" # on suppose que fpcmd est dans le PATH
-Parametres.Parametre("fpcmd_executable", str, nom="Exécutable de l'antivirus F-Prot 3 (fpcmd)",
-    description="Emplacement du fichier fpcmd de l'antivirus F-Prot 3",
+Parametres.Parametre("fpcmd_executable", str, nom=_("Exécutable de l'antivirus F-Prot 3 (fpcmd)"),
+    description=_("Emplacement du fichier fpcmd de l'antivirus F-Prot 3"),
     valeur_defaut = fpcmd_defaut).ajouter(parametres)
 
 
@@ -688,13 +699,13 @@ if __name__ == '__main__':
     # fichier INI:
     if options.nouv_politique != '':
         pol.ecrire_fichier(options.nouv_politique)
-        print 'Politique sauvee dans le fichier %s' % options.nouv_politique
+        print _('Politique sauvee dans le fichier %s') % options.nouv_politique
         sys.exit()
 
     # si l'option export est active on exporte la politique dans un fichier HTML:
     if options.export_html != '':
         pol.ecrire_html(options.export_html)
-        print 'Politique exportee dans le fichier %s' % options.export_html
+        print _('Politique exportee dans le fichier %s') % options.export_html
         sys.exit()
 
     # enfin on lance le transfert:
