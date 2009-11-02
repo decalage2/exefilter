@@ -112,6 +112,10 @@ module Origami
 
   end
 
+  module Object
+    alias :to_obfuscated_str :to_s
+  end
+
   class Dictionary
     
     def to_obfuscated_str
