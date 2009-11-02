@@ -1,525 +1,729 @@
-"Project-Id-Version: ExeFilter v1.1.0\n"
+msgid ""
+msgstr ""
+"Project-Id-Version: ExeFilter\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-03-28 10:44+0100\n"
+"POT-Creation-Date: 2009-11-02 14:55+0100\n"
 "PO-Revision-Date: \n"
-"Last-Translator: Philippe Lagadec <decalage(a)laposte.net>\n"
-"Language-Team: Philippe Lagadec <decalage(a)laposte.net>\n"
+"Last-Translator: Philippe Lagadec <http://www.decalage.info>\n"
+"Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Poedit-Language: English\n"
 "X-Poedit-SourceCharset: iso-8859-1\n"
-"X-Poedit-Basepath: \n"
-"X-Poedit-SearchPath-0: \n"
-
-#: ExeFilter_NG/Conteneur.py:164
-msgid "Conteneur generique"
-msgstr "Generic Container"
-
-#: ExeFilter_NG/Conteneur.py:262
-#, python-format
-msgid "FICHIER: %s"
-msgstr "FILE: %s"
-
-#: ExeFilter_NG/Conteneur_Fichier.py:129
-msgid "Fichier"
-msgstr "File"
-
-#: ExeFilter_NG/Conteneur_Repertoire.py:137
-msgid "Repertoire"
-msgstr "Directory"
-
-#: ExeFilter_NG/Conteneur_Repertoire.py:185
-#, python-format
-msgid "Copie temporaire: \"%s\" -> \"%s\"..."
-msgstr "Temporary copy: \"%s\" -> \"%s\"..."
-
-#: ExeFilter_NG/Conteneur_Repertoire.py:209
-#, python-format
-msgid "Copie vers la destination: \"%s\" -> \"%s\"..."
-msgstr "Copy to destination: \"%s\" -> \"%s\"..."
-
-#: ExeFilter_NG/Conteneur_Repertoire.py:217
-#, python-format
-msgid "Copie: \"%s\" -> \"%s\"..."
-msgstr "Copy: \"%s\" -> \"%s\"..."
-
-#: ExeFilter_NG/Conteneur_Zip.py:148
-msgid "Archive Zip"
-msgstr "Zip Archive"
-
-#: ExeFilter_NG/Conteneur_Zip.py:150
-msgid "Ouverture du fichier ZIP grâce au module zipfile."
-msgstr "Opening the ZIP archive using the zipfile module."
-
-#: ExeFilter_NG/Conteneur_Zip.py:177
-msgid "Lecture de la liste des fichiers du fichier ZIP:"
-msgstr "Reading list of files in the ZIP archive:"
-
-#: ExeFilter_NG/Conteneur_Zip.py:183
-#, python-format
-msgid "- fichier: %s"
-msgstr "- file: %s"
-
-#: ExeFilter_NG/Conteneur_Zip.py:201
-msgid "  Répertoire."
-msgstr "  Directory."
-
-#: ExeFilter_NG/Conteneur_Zip.py:204
-msgid "  Cette entrée est un label de volume MS-DOS, on l'ignore."
-msgstr "  This entry is a MS-DOS volume label, ignored."
-
-#: ExeFilter_NG/Conteneur_Zip.py:228
-#, python-format
-msgid "Décompression: \"%s\" -> \"%s\"..."
-msgstr "Uncompressing: \"%s\" -> \"%s\"..."
-
-#: ExeFilter_NG/Conteneur_Zip.py:260
-msgid "Recompression du fichier Zip après nettoyage des fichiers..."
-msgstr "Zip archive recompression after files cleaning..."
-
-#: ExeFilter_NG/Conteneur_Zip.py:302
-msgid "Aucun fichier accepté dans le Zip: suppression."
-msgstr "No file is accepted in the Zip archive: deleted."
-
-#: ExeFilter_NG/ExeFilter.py:187
-msgid "Répertoire des fichiers rapports"
-msgstr "Reports directory"
-
-#: ExeFilter_NG/ExeFilter.py:188
-msgid "Répertoire où sont stockés tous les fichiers rapports"
-msgstr "Directory where all the report files are written"
-
-#: ExeFilter_NG/ExeFilter.py:190
-msgid "Répertoire des fichiers journaux"
-msgstr "Logs directory"
-
-#: ExeFilter_NG/ExeFilter.py:191
-msgid "Répertoire où sont stockés tous les fichiers journaux"
-msgstr "Directory where all the log files are written"
-
-#: ExeFilter_NG/ExeFilter.py:193
-msgid "Répertoire des fichiers temporaires"
-msgstr "Temp directory"
-
-#: ExeFilter_NG/ExeFilter.py:194
-msgid "Répertoire où sont stockés tous les fichiers temporaires"
-msgstr "Directory where all the temporary files are written"
-
-#: ExeFilter_NG/ExeFilter.py:230
-msgid "Archiver tous les fichiers apres filtrage"
-msgstr "Archive all files after filtering"
-
-#: ExeFilter_NG/ExeFilter.py:231
-msgid "Pour archiver une copie de chaque fichier filtré dans un répertoire d'archivage."
-msgstr "To store a copy of each filtered file in an archive directory"
-
-#: ExeFilter_NG/ExeFilter.py:391
-msgid "La taille des fichiers source est superieure a la taille du repertoire d'archivage."
-msgstr "Size of source files exceeds the archive directory."
-
-#: ExeFilter_NG/ExeFilter.py:421
-msgid "repertoire d'archivage deja vide => taille source trop grande"
-msgstr "archive directory is already empy => size of source files is too large"
-
-#: ExeFilter_NG/ExeFilter.py:508
-#, python-format
-msgid "ExeFilter v%s lancé par utilisateur %s sur la machine %s"
-msgstr "ExeFilter v%s launched by user %s on computer %s"
-
-#: ExeFilter_NG/ExeFilter.py:513
-msgid "Début de l'analyse"
-msgstr "Starting analysis"
-
-#: ExeFilter_NG/Fichier.py:188
-#, python-format
-msgid "chemin relatif incorrect: %s"
-msgstr "incorrect relative file path: %s"
-
-#: ExeFilter_NG/Fichier.py:189
-msgid "Nom de fichier non relatif ou incorrect"
-msgstr "Incorrect or non-relative file path"
-
-#: ExeFilter_NG/Fichier.py:226
-#, python-format
-msgid "Impossible de supprimer un fichier temporaire: %s"
-msgstr "Impossible to remove a temporary file: %s"
-
-#: ExeFilter_NG/Fichier.py:289
-#, python-format
-msgid "%s : Le fichier est chiffré, il ne peut être analysé."
-msgstr "%s : File is encrypted, it cannot be analyzed."
-
-#: ExeFilter_NG/Fichier.py:307
-#, python-format
-msgid "%s : Erreur lors de l'analyse du format (%s)"
-msgstr "%s : Error during format analysis (%s)"
-
-#: ExeFilter_NG/Fichier.py:318
-msgid " : Reconnu"
-msgstr " : Recognized"
-
-#: ExeFilter_NG/Fichier.py:337
-#, python-format
-msgid "%s : Erreur lors du nettoyage (%s)"
-msgstr "%s : Error while cleaning (%s)"
-
-#: ExeFilter_NG/Fichier.py:365
-msgid " : Format de fichier non reconnu ou non autorisé"
-msgstr " : Unauthorized or unknown file format"
-
-#: ExeFilter_NG/Fichier.py:443
-#, python-format
-msgid "Connexion au serveur clamd %s:%d..."
-msgstr "Connection to clamd server %s:%d..."
-
-#: ExeFilter_NG/Fichier.py:447
-#, python-format
-msgid "Connexion au service clamd (%s:%d) impossible."
-msgstr "Impossible to connect to clamd service (%s:%d)."
-
-#: ExeFilter_NG/Fichier.py:451
-msgid "Appel de clamd pour l'analyse antivirus..."
-msgstr "Call to clamd for antivirus scanning..."
-
-#: ExeFilter_NG/Fichier.py:454
-#, python-format
-msgid "analyse de %s"
-msgstr "analysis of %s"
-
-#: ExeFilter_NG/Fichier.py:459
-#: ExeFilter_NG/Fichier.py:533
-#: ExeFilter_NG/Fichier.py:598
-msgid "Temps dépassé lors de la vérification antivirus"
-msgstr "Timeout during antivirus scanning"
-
-#: ExeFilter_NG/Fichier.py:462
-#: ExeFilter_NG/Fichier.py:541
-#: ExeFilter_NG/Fichier.py:602
-msgid "Erreur lors de la vérification antivirus"
-msgstr "Error during antivirus scanning"
-
-#: ExeFilter_NG/Fichier.py:467
-#: ExeFilter_NG/Fichier.py:528
-#: ExeFilter_NG/Fichier.py:590
-msgid "Pas de virus détecté."
-msgstr "No virus detected."
-
-#: ExeFilter_NG/Fichier.py:474
-#, python-format
-msgid "fichier=%s resultat=%s"
-msgstr "file=%s result=%s"
-
-#: ExeFilter_NG/Fichier.py:476
-#, python-format
-msgid "Virus détecté ou fichier suspect: %s"
-msgstr "Virus detected or suspicious file: %s"
-
-#: ExeFilter_NG/Fichier.py:495
-msgid "Lancement de fpscan pour l'analyse antivirus..."
-msgstr "Launching fpscan for antivirus scanning..."
-
-#: ExeFilter_NG/Fichier.py:526
-#, python-format
-msgid "resultat F-Prot fpscan: %d"
-msgstr "F-Prot fpscan result : %d"
-
-#: ExeFilter_NG/Fichier.py:537
-#: ExeFilter_NG/Fichier.py:594
-msgid "Virus détecté ou fichier suspect"
-msgstr "Virus detected or suspicious file"
-
-#: ExeFilter_NG/Fichier.py:546
-#: ExeFilter_NG/Fichier.py:607
-msgid "Antivirus non supporte ou implemente pour ce systeme."
-msgstr "Antivirus not supported or not implemented on this platform."
-
-#: ExeFilter_NG/Fichier.py:564
-msgid "Lancement de fpcmd pour l'analyse antivirus..."
-msgstr "Launching fpcmd for antivirus scanning..."
-
-#: ExeFilter_NG/Rapport.py:190
-msgid "Rapport ExeFilter\n"
-msgstr "ExeFilter report\n"
-
-#: ExeFilter_NG/Rapport.py:197
-#, python-format
-msgid "Rapport ExeFilter v%(version)s"
-msgstr "ExeFilter report v%(version)s"
-
-#: ExeFilter_NG/Rapport.py:199
-#, python-format
-msgid "généré le %(date)s sur la machine %(hostname)s par l'utilisateur %(user)s"
-msgstr "generated on the %(date)s on computer %(hostname)s by user %(user)s"
-
-#: ExeFilter_NG/Rapport.py:202
-msgid "Répertoire de destination : "
-msgstr "Destination directory : "
-
-#: ExeFilter_NG/Rapport.py:204
-msgid "Répertoire(s) et/ou fichier(s) analysé(s) : "
-msgstr "Analyzed dir(s) and/or file(s) : "
-
-#: ExeFilter_NG/Rapport.py:210
-msgid "ATTENTION ! L'analyse a été interrompue pendant son exécution : "
-msgstr "WARNING ! Analyze was interrupted during execution : "
-
-#: ExeFilter_NG/Rapport.py:211
-msgid "tous les fichiers n'ont pas été analysés."
-msgstr "not all the files have been analyzed."
-
-#: ExeFilter_NG/Rapport.py:215
-msgid "RESUME :"
-msgstr "SUMMARY :"
-
-#: ExeFilter_NG/Rapport.py:216
-msgid "Nombre de fichiers analysés : "
-msgstr "Analyzed files : "
-
-#: ExeFilter_NG/Rapport.py:217
-msgid "Nombre de fichiers acceptés : "
-msgstr "Accepted files : "
-
-#: ExeFilter_NG/Rapport.py:218
-msgid "Nombre de fichiers nettoyés : "
-msgstr "Cleaned files : "
-
-#: ExeFilter_NG/Rapport.py:219
-msgid "Nombre de fichiers refusés  : "
-msgstr "Blocked files : "
-
-#: ExeFilter_NG/Rapport.py:220
-msgid "Nombre d'erreurs            : "
-msgstr "Number of errors : "
-
-#: ExeFilter_NG/Rapport.py:225
-msgid "Fichier analysé"
-msgstr "File"
-
-#: ExeFilter_NG/Rapport.py:226
-msgid "Résultat"
-msgstr "Result"
-
-#: ExeFilter_NG/Rapport.py:227
-msgid "Commentaire"
-msgstr "Details"
-
-#: ExeFilter_NG/Rapport.py:238
-msgid "Accepté"
-msgstr "Accepted"
-
-#: ExeFilter_NG/Rapport.py:241
-msgid "Nettoyé"
-msgstr "Cleaned"
-
-#: ExeFilter_NG/Rapport.py:247
-msgid "Refusé"
-msgstr "Blocked"
-
-#: ExeFilter_NG/Rapport.py:251
-msgid "Erreur"
-msgstr "Error"
-
-#: ExeFilter_NG/Resultat.py:104
-msgid "Extension non autorisée"
-msgstr "Unauthorized file extension"
-
-#: ExeFilter_NG/Resultat.py:105
-msgid "Format incorrect ou incompatible avec l'extension"
-msgstr "Incorrect format or not compatible with file extension"
-
-#: ExeFilter_NG/Resultat.py:106
-msgid "Fichier accepté"
-msgstr "Accepted file"
-
-#: ExeFilter_NG/Resultat.py:107
-msgid "Fichier nettoyé"
-msgstr "Cleaned file"
-
-#: ExeFilter_NG/Resultat.py:108
-msgid "Erreur de lecture"
-msgstr "Read error"
-
-#: ExeFilter_NG/Resultat.py:109
-msgid "Erreur lors de l'analyse"
-msgstr "Error during analysis"
-
-#: ExeFilter_NG/Resultat.py:110
-msgid "Fichier refusé (analyse ou nettoyage impossible)"
-msgstr "Rejected file (impossible to scan or clean)"
-
-#: ExeFilter_NG/Resultat.py:111
-msgid "Fichier infecté par un virus"
-msgstr "Infected by a virus"
-
-#: ExeFilter_NG/Filtres/Copy of Filtre_Office.py:239
-msgid "Document MS Office generique"
-msgstr "Generic MS Office Document"
-
-#: ExeFilter_NG/Filtres/Copy of Filtre_Office.py:346
-msgid "Contient un objet OLE Package"
-msgstr "Contains an OLE Package object"
-
-#: ExeFilter_NG/Filtres/Copy of Filtre_Office.py:388
-#: Filtre_Office.py:417
-msgid "Macro(s) VBA supprimée(s)"
-msgstr "VBA Macros were removed"
-
-#: ExeFilter_NG/Filtres/Copy of Filtre_Office.py:432
-msgid "erreur lors du nettoyage des macros VBA"
-msgstr "Error during VBA Macros cleaning"
-
-#: ExeFilter_NG/Filtres/Filtre.py:123
+"X-Poedit-Basepath: c:\\Users\\lagadec.NC3A\\Documents\\ExeFilter\\SVN_trunk\\\n"
+"X-Poedit-SearchPath-0: Filtres\n"
+"X-Poedit-SearchPath-1: .\n"
+
+#: Filtres/Filtre.py:126
 msgid "Filtre Generique"
 msgstr "Generic Filter"
 
-#: ExeFilter_NG/Filtres/Filtre.py:147
+#: Filtres/Filtre.py:150
 msgid "Format autorisé"
 msgstr "Allowed format"
 
-#: ExeFilter_NG/Filtres/Filtre.py:148
+#: Filtres/Filtre.py:151
 msgid "indique si ce format est autorisé ou non par la politique de filtrage"
 msgstr "Specifies whether this file format is allowed by the filtering policy or not"
 
-#: ExeFilter_NG/Filtres/Filtre.py:184
+#: Filtres/Filtre.py:187
 msgid " : Pas de contenu actif détecté"
 msgstr " : No active content was detected"
 
-#: ExeFilter_NG/Filtres/Filtre.py:194
+#: Filtres/Filtre.py:197
 msgid " : Contenu actif détecté et nettoyé"
 msgstr " : Active content was detected and cleaned"
 
-#: ExeFilter_NG/Filtres/Filtre.py:205
+#: Filtres/Filtre.py:208
 msgid " : Format de fichier incorrect ou non supporté, ne peut être analysé."
 msgstr " : Incorrect or unsupported file format, cannot be analyzed."
 
-#: ExeFilter_NG/Filtres/Filtre.py:222
+#: Filtres/Filtre.py:225
 msgid "Analyse impossible."
 msgstr "Cannot be analyzed"
 
-#: ExeFilter_NG/Filtres/Filtre.py:237
+#: Filtres/Filtre.py:240
 msgid "Fichier chiffré"
 msgstr "Encrypted file"
 
-#: ExeFilter_NG/Filtres/Filtre.py:251
+#: Filtres/Filtre.py:254
 msgid "Nettoyage impossible."
 msgstr "Cannot be cleaned."
 
-#: ExeFilter_NG/Filtres/Filtre_AVI.py:116
+#: Filtres/Filtre_AVI.py:119
 msgid "Fichier Video AVI"
 msgstr "AVI Video file"
 
-#: ExeFilter_NG/Filtres/Filtre_BMP.py:116
+#: Filtres/Filtre_BMP.py:119
 msgid "Fichier Image BMP"
 msgstr "BMP Picture"
 
-#: ExeFilter_NG/Filtres/Filtre_GIF.py:114
+#: Filtres/Filtre_GIF.py:117
 msgid "Fichier Image GIF"
 msgstr "GIF Picture"
 
-#: ExeFilter_NG/Filtres/Filtre_HTML.py:173
+#: Filtres/Filtre_HTML.py:176
 msgid "Double charset dans une balise META"
 msgstr "Double charset in META tag"
 
-#: ExeFilter_NG/Filtres/Filtre_HTML.py:183
+#: Filtres/Filtre_HTML.py:186
 msgid "Double encodage META incoherent."
 msgstr "Several different encodings in META tags"
 
-#: ExeFilter_NG/Filtres/Filtre_HTML.py:186
+#: Filtres/Filtre_HTML.py:189
 msgid "Encodages BOM et META incoherents."
 msgstr "Different encoding in BOM and META tag"
 
-#: ExeFilter_NG/Filtres/Filtre_HTML.py:222
+#: Filtres/Filtre_HTML.py:225
 #, python-format
 msgid "<!-- balise %s supprimee -->"
 msgstr "<!-- %s tag removed -->"
 
-#: ExeFilter_NG/Filtres/Filtre_HTML.py:255
+#: Filtres/Filtre_HTML.py:258
 #, python-format
 msgid "attribut interdit: %s=..."
 msgstr "forbidden attribute: %s=..."
 
-#: ExeFilter_NG/Filtres/Filtre_HTML.py:267
+#: Filtres/Filtre_HTML.py:270
 #, python-format
 msgid "attribut interdit: %s=%s:..."
 msgstr "forbidden attribute: %s=%s:..."
 
-#: ExeFilter_NG/Filtres/Filtre_HTML.py:406
+#: Filtres/Filtre_HTML.py:409
 msgid "Document HTML"
 msgstr "HTML Document"
 
-#: ExeFilter_NG/Filtres/Filtre_HTML.py:443
+#: Filtres/Filtre_HTML.py:446
 #, python-format
 msgid "encodage d'après le BOM: %s"
 msgstr "Encoding according to BOM: %s"
 
-#: ExeFilter_NG/Filtres/Filtre_HTML.py:463
-#: ExeFilter_NG/Filtres/Filtre_HTML.py:471
+#: Filtres/Filtre_HTML.py:466
+#: Filtres/Filtre_HTML.py:474
 msgid "Erreur lors de l'analyse des balises META"
 msgstr "Error during META tags analysis"
 
-#: ExeFilter_NG/Filtres/Filtre_HTML.py:466
-#: ExeFilter_NG/Filtres/Filtre_HTML.py:521
+#: Filtres/Filtre_HTML.py:469
+#: Filtres/Filtre_HTML.py:524
 msgid "Syntaxe HTML incorrecte"
 msgstr "Incorrect HTML syntax"
 
-#: ExeFilter_NG/Filtres/Filtre_HTML.py:474
-#: ExeFilter_NG/Filtres/Filtre_HTML.py:529
+#: Filtres/Filtre_HTML.py:477
+#: Filtres/Filtre_HTML.py:532
 msgid "Encodage du fichier incorrect"
 msgstr "Incorrect file encoding"
 
-#: ExeFilter_NG/Filtres/Filtre_HTML.py:482
+#: Filtres/Filtre_HTML.py:485
 #, python-format
 msgid "encodage d'après la balise META: %s"
 msgstr "Encoding according to META tag: %s"
 
-#: ExeFilter_NG/Filtres/Filtre_HTML.py:489
+#: Filtres/Filtre_HTML.py:492
 #, python-format
 msgid "Fichier HTML temporaire: %s"
 msgstr "Temporary HTML file: %s"
 
-#: ExeFilter_NG/Filtres/Filtre_HTML.py:518
-#: ExeFilter_NG/Filtres/Filtre_HTML.py:526
+#: Filtres/Filtre_HTML.py:521
+#: Filtres/Filtre_HTML.py:529
 msgid "Erreur lors du nettoyage HTML"
 msgstr "Error during HTML cleaning"
 
-#: ExeFilter_NG/Filtres/Filtre_JPEG.py:111
+#: Filtres/Filtre_JPEG.py:118
 msgid "Fichier Image JPEG"
 msgstr "JPEG Picture"
 
-#: ExeFilter_NG/Filtres/Filtre_Office.py:457
+#: Filtres/Filtre_Office.py:247
+msgid "Document MS Office generique"
+msgstr "Generic MS Office Document"
+
+#: Filtres/Filtre_Office.py:276
+msgid "Détecter les objets OLE Package"
+msgstr "Detect Package OLE objects"
+
+#: Filtres/Filtre_Office.py:277
+msgid "Détecter les objets OLE Package, qui peuvent contenir des fichiers ou des commandes."
+msgstr "Detect Package OLE objects, which may contain any file or command line."
+
+#: Filtres/Filtre_Office.py:281
+msgid "Supprimer les macros VBA"
+msgstr "Remove VBA macros"
+
+#: Filtres/Filtre_Office.py:282
+msgid "Supprimer toutes les macros VBA des documents. Voir aussi les parametres macros_xxx pour choisir la methode employee. Si aucune methode n'est active,  une methode simple sera employee. Cette methode est portable et rapide, mais ne couvre que Word et Excel."
+msgstr "Remove/disable all VBA macros from documents. See also macros_xxx parameters to choose which method to use. If no specific method is enabled, a simple method will be used. This simple method is portable and fast, however it only covers Word and Excel files."
+
+#: Filtres/Filtre_Office.py:289
+msgid "Utiliser l'API Win32 pour supprimer les macros"
+msgstr "Use the Win32 API to remove VBA macros (Windows only)"
+
+#: Filtres/Filtre_Office.py:290
+msgid "Utiliser les fonctions de Windows pour supprimer toutes les macros VBA des documents. Cette methode est rapide mais ne couvre que Word et Excel, et ne fonctionne que sous Windows."
+msgstr "Use the Win32 API on Windows to remove all VBA macros from documents. This method is fast, but it only covers Word and Excel, and it only works on Windows. This parameter is ignored on other platforms."
+
+#: Filtres/Filtre_Office.py:296
+msgid "Utiliser F-Prot 3 pour supprimer les macros"
+msgstr "Use F-Prot 3 to remove VBA macros"
+
+#: Filtres/Filtre_Office.py:297
+msgid "Utiliser l'antivirus F-Prot 3 (fpcmd) pour supprimer toutes les macros VBA des documents. Cette methode est lente mais fiable pour Word, Excel et Powerpoint."
+msgstr "Use the F-Prot 3 antivirus (fpcmd) to remove all VBA macros from documents. This method is slow but efficient for Word, Excel and Powerpoint."
+
+#: Filtres/Filtre_Office.py:302
+msgid "Utiliser F-Prot 6 pour supprimer les macros"
+msgstr "Use F-Prot 6 to remove VBA macros"
+
+#: Filtres/Filtre_Office.py:303
+msgid "Utiliser l'antivirus F-Prot 6 (fpscan) pour supprimer toutes les macros VBA des documents. Cette methode est lente mais fiable pour Word, Excel et Powerpoint."
+msgstr "Use the F-Prot 6 antivirus (fpscan) to remove all VBA macros from documents. This method is slow but efficient for Word, Excel and Powerpoint."
+
+#: Filtres/Filtre_Office.py:354
+msgid "Contient un objet OLE Package"
+msgstr "Contains an OLE Package object"
+
+#: Filtres/Filtre_Office.py:440
+#: Filtres/Filtre_Office.py:468
+msgid "erreur lors du nettoyage des macros VBA"
+msgstr "Error during VBA Macros cleaning"
+
+#: Filtres/Filtre_Office.py:465
 msgid "temps dépassé lors du nettoyage des macros VBA"
 msgstr "Timeout reached during VBA Macros cleaning"
 
-#: ExeFilter_NG/Filtres/Filtre_Office.py:497
+#: Filtres/Filtre_Office.py:505
 msgid "Document MS Word"
 msgstr "MS Word Document"
 
-#: ExeFilter_NG/Filtres/Filtre_Office.py:552
+#: Filtres/Filtre_Office.py:560
 msgid "Classeur MS Excel"
 msgstr "MS Excel Spreadsheet"
 
-#: ExeFilter_NG/Filtres/Filtre_Office.py:607
+#: Filtres/Filtre_Office.py:615
 msgid "Presentation MS Powerpoint"
 msgstr "MS Powerpoint Presentation"
 
-#: ExeFilter_NG/Filtres/Filtre_Office.py:648
+#: Filtres/Filtre_Office.py:656
 msgid "Dessin MS Visio"
 msgstr "MS Visio Drawing"
 
-#: ExeFilter_NG/Filtres/Filtre_Office.py:688
+#: Filtres/Filtre_Office.py:696
 msgid "Projet MS Project"
 msgstr "MS Project file"
 
-#: ExeFilter_NG/Filtres/Filtre_PDF.py:120
+#: Filtres/Filtre_PDF.py:148
 msgid "Document PDF"
 msgstr "PDF Document"
 
-#: ExeFilter_NG/Filtres/Filtre_RTF.py:141
+#: Filtres/Filtre_PNG.py:116
+msgid "Fichier Image PNG"
+msgstr "PNG Picture"
+
+#: Filtres/Filtre_RTF.py:149
 msgid "Document RTF"
 msgstr "RTF Document"
 
-#: ExeFilter_NG/Filtres/Filtre_Texte.py:117
+#: Filtres/Filtre_RTF.py:169
+msgid "Supprimer les objets OLE Package"
+msgstr "Disable Package OLE objects"
+
+#: Filtres/Filtre_RTF.py:170
+msgid "Supprimer tout objet OLE Package, qui peut camoufler n'importe quel fichier executable."
+msgstr "Disable Package OLE objects, which may contain any executable file or command line."
+
+#: Filtres/Filtre_Texte.py:124
 msgid "Fichier Texte ASCII"
 msgstr "ASCII Text file"
+
+#: Filtres/Filtre_Zip.py:124
+msgid "Archive Zip"
+msgstr "Zip Archive"
+
+#: Conteneur.py:173
+msgid "Conteneur generique"
+msgstr "Generic Container"
+
+#: Conteneur.py:271
+#, python-format
+msgid "FICHIER: %s"
+msgstr "FILE: %s"
+
+#: Conteneur_Fichier.py:134
+msgid "Fichier"
+msgstr "File"
+
+#: Conteneur_Repertoire.py:143
+msgid "Repertoire"
+msgstr "Directory"
+
+#: Conteneur_Repertoire.py:191
+#, python-format
+msgid "Copie temporaire: \"%s\" -> \"%s\"..."
+msgstr "Temporary copy: \"%s\" -> \"%s\"..."
+
+#: Conteneur_Repertoire.py:217
+#, python-format
+msgid "Copie vers la destination: \"%s\" -> \"%s\"..."
+msgstr "Copy to destination: \"%s\" -> \"%s\"..."
+
+#: Conteneur_Repertoire.py:228
+#, python-format
+msgid "Copie: \"%s\" -> \"%s\"..."
+msgstr "Copy: \"%s\" -> \"%s\"..."
+
+#: Conteneur_Zip.py:155
+msgid "Ouverture du fichier ZIP grâce au module zipfile."
+msgstr "Opening the ZIP archive using the zipfile module."
+
+#: Conteneur_Zip.py:182
+msgid "Lecture de la liste des fichiers du fichier ZIP:"
+msgstr "Reading list of files in the ZIP archive:"
+
+#: Conteneur_Zip.py:188
+#, python-format
+msgid "- fichier: %s"
+msgstr "- file: %s"
+
+#: Conteneur_Zip.py:206
+msgid "  Répertoire."
+msgstr "  Directory."
+
+#: Conteneur_Zip.py:209
+msgid "  Cette entrée est un label de volume MS-DOS, on l'ignore."
+msgstr "  This entry is a MS-DOS volume label, ignored."
+
+#: Conteneur_Zip.py:233
+#, python-format
+msgid "Décompression: \"%s\" -> \"%s\"..."
+msgstr "Uncompressing: \"%s\" -> \"%s\"..."
+
+#: Conteneur_Zip.py:265
+msgid "Recompression du fichier Zip après nettoyage des fichiers..."
+msgstr "Zip archive recompression after files cleaning..."
+
+#: Conteneur_Zip.py:307
+msgid "Aucun fichier accepté dans le Zip: suppression."
+msgstr "No file is accepted in the Zip archive: deleted."
+
+#: ExeFilter.py:216
+msgid "Répertoire des fichiers rapports"
+msgstr "Reports directory"
+
+#: ExeFilter.py:217
+msgid "Répertoire où sont stockés tous les fichiers rapports"
+msgstr "Directory where all the report files are written"
+
+#: ExeFilter.py:219
+msgid "Répertoire des fichiers journaux"
+msgstr "Logs directory"
+
+#: ExeFilter.py:220
+msgid "Répertoire où sont stockés tous les fichiers journaux"
+msgstr "Directory where all the log files are written"
+
+#: ExeFilter.py:222
+msgid "Répertoire des fichiers temporaires"
+msgstr "Temp directory"
+
+#: ExeFilter.py:223
+msgid "Répertoire où sont stockés tous les fichiers temporaires"
+msgstr "Directory where all the temporary files are written"
+
+#: ExeFilter.py:225
+msgid "Répertoire des fichiers archivés"
+msgstr "Archived files directory"
+
+#: ExeFilter.py:226
+msgid "Répertoire où sont archivés tous les fichiers transférés"
+msgstr "Directory where all the filtered files are archived"
+
+#: ExeFilter.py:228
+msgid "Taille maximale du répertoire temporaire (en octets)"
+msgstr "Maximal size for the temp directory (in bytes)"
+
+#: ExeFilter.py:229
+msgid "Taille maximale du répertoire où sont stockés tous les fichiers temporaires"
+msgstr "Maximal size of the directory where all temporary files are stored."
+
+#: ExeFilter.py:231
+msgid "Taille maximale des archives (en octets)"
+msgstr "Maximal size for the archive directory (in bytes)"
+
+#: ExeFilter.py:232
+msgid "Taille maximale du répertoire où sont archivés tous les fichiers transférés"
+msgstr "Maximal size of the directory where all archived files are stored."
+
+#: ExeFilter.py:236
+msgid "Ecrire un journal sécurité dans un fichier"
+msgstr "Write a security log file"
+
+#: ExeFilter.py:237
+msgid "Le journal sécurité décrit synthétiquement les évènements concernant la sécurité des transferts."
+msgstr "The security log file contains all main security events which happen during content analysis."
+
+#: ExeFilter.py:239
+msgid "Envoyer un journal sécurité par syslog"
+msgstr "Send security events to a syslog server"
+
+#: ExeFilter.py:240
+msgid "Le journal sécurité décrit synthétiquement les évènements concernant la sécurité des transferts. Syslog permet de centraliser ces journaux par le réseau sur un serveur"
+msgstr "The security log file contains all main security events which happen during content analysis. This option sends the security log events to a central syslog server."
+
+#: ExeFilter.py:244
+msgid "Ecrire un journal technique de débogage"
+msgstr "Write a debug log file"
+
+#: ExeFilter.py:245
+msgid "Le journal technique contient les évènements détaillés des transferts, pour un débogage en cas de problème."
+msgstr "The debug log file contains very detailed technical events about content analysis, for troubleshooting in case of unexpected errors."
+
+#: ExeFilter.py:248
+msgid "Serveur syslog (nom ou adresse IP)"
+msgstr "Syslog server (hostname or IP address)"
+
+#: ExeFilter.py:249
+msgid "Nom ou adresse IP du serveur syslog qui centralise les journaux sécurité."
+msgstr "Hostname or IP address of the syslog server to centralize logs."
+
+#: ExeFilter.py:251
+msgid "Port syslog (numéro de port UDP)"
+msgstr "Syslog port (UDP port number)"
+
+#: ExeFilter.py:252
+msgid "Numéro de port UDP du serveur syslog: 514 pour un serveur syslog standard."
+msgstr "UDP port number used by the syslog server: usually 514 for a standard syslog server."
+
+#: ExeFilter.py:256
+msgid "Archiver tous les fichiers apres filtrage"
+msgstr "Archive all files after filtering"
+
+#: ExeFilter.py:257
+msgid "Pour archiver une copie de chaque fichier filtré dans un répertoire d'archivage."
+msgstr "To store a copy of each filtered file in an archive directory"
+
+#: ExeFilter.py:263
+msgid "Utiliser l'antivirus ClamAV (serveur clamd)"
+msgstr "Use ClamAV antivirus (clamd daemon)"
+
+#: ExeFilter.py:264
+msgid "Utiliser la version serveur de l'antivirus ClamAV (clamd) pour analyser les fichiers acceptes. Clamd doit tourner en tant que service sur la machine locale."
+msgstr "Use the daemon version of the ClamAV antivirus (clamd) to analyze all files after content filtering. For this, clamd must run as a service on the local host."
+
+#: ExeFilter.py:268
+msgid "Adresse IP ou nom du serveur antivirus clamd"
+msgstr "Hostname or IP address of the clamd server"
+
+#: ExeFilter.py:269
+msgid "En general le serveur clamd tourne sur la meme machine: localhost."
+msgstr "Usually the clamd server runs on the same machine: localhost."
+
+#: ExeFilter.py:271
+msgid "Port du serveur antivirus clamd"
+msgstr "Port of the clamd server"
+
+#: ExeFilter.py:272
+msgid "En general le serveur clamd tourne sur le port 3310."
+msgstr "Usually the clamd server listens on port 3310"
+
+#: ExeFilter.py:276
+msgid "Utiliser l'antivirus F-Prot 6 (fpscan)"
+msgstr "Use the F-Prot 6 antivirus (fpscan)"
+
+#: ExeFilter.py:277
+msgid "Utiliser la version ligne de commande de l'antivirus F-Prot 6 (fpscan) pour analyser les fichiers acceptes. Attention cela peut degrader significativement les performances."
+msgstr "Use the command-line version of the F-Prot 6 antivirus (fpscan) to scan all files. Warning: this may affect performance significantly."
+
+#: ExeFilter.py:283
+msgid "Exécutable de l'antivirus F-Prot 6 (fpscan)"
+msgstr "Path of the F-Prot 6 executable (fpscan)"
+
+#: ExeFilter.py:284
+msgid "Emplacement du fichier fpscan de l'antivirus F-Prot 6"
+msgstr "Absolute path of the F-Prot 6 executable (fpscan / fpscan.exe)"
+
+#: ExeFilter.py:288
+msgid "Utiliser l'antivirus F-Prot 3 (fpcmd)"
+msgstr "Use the F-Prot 3 antivirus (fpcmd)"
+
+#: ExeFilter.py:289
+msgid "Utiliser la version ligne de commande de l'antivirus F-Prot 3 (fpcmd) pour analyser les fichiers acceptes. Attention cela peut degrader significativement les performances."
+msgstr "Use the command-line version of the F-Prot 3 antivirus (fpcmd) to scan all files. Warning: this may affect performance significantly."
+
+#: ExeFilter.py:296
+msgid "Exécutable de l'antivirus F-Prot 3 (fpcmd)"
+msgstr "Path of the F-Prot 3 executable (fpcmd)"
+
+#: ExeFilter.py:297
+msgid "Emplacement du fichier fpcmd de l'antivirus F-Prot 3"
+msgstr "Absolute path of the F-Prot 3 executable (fpcmd / fpcmd.exe)"
+
+#: ExeFilter.py:422
+msgid "La taille des fichiers source est superieure a la taille du repertoire d'archivage."
+msgstr "Size of source files exceeds the archive directory."
+
+#: ExeFilter.py:452
+msgid "repertoire d'archivage deja vide => taille source trop grande"
+msgstr "archive directory is already empy => size of source files is too large"
+
+#: ExeFilter.py:539
+#, python-format
+msgid "ExeFilter v%s lancé par utilisateur %s sur la machine %s"
+msgstr "ExeFilter v%s launched by user %s on computer %s"
+
+#: ExeFilter.py:544
+msgid "Début de l'analyse"
+msgstr "Starting analysis"
+
+#: ExeFilter.py:702
+#, python-format
+msgid "Politique sauvee dans le fichier %s"
+msgstr "Policy saved in file %s"
+
+#: ExeFilter.py:708
+#, python-format
+msgid "Politique exportee dans le fichier %s"
+msgstr "Policy exported in file %s"
+
+#: Fichier.py:188
+#, python-format
+msgid "chemin relatif incorrect: %s"
+msgstr "incorrect relative file path: %s"
+
+#: Fichier.py:189
+msgid "Nom de fichier non relatif ou incorrect"
+msgstr "Incorrect or non-relative file path"
+
+#: Fichier.py:226
+#, python-format
+msgid "Impossible de supprimer un fichier temporaire: %s"
+msgstr "Impossible to remove a temporary file: %s"
+
+#: Fichier.py:289
+#, python-format
+msgid "%s : Le fichier est chiffré, il ne peut être analysé."
+msgstr "%s : File is encrypted, it cannot be analyzed."
+
+#: Fichier.py:307
+#, python-format
+msgid "%s : Erreur lors de l'analyse du format (%s)"
+msgstr "%s : Error during format analysis (%s)"
+
+#: Fichier.py:318
+msgid " : Reconnu"
+msgstr " : Recognized"
+
+#: Fichier.py:337
+#, python-format
+msgid "%s : Erreur lors du nettoyage (%s)"
+msgstr "%s : Error while cleaning (%s)"
+
+#: Fichier.py:365
+msgid " : Format de fichier non reconnu ou non autorisé"
+msgstr " : Unauthorized or unknown file format"
+
+#: Fichier.py:443
+#, python-format
+msgid "Connexion au serveur clamd %s:%d..."
+msgstr "Connection to clamd server %s:%d..."
+
+#: Fichier.py:447
+#, python-format
+msgid "Connexion au service clamd (%s:%d) impossible."
+msgstr "Impossible to connect to clamd service (%s:%d)."
+
+#: Fichier.py:451
+msgid "Appel de clamd pour l'analyse antivirus..."
+msgstr "Call to clamd for antivirus scanning..."
+
+#: Fichier.py:454
+#, python-format
+msgid "analyse de %s"
+msgstr "analysis of %s"
+
+#: Fichier.py:459
+#: Fichier.py:533
+#: Fichier.py:598
+msgid "Temps dépassé lors de la vérification antivirus"
+msgstr "Timeout during antivirus scanning"
+
+#: Fichier.py:462
+#: Fichier.py:541
+#: Fichier.py:602
+msgid "Erreur lors de la vérification antivirus"
+msgstr "Error during antivirus scanning"
+
+#: Fichier.py:467
+#: Fichier.py:528
+#: Fichier.py:590
+msgid "Pas de virus détecté."
+msgstr "No virus detected."
+
+#: Fichier.py:474
+#, python-format
+msgid "fichier=%s resultat=%s"
+msgstr "file=%s result=%s"
+
+#: Fichier.py:476
+#, python-format
+msgid "Virus détecté ou fichier suspect: %s"
+msgstr "Virus detected or suspicious file: %s"
+
+#: Fichier.py:495
+msgid "Lancement de fpscan pour l'analyse antivirus..."
+msgstr "Launching fpscan for antivirus scanning..."
+
+#: Fichier.py:526
+#, python-format
+msgid "resultat F-Prot fpscan: %d"
+msgstr "F-Prot fpscan result : %d"
+
+#: Fichier.py:537
+#: Fichier.py:594
+msgid "Virus détecté ou fichier suspect"
+msgstr "Virus detected or suspicious file"
+
+#: Fichier.py:546
+#: Fichier.py:607
+msgid "Antivirus non supporte ou implemente pour ce systeme."
+msgstr "Antivirus not supported or not implemented on this platform."
+
+#: Fichier.py:564
+msgid "Lancement de fpcmd pour l'analyse antivirus..."
+msgstr "Launching fpcmd for antivirus scanning..."
+
+#: Politique.py:278
+msgid "Code Paramètre"
+msgstr "Parameter"
+
+#: Politique.py:278
+msgid "Nom"
+msgstr "Name"
+
+#: Politique.py:278
+msgid "Description"
+msgstr "Description"
+
+#: Politique.py:279
+msgid "Valeur"
+msgstr "Value"
+
+#: Politique.py:279
+msgid "Valeur par défaut"
+msgstr "Default value"
+
+#: Rapport.py:193
+msgid "Rapport ExeFilter\n"
+msgstr "ExeFilter report\n"
+
+#: Rapport.py:200
+#, python-format
+msgid "Rapport ExeFilter v%(version)s"
+msgstr "ExeFilter report v%(version)s"
+
+#: Rapport.py:202
+#, python-format
+msgid "généré le %(date)s sur la machine %(hostname)s par l'utilisateur %(user)s"
+msgstr "generated on the %(date)s on computer %(hostname)s by user %(user)s"
+
+#: Rapport.py:205
+msgid "Répertoire de destination : "
+msgstr "Destination directory : "
+
+#: Rapport.py:207
+msgid "Répertoire(s) et/ou fichier(s) analysé(s) : "
+msgstr "Analyzed dir(s) and/or file(s) : "
+
+#: Rapport.py:213
+msgid "ATTENTION ! L'analyse a été interrompue pendant son exécution : "
+msgstr "WARNING ! Analyze was interrupted during execution : "
+
+#: Rapport.py:214
+msgid "tous les fichiers n'ont pas été analysés."
+msgstr "not all files have been analyzed."
+
+#: Rapport.py:218
+msgid "RESUME :"
+msgstr "SUMMARY :"
+
+#: Rapport.py:219
+msgid "Nombre de fichiers analysés : "
+msgstr "Analyzed files : "
+
+#: Rapport.py:220
+msgid "Nombre de fichiers acceptés : "
+msgstr "Accepted files : "
+
+#: Rapport.py:221
+msgid "Nombre de fichiers nettoyés : "
+msgstr "Cleaned files : "
+
+#: Rapport.py:222
+msgid "Nombre de fichiers refusés  : "
+msgstr "Blocked files : "
+
+#: Rapport.py:223
+msgid "Nombre d'erreurs            : "
+msgstr "Number of errors : "
+
+#: Rapport.py:228
+msgid "Fichier analysé"
+msgstr "File"
+
+#: Rapport.py:229
+msgid "Résultat"
+msgstr "Result"
+
+#: Rapport.py:230
+msgid "Commentaire"
+msgstr "Details"
+
+#: Rapport.py:241
+msgid "Accepté"
+msgstr "Accepted"
+
+#: Rapport.py:244
+msgid "Nettoyé"
+msgstr "Cleaned"
+
+#: Rapport.py:250
+msgid "Refusé"
+msgstr "Blocked"
+
+#: Rapport.py:254
+msgid "Erreur"
+msgstr "Error"
+
+#: Resultat.py:107
+msgid "Extension non autorisée"
+msgstr "Unauthorized file extension"
+
+#: Resultat.py:108
+msgid "Format incorrect ou incompatible avec l'extension"
+msgstr "Incorrect format or not compatible with file extension"
+
+#: Resultat.py:109
+msgid "Fichier accepté"
+msgstr "Accepted file"
+
+#: Resultat.py:110
+msgid "Fichier nettoyé"
+msgstr "Cleaned file"
+
+#: Resultat.py:111
+msgid "Erreur de lecture"
+msgstr "Read error"
+
+#: Resultat.py:112
+msgid "Erreur lors de l'analyse"
+msgstr "Error during analysis"
+
+#: Resultat.py:113
+msgid "Fichier refusé (analyse ou nettoyage impossible)"
+msgstr "Rejected file (impossible to scan or clean)"
+
+#: Resultat.py:114
+msgid "Fichier infecté par un virus"
+msgstr "Infected by a virus"
+
+#~ msgid "Macro(s) VBA supprimÃ©e(s)"
+#~ msgstr "VBA Macros were removed"
 

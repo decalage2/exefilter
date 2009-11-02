@@ -38,7 +38,7 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 LICENCE pour le projet ExeFilter:
 
 Copyright DGA/CELAR 2004-2008
-Copyright NATO/NC3A 2008 (modifications PL apres v1.1.0)
+Copyright NATO/NC3A 2008-2009 (modifications PL apres v1.1.0)
 
 Auteurs:
     - Philippe Lagadec (PL) - philippe.lagadec(a)laposte.net
@@ -77,8 +77,8 @@ termes.
 __docformat__ = 'epytext en'
 
 __author__    = 'Philippe Lagadec, Tanguy Vinceleux, Arnaud Kerréneur (DGA/CELAR)'
-__date__      = '2009-10-22'
-__version__   = '1.1.2-alpha2' #: le numero de version ExeFilter global suit la logique Linux
+__date__      = '2009-11-02'
+__version__   = '1.1.2-alpha3' #: le numero de version ExeFilter global suit la logique Linux
 
 # ce fichier __init__.py sert uniquement à faire en sorte que Python considère
 # ce répertoire comme un package de modules, et à constituer la racine de la
