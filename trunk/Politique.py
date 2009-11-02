@@ -87,6 +87,9 @@ import os
 from commun import *
 import Filtres, Parametres, ExeFilter
 
+# third party modules:
+import thirdparty.HTML as HTML
+
 #=== VARIABLES GLOBALES =======================================================
 
 
@@ -271,46 +274,70 @@ class Politique:
     def ecrire_html (self, nom_fichier_html):
         """Pour écrire un fichier HTML décrivant en détails chaque paramètre de
         la politique."""
-        f = codecs.open(nom_fichier_html, "w", "latin_1")
-        f.write("<HTML>")
-        f.write('<table border=1 WIDTH="100%" BGCOLOR="#FFFFFF">')
-        f.write('<tr BGCOLOR="#FFCC99">')
-        f.write(u'<td><center><b>Code Paramètre</b></center></td>')
-        f.write('<td><center><b>Nom</b></center></td>')
-        f.write('<td><center><b>Description</b><center></td>')
-        f.write('<td><center><b>Valeur</b><center></td>')
-        f.write(u'<td><center><b>Valeur par défaut</b><center></td>')
-        f.write('</tr>')
-        f.write('<tr BGCOLOR="#FFFF00">')
-        f.write('<td><center><b>section [%s]</b></center></td>' % SECTION_EXEFILTER)
-        f.write('</tr>')
+        # table with 5 columns and header row
+        t = HTML.Table(header_row = (_('Code Paramètre'), _('Nom'), _('Description'),
+            _('Valeur'), _('Valeur par défaut')))
+        # row for global section head:
+        t.rows.append(HTML.TableRow(('<b>section [%s]</b>' % SECTION_EXEFILTER,
+            '', '', '', ''), bgcolor='cyan'))
         # fonction pour comparer 2 noms de parametres afin de trier la liste:
         cmp_params = lambda p1,p2: cmp(p1.code.lower(), p2.code.lower())
         for p in sorted(self.parametres.itervalues(), cmp=cmp_params):
-            f.write('<tr BGCOLOR="#FFFFFF">')
-            f.write(u'<td><b>%s</b></td>' % p.code)
-            f.write(u'<td>%s</td>' % unistr(p.nom))
-            f.write(u'<td>%s</td>' % unistr(p.description))
-            f.write(u'<td>%s</td>' % unistr(str(p)))
-            f.write(u'<td>%s</td>' % unistr(str(p.valeur_defaut)))
-            f.write('</tr>')
+            t.rows.append(('<b>%s</b>' % p.code, p.nom, p.description, str(p), str(p.valeur_defaut)))
         # fonction pour comparer 2 noms de filtres afin de trier la liste:
         cmp_filtres = lambda f1,f2: cmp(f1.nom_classe.lower(), f2.nom_classe.lower())
         for filtre in sorted(self.filtres, cmp=cmp_filtres):
-            f.write('<tr BGCOLOR="#FFFF00">')
-            f.write('<td><center><b>section [%s]</b></center></td>' % filtre.nom_classe)
-            f.write('</tr>')
+            # row for section head:
+            t.rows.append(HTML.TableRow(('<b>section [%s]</b>' % filtre.nom_classe,
+                '', '', '', ''), bgcolor='cyan'))
             for p in sorted(filtre.parametres.itervalues(), cmp=cmp_params):
-                f.write('<tr BGCOLOR="#FFFFFF">')
-                f.write(u'<td><b>%s</b></td>' % p.code)
-                f.write(u'<td>%s</td>' % unistr(p.nom))
-                f.write(u'<td>%s</td>' % unistr(p.description))
-                f.write(u'<td>%s</td>' % unistr(str(p)))
-                f.write(u'<td>%s</td>' % unistr(str(p.valeur_defaut)))
-                f.write('</tr>')
-        f.write('</table>')
-        f.write("</HTML>")
+                t.rows.append(('<b>%s</b>' % p.code, p.nom, p.description, str(p), str(p.valeur_defaut)))
+        f = open(nom_fichier_html, "w")
+        f.write('<FONT FACE="Arial, sans-serif">\n')
+        f.write(str(t))
+        f.write('</FONT>\n')
         f.close()
+
+##        f = codecs.open(nom_fichier_html, "w", "latin_1")
+##        f.write("<HTML>")
+##        f.write('<table border=1 WIDTH="100%" BGCOLOR="#FFFFFF">')
+##        f.write('<tr BGCOLOR="#FFCC99">')
+##        f.write(u'<td><center><b>Code Paramètre</b></center></td>')
+##        f.write('<td><center><b>Nom</b></center></td>')
+##        f.write('<td><center><b>Description</b><center></td>')
+##        f.write('<td><center><b>Valeur</b><center></td>')
+##        f.write(u'<td><center><b>Valeur par défaut</b><center></td>')
+##        f.write('</tr>')
+##        f.write('<tr BGCOLOR="#FFFF00">')
+##        f.write('<td><center><b>section [%s]</b></center></td>' % SECTION_EXEFILTER)
+##        f.write('</tr>')
+##        # fonction pour comparer 2 noms de parametres afin de trier la liste:
+##        cmp_params = lambda p1,p2: cmp(p1.code.lower(), p2.code.lower())
+##        for p in sorted(self.parametres.itervalues(), cmp=cmp_params):
+##            f.write('<tr BGCOLOR="#FFFFFF">')
+##            f.write(u'<td><b>%s</b></td>' % p.code)
+##            f.write(u'<td>%s</td>' % unistr(p.nom))
+##            f.write(u'<td>%s</td>' % unistr(p.description))
+##            f.write(u'<td>%s</td>' % unistr(str(p)))
+##            f.write(u'<td>%s</td>' % unistr(str(p.valeur_defaut)))
+##            f.write('</tr>')
+##        # fonction pour comparer 2 noms de filtres afin de trier la liste:
+##        cmp_filtres = lambda f1,f2: cmp(f1.nom_classe.lower(), f2.nom_classe.lower())
+##        for filtre in sorted(self.filtres, cmp=cmp_filtres):
+##            f.write('<tr BGCOLOR="#FFFF00">')
+##            f.write('<td><center><b>section [%s]</b></center></td>' % filtre.nom_classe)
+##            f.write('</tr>')
+##            for p in sorted(filtre.parametres.itervalues(), cmp=cmp_params):
+##                f.write('<tr BGCOLOR="#FFFFFF">')
+##                f.write(u'<td><b>%s</b></td>' % p.code)
+##                f.write(u'<td>%s</td>' % unistr(p.nom))
+##                f.write(u'<td>%s</td>' % unistr(p.description))
+##                f.write(u'<td>%s</td>' % unistr(str(p)))
+##                f.write(u'<td>%s</td>' % unistr(str(p.valeur_defaut)))
+##                f.write('</tr>')
+##        f.write('</table>')
+##        f.write("</HTML>")
+##        f.close()
 
 
 #=== PROGRAMME PRINCIPAL (test) ===============================================
