@@ -29,7 +29,10 @@ Date:    9 Mar 2007
 
 from __future__ import generators
 
-import sys, warnings, os, fnmatch, glob, shutil, codecs, md5
+# hack P. Lagadec 2009-11-11: removed md5 import to avoid DeprecationWarning with Python 2.6
+# BUT this breaks read_md5()...
+#TODO: use hashlib instead when available (Python 2.5+), else fallback to md5
+import sys, warnings, os, fnmatch, glob, shutil, codecs#, md5
 
 __version__ = '2.2'
 __all__ = ['path']
@@ -353,7 +356,7 @@ class path(_base):
         whose names match the given pattern.  For example,
         d.files('*.pyc').
         """
-        
+
         return [p for p in self.listdir(pattern) if p.isfile()]
 
     def walk(self, pattern=None, errors='strict'):
