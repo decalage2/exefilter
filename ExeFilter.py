@@ -100,6 +100,8 @@ __version__ = "1.05"
 # 2009-10-22 v1.04 PL: - archiving disabled by default
 # 2009-11-02 v1.05 PL: - init_gettext always called, even when imported
 #                      - updated parameters for gettext translation
+# 2009-11-11 v1.06 PL: - added new CLI option -o for a single output file
+#                      - added translation for CLI options and summary
 
 #------------------------------------------------------------------------------
 # A FAIRE :
@@ -462,7 +464,7 @@ def init_archivage(politique, taille_src):
 #def transfert(liste_source, destination, type_transfert="entree", handle=None,
 #              taille_temp = TAILLE_ARCHIVE*1000000, pol=None):
 def transfert(liste_source, destination, type_transfert="entree", handle=None,
-              pol=None):
+              pol=None, dest_is_a_file=False):
     """
     Lance le transfert et l'analyse des répertoires et/ou fichiers source
 
@@ -480,6 +482,10 @@ def transfert(liste_source, destination, type_transfert="entree", handle=None,
 
     #@param taille_temp: taille maximale du répertoire temporaire, en octets. Taille par défaut 10Go (DVD double couche)
     #@type  taille_temp: int
+
+    @param dest_is_a_file: False if destination is a dir (default),
+                           True if it's a filename.
+    @type dest_is_a_file: bool
     """
 
     global nom_journal_secu
@@ -553,6 +559,11 @@ def transfert(liste_source, destination, type_transfert="entree", handle=None,
     commun.continuer_transfert = True
     commun.transfert_commence = False
 
+    # if destination is a single file, check if source is one file:
+    if dest_is_a_file:
+        assert(len(liste_source)==1)
+        assert(os.path.isfile(liste_source[0]))
+
     # boucle pour lire chaque répertoire et/ou fichier contenu dans    la liste
     for source in liste_source :
         # on vérifie le type de source: répertoire ou fichier ?
@@ -573,7 +584,8 @@ def transfert(liste_source, destination, type_transfert="entree", handle=None,
 
             rep_relatif_source = ""
             rep_source = Conteneur_Fichier.Conteneur_Fichier (source,
-                destination, rep_relatif_source, politique=p)
+                destination, rep_relatif_source, politique=p,
+                dest_is_a_file=dest_is_a_file)
 
             # calcul de la taille du fichier source
             taille_src += os.stat(source).st_size
@@ -622,8 +634,8 @@ def transfert(liste_source, destination, type_transfert="entree", handle=None,
     plx.display_html_file(os.path.abspath(chemin_rapport+'.html'))
     Journal.info2(u"Fin de l'analyse")
     # log du résumé de la dépollution
-    Journal.important(u'Résumé : %d fichiers analysés ; '\
-        u'%d fichiers acceptés ; %d fichiers nettoyés ; %d fichiers refusés ; %d erreurs' \
+    Journal.important(_(u'Résumé : %d fichiers analysés ; '
+        u'%d fichiers acceptés ; %d fichiers nettoyés ; %d fichiers refusés ; %d erreurs')
         % (resume[0], resume[1], resume[2], resume[3], resume[4]))
 
     if commun.continuer_transfert == False:
@@ -649,37 +661,40 @@ if __name__ == '__main__':
 
     # Banniere
     print "-"*79
-    print "ExeFilter v" + XF_VERSION + " du " + XF_DATE
+    print "ExeFilter v%s - %s" % (XF_VERSION, XF_DATE)
     print "-"*79
     print ""
 
     # on crée un objet optparse.OptionParser pour analyser la ligne de commande:
     op = optparse.OptionParser(usage =
-        "%prog [options] <fichiers ou repertoires a nettoyer>")
+        _("%prog [options] <fichiers ou repertoires a nettoyer>"))
 
     op.add_option("-c", "--config", dest="config", default="",
-        help="Fichier de configuration general pour ExeFilter")
-    op.add_option("-p", "--politique", dest="politique", default="",
-        help="Fichier de configuration pour la politique de filtrage")
+        help=_("Fichier de configuration general pour ExeFilter"))
+    op.add_option("-p", "--policy", dest="politique", default="",
+        help=_("Fichier de configuration pour la politique de filtrage"))
     op.add_option("-d", "--dest", dest="destination", default="",
-        help="Repertoire destination pour les fichiers nettoyes (obligatoire)")
+        help=_("Repertoire destination pour les fichiers nettoyes (obligatoire)"))
+    op.add_option("-o", "--output", dest="output_file", default="",
+        help=_("Output file (may only be used when source is a single file, instead of -d)."))
     op.add_option("-v", "--verbose", action="store_true", dest="debug",
-        default=False, help="Mode Debug (pour le developpement)")
-    op.add_option("-n", "--nouvelle", dest="nouv_politique", default='',
-        help="Creer une nouvelle politique dans un fichier INI/CFG")
+        default=False, help=_("Mode Debug (pour le developpement)"))
+    op.add_option("-n", "--new", dest="nouv_politique", default='',
+        help=_("Creer une nouvelle politique dans un fichier INI/CFG"))
     op.add_option("-e", "--export", dest="export_html", default='',
-        help="Exporter la politique dans un fichier HTML")
+        help=_("Exporter la politique dans un fichier HTML"))
 
     # on parse les options de ligne de commande:
     (options, args) = op.parse_args(sys.argv[1:])
 
     # si aucun fichier/répertoire à nettoyer, et si la destination n'est pas
     # spécifiée, on force l'affichage de l'aide:
-    if (len(args)==0 or options.destination == "") and options.export_html==''\
+    if (len(args)==0 or (options.destination == "" and options.output_file==""))\
+        and options.export_html==''\
         and options.nouv_politique=='':
         op.print_help()
         print ""
-        print "Il faut indiquer les fichiers/repertoires a nettoyer, ainsi qu'une destination."
+        print _("Il faut indiquer les fichiers/repertoires a nettoyer, ainsi qu'une destination.")
         sys.exit(1)
 
     # on exploite les éventuelles options
@@ -710,7 +725,12 @@ if __name__ == '__main__':
 
     # enfin on lance le transfert:
     # (les répertoires et/ou fichiers source sont dans la liste args)
-    transfert(args, options.destination, pol=pol)
+    if not options.output_file:
+        # destination is a directory:
+        transfert(args, options.destination, pol=pol)
+    else:
+        # destination is a filename:
+        transfert(args, options.output_file, pol=pol, dest_is_a_file=True)
 
 
 
