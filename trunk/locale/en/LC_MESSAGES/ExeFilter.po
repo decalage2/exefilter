@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ExeFilter\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-11-02 14:55+0100\n"
+"POT-Creation-Date: 2009-11-11 22:24+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Philippe Lagadec <http://www.decalage.info>\n"
 "Language-Team: \n"
@@ -247,9 +247,15 @@ msgstr "Generic Container"
 msgid "FICHIER: %s"
 msgstr "FILE: %s"
 
-#: Conteneur_Fichier.py:134
+#: Conteneur_Fichier.py:146
 msgid "Fichier"
 msgstr "File"
+
+#: Conteneur_Fichier.py:189
+#: Conteneur_Repertoire.py:217
+#, python-format
+msgid "Copie vers la destination: \"%s\" -> \"%s\"..."
+msgstr "Copy to destination: \"%s\" -> \"%s\"..."
 
 #: Conteneur_Repertoire.py:143
 msgid "Repertoire"
@@ -259,11 +265,6 @@ msgstr "Directory"
 #, python-format
 msgid "Copie temporaire: \"%s\" -> \"%s\"..."
 msgstr "Temporary copy: \"%s\" -> \"%s\"..."
-
-#: Conteneur_Repertoire.py:217
-#, python-format
-msgid "Copie vers la destination: \"%s\" -> \"%s\"..."
-msgstr "Copy to destination: \"%s\" -> \"%s\"..."
 
 #: Conteneur_Repertoire.py:228
 #, python-format
@@ -304,181 +305,222 @@ msgstr "Zip archive recompression after files cleaning..."
 msgid "Aucun fichier accepté dans le Zip: suppression."
 msgstr "No file is accepted in the Zip archive: deleted."
 
-#: ExeFilter.py:216
+#: ExeFilter.py:218
 msgid "Répertoire des fichiers rapports"
 msgstr "Reports directory"
 
-#: ExeFilter.py:217
+#: ExeFilter.py:219
 msgid "Répertoire où sont stockés tous les fichiers rapports"
 msgstr "Directory where all the report files are written"
 
-#: ExeFilter.py:219
+#: ExeFilter.py:221
 msgid "Répertoire des fichiers journaux"
 msgstr "Logs directory"
 
-#: ExeFilter.py:220
+#: ExeFilter.py:222
 msgid "Répertoire où sont stockés tous les fichiers journaux"
 msgstr "Directory where all the log files are written"
 
-#: ExeFilter.py:222
+#: ExeFilter.py:224
 msgid "Répertoire des fichiers temporaires"
 msgstr "Temp directory"
 
-#: ExeFilter.py:223
+#: ExeFilter.py:225
 msgid "Répertoire où sont stockés tous les fichiers temporaires"
 msgstr "Directory where all the temporary files are written"
 
-#: ExeFilter.py:225
+#: ExeFilter.py:227
 msgid "Répertoire des fichiers archivés"
 msgstr "Archived files directory"
 
-#: ExeFilter.py:226
+#: ExeFilter.py:228
 msgid "Répertoire où sont archivés tous les fichiers transférés"
 msgstr "Directory where all the filtered files are archived"
 
-#: ExeFilter.py:228
+#: ExeFilter.py:230
 msgid "Taille maximale du répertoire temporaire (en octets)"
 msgstr "Maximal size for the temp directory (in bytes)"
 
-#: ExeFilter.py:229
+#: ExeFilter.py:231
 msgid "Taille maximale du répertoire où sont stockés tous les fichiers temporaires"
 msgstr "Maximal size of the directory where all temporary files are stored."
 
-#: ExeFilter.py:231
+#: ExeFilter.py:233
 msgid "Taille maximale des archives (en octets)"
 msgstr "Maximal size for the archive directory (in bytes)"
 
-#: ExeFilter.py:232
+#: ExeFilter.py:234
 msgid "Taille maximale du répertoire où sont archivés tous les fichiers transférés"
 msgstr "Maximal size of the directory where all archived files are stored."
 
-#: ExeFilter.py:236
+#: ExeFilter.py:238
 msgid "Ecrire un journal sécurité dans un fichier"
 msgstr "Write a security log file"
 
-#: ExeFilter.py:237
+#: ExeFilter.py:239
 msgid "Le journal sécurité décrit synthétiquement les évènements concernant la sécurité des transferts."
 msgstr "The security log file contains all main security events which happen during content analysis."
 
-#: ExeFilter.py:239
+#: ExeFilter.py:241
 msgid "Envoyer un journal sécurité par syslog"
 msgstr "Send security events to a syslog server"
 
-#: ExeFilter.py:240
+#: ExeFilter.py:242
 msgid "Le journal sécurité décrit synthétiquement les évènements concernant la sécurité des transferts. Syslog permet de centraliser ces journaux par le réseau sur un serveur"
 msgstr "The security log file contains all main security events which happen during content analysis. This option sends the security log events to a central syslog server."
 
-#: ExeFilter.py:244
+#: ExeFilter.py:246
 msgid "Ecrire un journal technique de débogage"
 msgstr "Write a debug log file"
 
-#: ExeFilter.py:245
+#: ExeFilter.py:247
 msgid "Le journal technique contient les évènements détaillés des transferts, pour un débogage en cas de problème."
 msgstr "The debug log file contains very detailed technical events about content analysis, for troubleshooting in case of unexpected errors."
 
-#: ExeFilter.py:248
+#: ExeFilter.py:250
 msgid "Serveur syslog (nom ou adresse IP)"
 msgstr "Syslog server (hostname or IP address)"
 
-#: ExeFilter.py:249
+#: ExeFilter.py:251
 msgid "Nom ou adresse IP du serveur syslog qui centralise les journaux sécurité."
 msgstr "Hostname or IP address of the syslog server to centralize logs."
 
-#: ExeFilter.py:251
+#: ExeFilter.py:253
 msgid "Port syslog (numéro de port UDP)"
 msgstr "Syslog port (UDP port number)"
 
-#: ExeFilter.py:252
+#: ExeFilter.py:254
 msgid "Numéro de port UDP du serveur syslog: 514 pour un serveur syslog standard."
 msgstr "UDP port number used by the syslog server: usually 514 for a standard syslog server."
 
-#: ExeFilter.py:256
+#: ExeFilter.py:258
 msgid "Archiver tous les fichiers apres filtrage"
 msgstr "Archive all files after filtering"
 
-#: ExeFilter.py:257
+#: ExeFilter.py:259
 msgid "Pour archiver une copie de chaque fichier filtré dans un répertoire d'archivage."
 msgstr "To store a copy of each filtered file in an archive directory"
 
-#: ExeFilter.py:263
+#: ExeFilter.py:265
 msgid "Utiliser l'antivirus ClamAV (serveur clamd)"
 msgstr "Use ClamAV antivirus (clamd daemon)"
 
-#: ExeFilter.py:264
+#: ExeFilter.py:266
 msgid "Utiliser la version serveur de l'antivirus ClamAV (clamd) pour analyser les fichiers acceptes. Clamd doit tourner en tant que service sur la machine locale."
 msgstr "Use the daemon version of the ClamAV antivirus (clamd) to analyze all files after content filtering. For this, clamd must run as a service on the local host."
 
-#: ExeFilter.py:268
+#: ExeFilter.py:270
 msgid "Adresse IP ou nom du serveur antivirus clamd"
 msgstr "Hostname or IP address of the clamd server"
 
-#: ExeFilter.py:269
+#: ExeFilter.py:271
 msgid "En general le serveur clamd tourne sur la meme machine: localhost."
 msgstr "Usually the clamd server runs on the same machine: localhost."
 
-#: ExeFilter.py:271
+#: ExeFilter.py:273
 msgid "Port du serveur antivirus clamd"
 msgstr "Port of the clamd server"
 
-#: ExeFilter.py:272
+#: ExeFilter.py:274
 msgid "En general le serveur clamd tourne sur le port 3310."
 msgstr "Usually the clamd server listens on port 3310"
 
-#: ExeFilter.py:276
+#: ExeFilter.py:278
 msgid "Utiliser l'antivirus F-Prot 6 (fpscan)"
 msgstr "Use the F-Prot 6 antivirus (fpscan)"
 
-#: ExeFilter.py:277
+#: ExeFilter.py:279
 msgid "Utiliser la version ligne de commande de l'antivirus F-Prot 6 (fpscan) pour analyser les fichiers acceptes. Attention cela peut degrader significativement les performances."
 msgstr "Use the command-line version of the F-Prot 6 antivirus (fpscan) to scan all files. Warning: this may affect performance significantly."
 
-#: ExeFilter.py:283
+#: ExeFilter.py:285
 msgid "Exécutable de l'antivirus F-Prot 6 (fpscan)"
 msgstr "Path of the F-Prot 6 executable (fpscan)"
 
-#: ExeFilter.py:284
+#: ExeFilter.py:286
 msgid "Emplacement du fichier fpscan de l'antivirus F-Prot 6"
 msgstr "Absolute path of the F-Prot 6 executable (fpscan / fpscan.exe)"
 
-#: ExeFilter.py:288
+#: ExeFilter.py:290
 msgid "Utiliser l'antivirus F-Prot 3 (fpcmd)"
 msgstr "Use the F-Prot 3 antivirus (fpcmd)"
 
-#: ExeFilter.py:289
+#: ExeFilter.py:291
 msgid "Utiliser la version ligne de commande de l'antivirus F-Prot 3 (fpcmd) pour analyser les fichiers acceptes. Attention cela peut degrader significativement les performances."
 msgstr "Use the command-line version of the F-Prot 3 antivirus (fpcmd) to scan all files. Warning: this may affect performance significantly."
 
-#: ExeFilter.py:296
+#: ExeFilter.py:298
 msgid "Exécutable de l'antivirus F-Prot 3 (fpcmd)"
 msgstr "Path of the F-Prot 3 executable (fpcmd)"
 
-#: ExeFilter.py:297
+#: ExeFilter.py:299
 msgid "Emplacement du fichier fpcmd de l'antivirus F-Prot 3"
 msgstr "Absolute path of the F-Prot 3 executable (fpcmd / fpcmd.exe)"
 
-#: ExeFilter.py:422
+#: ExeFilter.py:424
 msgid "La taille des fichiers source est superieure a la taille du repertoire d'archivage."
 msgstr "Size of source files exceeds the archive directory."
 
-#: ExeFilter.py:452
+#: ExeFilter.py:454
 msgid "repertoire d'archivage deja vide => taille source trop grande"
 msgstr "archive directory is already empy => size of source files is too large"
 
-#: ExeFilter.py:539
+#: ExeFilter.py:545
 #, python-format
 msgid "ExeFilter v%s lancé par utilisateur %s sur la machine %s"
 msgstr "ExeFilter v%s launched by user %s on computer %s"
 
-#: ExeFilter.py:544
+#: ExeFilter.py:550
 msgid "Début de l'analyse"
 msgstr "Starting analysis"
 
-#: ExeFilter.py:702
+#: ExeFilter.py:637
+#, python-format
+msgid "Résumé : %d fichiers analysés ; %d fichiers acceptés ; %d fichiers nettoyés ; %d fichiers refusés ; %d erreurs"
+msgstr "Summary : %d analyzed files - %d clean - %d cleaned - %d blocked - %d errors."
+
+#: ExeFilter.py:670
+msgid "%prog [options] <fichiers ou repertoires a nettoyer>"
+msgstr "%prog [options] <files or dirs to be analyzed>"
+
+#: ExeFilter.py:673
+msgid "Fichier de configuration general pour ExeFilter"
+msgstr "Configuration file for ExeFilter"
+
+#: ExeFilter.py:675
+msgid "Fichier de configuration pour la politique de filtrage"
+msgstr "Configuration file for filtering policy"
+
+#: ExeFilter.py:677
+msgid "Repertoire destination pour les fichiers nettoyes (obligatoire)"
+msgstr "Destination directory to store cleaned files (mandatory unless -o is used)"
+
+#: ExeFilter.py:679
+msgid "Output file (may only be used when source is a single file, instead of -d)."
+msgstr "Output file (may only be used when source is a single file, instead of -d)."
+
+#: ExeFilter.py:681
+msgid "Mode Debug (pour le developpement)"
+msgstr "Debug mode (for developers)"
+
+#: ExeFilter.py:683
+msgid "Creer une nouvelle politique dans un fichier INI/CFG"
+msgstr "Create a new config/policy file (INI format)"
+
+#: ExeFilter.py:685
+msgid "Exporter la politique dans un fichier HTML"
+msgstr "Export default config/policy and detailed description in a HTML file"
+
+#: ExeFilter.py:697
+msgid "Il faut indiquer les fichiers/repertoires a nettoyer, ainsi qu'une destination."
+msgstr "Please specify files or dirs to be analyzed, and a destination (-d or -o)."
+
+#: ExeFilter.py:717
 #, python-format
 msgid "Politique sauvee dans le fichier %s"
 msgstr "Policy saved in file %s"
 
-#: ExeFilter.py:708
+#: ExeFilter.py:723
 #, python-format
 msgid "Politique exportee dans le fichier %s"
 msgstr "Policy exported in file %s"

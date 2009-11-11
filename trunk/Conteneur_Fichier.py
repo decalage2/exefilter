@@ -16,26 +16,26 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 @contact: U{Philippe Lagadec<mailto:philippe.lagadec(a)laposte.net>}
 
 @copyright: DGA/CELAR 2004-2008
-@copyright: NATO/NC3A 2008 (modifications PL apres v1.1.0)
+@copyright: NATO/NC3A 2008-2009 (modifications PL apres v1.1.0)
 
 @license: CeCILL (open-source compatible GPL)
           cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.03
+@version: 1.04
 
 @status: beta
 """
 #==============================================================================
 __docformat__ = 'epytext en'
 
-__date__    = "2008-04-20"
-__version__ = "1.03"
+__date__    = "2009-11-11"
+__version__ = "1.04"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
 
 # Copyright DGA/CELAR 2004-2008
-# Copyright NATO/NC3A 2008 (PL changes after v1.1.0)
+# Copyright NATO/NC3A 2008-2009 (PL changes after v1.1.0)
 # Auteurs:
 # - Philippe Lagadec (PL) - philippe.lagadec(a)laposte.net
 # - Arnaud Kerréneur (AK) - arnaud.kerreneur(a)dga.defense.gouv.fr
@@ -78,12 +78,15 @@ __version__ = "1.03"
 # 2007-11-03 v1.01 PL: - ajout licence CeCILL
 # 2008-03-24 v1.02 PL: - ajout de _() pour traduction gettext des chaines
 # 2008-04-20 v1.03 PL: - ajout parametre politique a Conteneur_Fichier.__init__
+# 2009-11-11 v1.04 PL: - added option to have a filename as destination
 
 #------------------------------------------------------------------------------
 # A FAIRE:
 #------------------------------------------------------------------------------
 
 #=== IMPORTS ==================================================================
+
+import os
 
 # module path.py pour manipuler plus facilement les fichiers/répertoires
 from path import path
@@ -113,7 +116,7 @@ class Conteneur_Fichier (Conteneur_Repertoire.Conteneur_Repertoire):
     """
 
     def __init__(self, nom_fichier, repertoire_destination, rep_relatif_source,
-        fichier=None, politique=None):
+        fichier=None, politique=None, dest_is_a_file=False):
         """
         Constructeur d'objet Conteneur_Fichier.
 
@@ -123,10 +126,19 @@ class Conteneur_Fichier (Conteneur_Repertoire.Conteneur_Repertoire):
         @param repertoire_destination: le répertoire destination où copier le
                                        fichier apres transfert
         @type repertoire_destination: str
+
+        @param dest_is_a_file: False if repertoire_destination is a dir (default),
+                               True if it's a filename.
+        @type dest_is_a_file: bool
         """
         # nom source est le chemin absolu du répertoire source:
         chem_source = path(nom_fichier).abspath().normpath().dirname()
         Journal.debug(u"chem_source = %s" % chem_source)
+        self.dest_is_a_file = dest_is_a_file
+        if dest_is_a_file:
+            # if dest is a file, store filename and use its parent dir:
+            self.dest_filename = os.path.abspath(repertoire_destination)
+            repertoire_destination = os.path.dirname(self.dest_filename)
         # on appelle d'abord le constructeur de base
         #self.type = "Fichier"
         Conteneur.Conteneur.__init__(self, chem_source, repertoire_destination,
@@ -148,4 +160,47 @@ class Conteneur_Fichier (Conteneur_Repertoire.Conteneur_Repertoire):
             f = Fichier.Fichier(self.nom_fichier, conteneur=self)
             self.liste_fichiers.append(f)
         return self.liste_fichiers
+
+
+    def reconstruire (self):
+        """
+        reconstruit le Conteneur à partir des fichiers nettoyés.
+        """
+        # if destination is a directory, use the normal method:
+        if not self.dest_is_a_file:
+            Conteneur_Repertoire.Conteneur_Repertoire.reconstruire(self)
+        # else destination is a file:
+        else:
+            # check if there's only one file:
+            assert(len(self.liste_fichiers) == 1)
+            fichier = self.liste_fichiers[0]
+            # si le fichier n'est pas refuse, on le recopie a destination:
+            if not fichier.resultat_fichier.est_refuse():
+                # directory of dest file:
+                chem_dest_fich = path(os.path.dirname(self.dest_filename))
+##                Journal.debug(u"self.chem_dest = %s" % self.chem_dest)
+##                Journal.debug(u"fichier.chemin.parent = %s" % fichier.chemin.parent)
+##                Journal.debug(u"fichier.chemin = %s" % fichier.chemin)
+##                Journal.debug(u"chem_dest_fich = %s" % chem_dest_fich)
+                # create dest dir if it does not exist:
+                if not chem_dest_fich.exists():
+                    chem_dest_fich.makedirs()
+                fichier_dest = self.dest_filename
+                Journal.info2(_(u'Copie vers la destination: "%s" -> "%s"...') % (fichier._copie_temp, fichier_dest))
+                fichier._copie_temp.copy2(fichier_dest)
+                # no archiving in that mode:
+##                # Si l'option archivage (archive_after) est activee:
+##                if self.politique.parametres['archive_after'].valeur:
+##                    # on copie les fichiers nettoyés vers le répertoire archivage
+##                    #TODO: code a simplifier
+##                    chem_dest_fich = path(self.rep_archive) / path(commun.sous_rep_archive) / self.rep_relatif_source / fichier.chemin.parent
+##                    if not chem_dest_fich.exists():
+##                        chem_dest_fich.makedirs()
+##                    fichier_dest = path(self.rep_archive) / path(commun.sous_rep_archive) / self.rep_relatif_source / fichier.chemin
+##                    debug(_(u'Copie: "%s" -> "%s"...') % (fichier._copie_temp, fichier_dest))
+##                    fichier._copie_temp.copy2(fichier_dest)
+
+            # puis détruire le répertoire temporaire !
+            debug ("effacement du rep temp partiel %s" % self.rep_temp_partiel)
+            self.rep_temp_partiel.rmtree()
 
