@@ -1,14 +1,14 @@
 #!/usr/local/bin/python
-# -*- coding: iso-8859-1 -*-
+# -*- coding: latin-1 -*-
 """
 OleFileIO_PL:
     Module to read Microsoft OLE2 files (also called Structured Storage or
     Microsoft Compound Document File Format), such as Microsoft Office
     documents, Image Composer and FlashPix files, Outlook messages, ...
 
-version 0.19 2008-02-29 Philippe Lagadec - http://lagasoft.free.fr
+version 0.20 2009-12-11 Philippe Lagadec - http://www.decalage.info
 
-Project website: http://lagasoft.free.fr/python/olefileio
+Project website: http://www.decalage.info/python/olefileio
 
 Improved version of the OleFileIO module from PIL library v1.1.6
 See: http://www.pythonware.com/products/pil/index.htm
@@ -16,7 +16,7 @@ See: http://www.pythonware.com/products/pil/index.htm
 The Python Imaging Library (PIL) is
     Copyright (c) 1997-2005 by Secret Labs AB
     Copyright (c) 1995-2005 by Fredrik Lundh
-OleFileIO_PL changes are Copyright (c) 2005-2007 by Philippe Lagadec
+OleFileIO_PL changes are Copyright (c) 2005-2009 by Philippe Lagadec
 
 See source code and LICENSE.txt for information on usage and redistribution.
 
@@ -24,15 +24,15 @@ WARNING: THIS IS (STILL) WORK IN PROGRESS.
 """
 
 __author__  = "Fredrik Lundh (Secret Labs AB), Philippe Lagadec"
-__date__    = "2008-02-29"
-__version__ = '0.19'
+__date__    = "2009-12-11"
+__version__ = '0.20'
 
 #--- LICENSE ------------------------------------------------------------------
 
 # OleFileIO_PL is an improved version of the OleFileIO module from the
 # Python Imaging Library (PIL).
 
-# OleFileIO_PL changes are Copyright (c) 2005-2007 by Philippe Lagadec
+# OleFileIO_PL changes are Copyright (c) 2005-2009 by Philippe Lagadec
 #
 # The Python Imaging Library (PIL) is
 #    Copyright (c) 1997-2005 by Secret Labs AB
@@ -102,7 +102,9 @@ __version__ = '0.19'
 # 2007-12-05 v0.18 PL: - fixed several bugs in handling of FAT, MiniFAT and
 #                        streams
 #                      - added option '-c' in main to check all streams
-# 2008-02-29 v0.19 PL: - bugfix in OleFileIO.open to use path objects
+# 2009-12-10 v0.19 PL: - bugfix for 32 bit arrays on 64 bits platforms
+#                        (thanks to Ben G. and Martijn for reporting the bug)
+# 2009-12-11 v0.20 PL: - bugfix in OleFileIO.open when filename is not plain str
 
 #-----------------------------------------------------------------------------
 # TODO (for version 1.0):
@@ -193,6 +195,16 @@ import string, StringIO, struct, array, os.path
 
 #[PL] Define explicitly the public API to avoid private objects in pydoc:
 __all__ = ['OleFileIO', 'isOleFile']
+
+#[PL] workaround to fix an issue with array item size on 64 bits systems:
+if array.array('L').itemsize == 4:
+    # on 32 bits platforms, long integers in an array are 32 bits:
+    UINT32 = 'L'
+elif array.array('I').itemsize == 4:
+    # on 64 bits platforms, integers in an array are 32 bits:
+    UINT32 = 'I'
+else:
+    raise ValueError, 'Need to fix a bug with 32 bit arrays, please contact author...'
 
 
 #[PL] These workarounds were inspired from the Path module
@@ -823,15 +835,22 @@ class OleFileIO:
         """
         Open an OLE2 file.
         Reads the header, FAT and directory.
+
+        filename: string-like or file-like object
         """
-        # check if filename is actually a string or an open file:
-        #if type(filename) == type(""): => doesn't work with path objects
-        if not hasattr(filename, 'read'):
-            # this is a string containing the filename:
-            self.fp = open(filename, "rb")
-        else:
-            # this is already an open file or a file object:
+        #[PL] check if filename is a string-like or file-like object:
+        # (it is better to check for a read() method)
+        if hasattr(filename, 'read'):
+            # file-like object
             self.fp = filename
+        else:
+            # string-like object
+            self.fp = open(filename, "rb")
+        # old code fails if filename is not a plain string:   
+        #if type(filename) == type(""):
+        #    self.fp = open(filename, "rb")
+        #else:
+        #    self.fp = filename
 
         # lists of streams in FAT and MiniFAT, to detect duplicate references
         # (list of indexes of first sectors of each stream)
@@ -1049,7 +1068,7 @@ class OleFileIO:
         if not DEBUG_MODE:
             return
         VPL=8 # number of values per line (8+1 * 8+1 = 81)
-        tab = array.array('L', sector)
+        tab = array.array(UINT32, sector)
         nbsect = len(tab)
         nlines = (nbsect+VPL-1)/VPL
         print "index",
@@ -1081,7 +1100,7 @@ class OleFileIO:
             fat1 = sect
         else:
             # if it's a raw sector, it is parsed in an array
-            fat1 = array.array('L', sect)
+            fat1 = array.array(UINT32, sect)
             self.dumpsect(sect)
         # The FAT is a sector chain starting at the first index of itself.
         for isect in fat1:
@@ -1093,7 +1112,7 @@ class OleFileIO:
             s = self.getsect(isect)
             # parse it as an array of 32 bits integers, and add it to the
             # global FAT array
-            self.fat = self.fat + array.array('L', s)
+            self.fat = self.fat + array.array(UINT32, s)
         return isect
 
 
@@ -1111,7 +1130,7 @@ class OleFileIO:
         # [PL] FAT is an array of 32 bits unsigned ints, it's more effective
         # to use an array than a list in Python.
         # It's initialized as empty first:
-        self.fat = array.array('L')
+        self.fat = array.array(UINT32)
         self.loadfat_sect(sect)
         #self.dumpfat(self.fat)
 ##      for i in range(0, len(sect), 4):
@@ -1121,7 +1140,7 @@ class OleFileIO:
 ##              break
 ##          s = self.getsect(ix)
 ##          #fat    = fat + map(lambda i, s=s: i32(s, i), range(0, len(s), 4))
-##          fat = fat + array.array('L', s)
+##          fat = fat + array.array(UINT32, s)
         if self.csectDif != 0:
             # [PL] There's a DIFAT because file is larger than 6.8MB
             # some checks just in case:
@@ -1144,7 +1163,7 @@ class OleFileIO:
                 debug( "DIFAT block %d, sector %X" % (i, isect_difat) )
                 #TODO: check if corresponding FAT SID = DIFSECT
                 sector_difat = self.getsect(isect_difat)
-                difat = array.array('L', sector_difat)
+                difat = array.array(UINT32, sector_difat)
                 self.dumpsect(sector_difat)
                 self.loadfat_sect(difat[:127])
                 # last DIFAT pointer is next DIFAT sector:
@@ -1194,7 +1213,7 @@ class OleFileIO:
         s = self._open(self.minifatsect, stream_size, force_FAT=True).read()
         #[PL] Old code replaced by an array:
         #self.minifat = map(lambda i, s=s: i32(s, i), range(0, len(s), 4))
-        self.minifat = array.array('L', s)
+        self.minifat = array.array(UINT32, s)
         # Then shrink the array to used size, to avoid indexes out of MiniStream:
         debug('MiniFAT shrunk from %d to %d sectors' % (len(self.minifat), nb_minisectors))
         self.minifat = self.minifat[:nb_minisectors]
