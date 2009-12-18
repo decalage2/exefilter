@@ -31,7 +31,7 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 @license: CeCILL (open-source compatible GPL)
           cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.05
+@version: 1.06
 
 @status: beta
 """
@@ -40,8 +40,8 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 __docformat__ = 'epytext en'
 
 #__author__  = "Philippe Lagadec, Tanguy Vinceleux, Arnaud Kerréneur (DGA/CELAR)"
-__date__    = "2009-11-02"
-__version__ = "1.05"
+__date__    = "2009-11-12"
+__version__ = "1.06"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
@@ -102,9 +102,11 @@ __version__ = "1.05"
 #                      - updated parameters for gettext translation
 # 2009-11-11 v1.06 PL: - added new CLI option -o for a single output file
 #                      - added translation for CLI options and summary
+#                      - added parameters to set exit code according to results
 
 #------------------------------------------------------------------------------
-# A FAIRE :
+# TODO:
+# + handle assert errors with -o option
 # - fix init_gettext() when application is compiled with py2exe
 # + finir traduction gettext
 # + traduire codes parametres en anglais (pour avoir une config homogene)
@@ -204,6 +206,13 @@ REP_ARCHIVE    = "archivage" + os.sep   # archivage\
 TAILLE_TEMP    = 10000    # taille max répertoire temp, en Mo
 TAILLE_ARCHIVE = 10000    # taille max archive, en Mo
 
+# default exit codes for result:
+EXITCODE_CLEAN   = 0    # clean content
+EXITCODE_BLOCKED = 1    # blocked content
+EXITCODE_CLEANED = 2    # cleaned content
+EXITCODE_ERROR   = 3    # error during analysis
+
+
 #=== VARIABLES GLOBALES =======================================================
 
 #TODO: a supprimer pour permettre plusieurs transferts simultanés
@@ -258,6 +267,23 @@ Parametres.Parametre("port_syslog", int, nom=_("Port syslog (numéro de port UDP)
 Parametres.Parametre("archive_after", bool, nom=_(u"Archiver tous les fichiers apres filtrage"),
     description=_(u"Pour archiver une copie de chaque fichier filtré dans un répertoire d'archivage."),
     valeur_defaut = False).ajouter(parametres)
+
+Parametres.Parametre("exitcode_clean", int, nom='Exit code when overall result is clean',
+    description='Exit code (errorlevel) returned by ExeFilter when all analyzed '
+        'files are clean. (only works with -o option for now)',
+    valeur_defaut = EXITCODE_CLEAN).ajouter(parametres)
+Parametres.Parametre("exitcode_cleaned", int, nom='Exit code when overall result is cleaned',
+    description='Exit code (errorlevel) returned by ExeFilter when at least some analyzed '
+        'files have been cleaned. (only works with -o option for now)',
+    valeur_defaut = EXITCODE_CLEANED).ajouter(parametres)
+Parametres.Parametre("exitcode_blocked", int, nom='Exit code when overall result is blocked',
+    description='Exit code (errorlevel) returned by ExeFilter when all analyzed '
+        'files are blocked. (only works with -o option for now)',
+    valeur_defaut = EXITCODE_BLOCKED).ajouter(parametres)
+Parametres.Parametre("exitcode_error", int, nom='Exit code when overall result is error',
+    description='Exit code (errorlevel) returned by ExeFilter when an error '
+        'occurred during the analysis. (only works with -o option for now)',
+    valeur_defaut = EXITCODE_ERROR).ajouter(parametres)
 
 #--- ANTIVIRUS ---
 
@@ -641,8 +667,28 @@ def transfert(liste_source, destination, type_transfert="entree", handle=None,
     if commun.continuer_transfert == False:
         Journal.warning(u"TRANSFERT ANNULE par l'utilisateur")
 
+    # return exit code according to results:
+    #TODO: use results from containers instead of this quick hack:
+    clean   = resume[1]
+    cleaned = resume[2]
+    blocked = resume[3]
+    errors  = resume[4]
+    if errors:
+        exitcode = p.parametres['exitcode_error'].valeur
+    elif (clean+cleaned>0) and (cleaned+blocked>0):
+        exitcode = p.parametres['exitcode_cleaned'].valeur
+    elif (clean>0) and (cleaned+blocked == 0):
+        exitcode = p.parametres['exitcode_clean'].valeur
+    elif (blocked>0) and (clean+cleaned == 0):
+        exitcode = p.parametres['exitcode_blocked'].valeur
+    else:
+        raise ValueError, 'Summary values look wrong...'
+    Journal.debug('Exit code: %d' % exitcode)
+
     Journal.fermer_journal()
-    return
+    return exitcode
+
+    #return
 
 
 
@@ -695,7 +741,7 @@ if __name__ == '__main__':
         op.print_help()
         print ""
         print _("Il faut indiquer les fichiers/repertoires a nettoyer, ainsi qu'une destination.")
-        sys.exit(1)
+        sys.exit(parametres['exitcode_error'].valeur)
 
     # on exploite les éventuelles options
     if options.debug:
@@ -725,12 +771,18 @@ if __name__ == '__main__':
 
     # enfin on lance le transfert:
     # (les répertoires et/ou fichiers source sont dans la liste args)
-    if not options.output_file:
-        # destination is a directory:
-        transfert(args, options.destination, pol=pol)
-    else:
-        # destination is a filename:
-        transfert(args, options.output_file, pol=pol, dest_is_a_file=True)
+    try:
+        if not options.output_file:
+            # destination is a directory:
+            exitcode = transfert(args, options.destination, pol=pol)
+        else:
+            # destination is a filename:
+            exitcode = transfert(args, options.output_file, pol=pol, dest_is_a_file=True)
+    except:
+        Journal.exception('Error during analysis')
+        exitcode = pol.parametres['exitcode_error'].valeur
+
+    sys.exit(exitcode)
 
 
 
