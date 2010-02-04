@@ -177,6 +177,9 @@ class Conteneur:
     def creer_rep_temp(self):
         """Pour initialiser le répertoire temporaire nécessaire à l'analyse du
         conteneur."""
+        # first, make sure the root temp dir exists:
+        if not os.path.exists(self.rep_temp):
+            os.makedirs(self.rep_temp)
         # create a temp subdir only accessible to current user,
         # without race conditions:
         self.rep_temp_complet = path(tempfile.mkdtemp(dir=self.rep_temp))
