@@ -104,6 +104,8 @@ __version__ = "1.07"
 #                      - added translation for CLI options and summary
 #                      - added parameters to set exit code according to results
 # 2010-02-04 v1.07 PL: - removed commun.sous_rep_temp to avoid race conditions
+#                      - avoid exceptions when username or locale cannot be
+#                        determined
 
 #------------------------------------------------------------------------------
 # TODO:
@@ -134,7 +136,11 @@ def init_gettext():
     # initialisation de la locale (cf. doc Python): est-ce toujours necessaire ?
     locale.setlocale(locale.LC_ALL, '')
     # langue du systeme: 2 premieres lettres de la locale/lang
-    lang = locale.getdefaultlocale()[0][:2]
+    try:
+        lang = locale.getdefaultlocale()[0][:2]
+    except:
+        # workaround if locale cannot be determined
+        lang = 'en'
     #print 'lang =', lang
     if lang != 'fr':
         # ordre prefere des langues: 1) systeme, 2) english, 3) francais
@@ -219,6 +225,7 @@ EXITCODE_ERROR   = 3    # error during analysis
 #TODO: a supprimer pour permettre plusieurs transferts simultanés
 nom_rapport       = None
 nom_journal_secu  = None
+nom_journal_debug = None
 transfert_termine = False
 
 # Paramètres d'ExeFilter, avec leurs valeurs par défaut:
@@ -341,6 +348,7 @@ def get_journal() :
     @return: le chemin du fichier journal
     @rtype: str
     """
+    global nom_journal_secu
     if nom_journal_secu == None:
         #TODO: renvoyer une valeur par defaut ?
         return None
@@ -359,6 +367,7 @@ def get_journal_debug() :
     @return: le chemin du fichier journal
     @rtype: str
     """
+    global nom_journal_debug
     if nom_journal_debug == None:
         #TODO: renvoyer une valeur par defaut ?
         return None
@@ -526,11 +535,19 @@ def transfert(liste_source, destination, type_transfert="entree", handle=None,
 
     taille_src = 0
 
+    # on récupère le nom de l'utilisateur qui lance ExeFilter, avec nom de
+    # domaine (ou de machine) sous Windows:
+    try:
+        username = get_username()
+    except:
+        # workaround if user name cannot be determined
+        username = 'unknown'
+
     # création du tronc commun pour les noms des journaux et des rapports:
     nom_machine = socket.gethostname()
     date = time.strftime("%Y-%m-%d", time.localtime())
     heure = time.strftime("%Hh%Mm%Ss", time.localtime())
-    nom_commun = date + "_" + nom_machine + "_" + get_username() + "_" + heure
+    nom_commun = date + "_" + nom_machine + "_" + username + "_" + heure
 
     # nom des fichiers log = nom de la machine + date et heure du transfert
     nom_journal_secu = "Journal_secu_" + nom_commun + ".log"
@@ -565,12 +582,8 @@ def transfert(liste_source, destination, type_transfert="entree", handle=None,
     # création des sous-répertoires temp et archivage:
     commun.sous_rep_archive = "transfert_" + nom_commun
 
-    # on récupère le nom de l'utilisateur qui lance ExeFilter, avec nom de
-    # domaine (ou de machine) sous Windows:
-    user = get_username(with_domain=True)
-
     Journal.important(_(u"ExeFilter v%s lancé par utilisateur %s sur la machine %s") %
-        (XF_VERSION, user, nom_machine))
+        (XF_VERSION, get_username(with_domain=True), nom_machine))
 
     # on ajoute la politique dans le journal:
     p.journaliser()
