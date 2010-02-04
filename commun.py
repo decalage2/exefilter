@@ -4,6 +4,7 @@
 ExeFilter - Fonctions, constantes et variables communes à tous les modules.
 
 Ce fichier fait partie du projet ExeFilter.
+URL du projet: U{http://www.decalage.info/exefilter}
 
 @author: U{Philippe Lagadec<mailto:philippe.lagadec(a)laposte.net>}
 @author: U{Arnaud Kerréneur<mailto:arnaud.kerreneur(a)dga.defense.gouv.fr>}
@@ -11,10 +12,12 @@ Ce fichier fait partie du projet ExeFilter.
 
 @contact: U{Philippe Lagadec<mailto:philippe.lagadec(a)laposte.net>}
 
-@copyright: DGA/CELAR 2004-2007
+@copyright: DGA/CELAR 2004-2008
+@copyright: NATO/NC3A 2008-2010 (modifications PL apres ExeFilter v1.1.0)
+
 @license: CeCILL (open-source compatible GPL) - cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.01
+@version: 1.02
 @status: beta
 
 @var MODE_DEBUG: Activation du mode debug
@@ -22,14 +25,15 @@ Ce fichier fait partie du projet ExeFilter.
 __docformat__ = 'epytext en'
 
 #__author__    = "Philippe Lagadec, Arnaud Kerréneur (DGA/CELAR)"
-__date__      = "2007-12-17"
-__version__   = "1.01"
+__date__      = "2010-02-04"
+__version__   = "1.02"
 
 
 #------------------------------------------------------------------------------
 # LICENCE:
 
-# Copyright DGA/CELAR 2004-2007
+# Copyright DGA/CELAR 2004-2008
+# Copyright NATO/NC3A 2008-2010 (modifications PL apres ExeFilter v1.1.0)
 # Auteurs:
 # - Philippe Lagadec (PL) - philippe.lagadec(a)laposte.net
 # - Arnaud Kerréneur (AK) - arnaud.kerreneur(a)dga.defense.gouv.fr
@@ -74,6 +78,7 @@ __version__   = "1.01"
 #                      - conversion tabs en espaces
 #                      - amelioration imports
 #                      - ajout de display_html_file
+# 2010-02-04 v1.02 PL: - disabled sous_rep_temp to avoid race conditions
 
 #------------------------------------------------------------------------------
 # A FAIRE:
@@ -110,7 +115,7 @@ MODE_DEBUG = False    # contrôle si les messages de debug() s'affichent
 nb_fichiers = compteur_avancement = 0
 continuer_transfert = True
 transfert_commence  = False
-sous_rep_temp       = None
+##sous_rep_temp       = None
 sous_rep_archive    = None
 politique           = None
 
