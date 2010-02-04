@@ -7,7 +7,7 @@ Module qui contient la classe L{Conteneur_Fichier.Conteneur_Fichier},
 pour traiter un conteneur qui correspond à un simple fichier.
 
 Ce fichier fait partie du projet ExeFilter.
-URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
+URL du projet: U{http://www.decalage.info/exefilter}
 
 @organization: DGA/CELAR
 @author: U{Philippe Lagadec<mailto:philippe.lagadec(a)laposte.net>}
@@ -16,26 +16,26 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 @contact: U{Philippe Lagadec<mailto:philippe.lagadec(a)laposte.net>}
 
 @copyright: DGA/CELAR 2004-2008
-@copyright: NATO/NC3A 2008-2009 (modifications PL apres v1.1.0)
+@copyright: NATO/NC3A 2008-2010 (modifications PL apres ExeFilter v1.1.0)
 
 @license: CeCILL (open-source compatible GPL)
           cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.04
+@version: 1.05
 
 @status: beta
 """
 #==============================================================================
 __docformat__ = 'epytext en'
 
-__date__    = "2009-11-11"
-__version__ = "1.04"
+__date__    = "2010-02-04"
+__version__ = "1.05"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
 
 # Copyright DGA/CELAR 2004-2008
-# Copyright NATO/NC3A 2008-2009 (PL changes after v1.1.0)
+# Copyright NATO/NC3A 2008-2010 (PL changes after ExeFilter v1.1.0)
 # Auteurs:
 # - Philippe Lagadec (PL) - philippe.lagadec(a)laposte.net
 # - Arnaud Kerréneur (AK) - arnaud.kerreneur(a)dga.defense.gouv.fr
@@ -79,6 +79,7 @@ __version__ = "1.04"
 # 2008-03-24 v1.02 PL: - ajout de _() pour traduction gettext des chaines
 # 2008-04-20 v1.03 PL: - ajout parametre politique a Conteneur_Fichier.__init__
 # 2009-11-11 v1.04 PL: - added option to have a filename as destination
+# 2010-02-04 v1.05 PL: - fixed temp dir deletion
 
 #------------------------------------------------------------------------------
 # A FAIRE:
@@ -201,6 +202,6 @@ class Conteneur_Fichier (Conteneur_Repertoire.Conteneur_Repertoire):
 ##                    fichier._copie_temp.copy2(fichier_dest)
 
             # puis détruire le répertoire temporaire !
-            debug ("effacement du rep temp partiel %s" % self.rep_temp_partiel)
-            self.rep_temp_partiel.rmtree()
+            debug ("Effacement du repertoire temporaire %s" % self.rep_temp_complet)
+            self.rep_temp_complet.rmtree()
 

@@ -16,7 +16,7 @@ La source et la destination peuvent être fournies en ligne de commande,
 ou bien grâce à la fonction transfert() si ce module est importé.
 
 Ce fichier fait partie du projet ExeFilter.
-URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
+URL du projet: U{http://www.decalage.info/exefilter}
 
 @organization: DGA/CELAR
 @author: U{Philippe Lagadec<mailto:philippe.lagadec(a)laposte.net>}
@@ -26,12 +26,12 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 @contact: U{Philippe Lagadec<mailto:philippe.lagadec(a)laposte.net>}
 
 @copyright: DGA/CELAR 2004-2008
-@copyright: NATO/NC3A 2008-2009 (modifications PL apres v1.1.0)
+@copyright: NATO/NC3A 2008-2010 (modifications PL apres v1.1.0)
 
 @license: CeCILL (open-source compatible GPL)
           cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.06
+@version: 1.07
 
 @status: beta
 """
@@ -40,14 +40,14 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 __docformat__ = 'epytext en'
 
 #__author__  = "Philippe Lagadec, Tanguy Vinceleux, Arnaud Kerréneur (DGA/CELAR)"
-__date__    = "2009-11-12"
-__version__ = "1.06"
+__date__    = "2010-02-04"
+__version__ = "1.07"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
 
 # Copyright DGA/CELAR 2004-2008
-# Copyright NATO/NC3A 2008-2009 (modifications PL apres v1.1.0)
+# Copyright NATO/NC3A 2008-2010 (modifications PL apres ExeFilter v1.1.0)
 # Auteurs:
 # - Philippe Lagadec (PL) - philippe.lagadec(a)laposte.net
 # - Arnaud Kerréneur (AK) - arnaud.kerreneur(a)dga.defense.gouv.fr
@@ -103,6 +103,7 @@ __version__ = "1.06"
 # 2009-11-11 v1.06 PL: - added new CLI option -o for a single output file
 #                      - added translation for CLI options and summary
 #                      - added parameters to set exit code according to results
+# 2010-02-04 v1.07 PL: - removed commun.sous_rep_temp to avoid race conditions
 
 #------------------------------------------------------------------------------
 # TODO:
@@ -562,7 +563,7 @@ def transfert(liste_source, destination, type_transfert="entree", handle=None,
     Journal.init_journal(p, journal_secu = get_journal(), journal_debug = get_journal_debug())
 
     # création des sous-répertoires temp et archivage:
-    commun.sous_rep_archive = commun.sous_rep_temp = "transfert_" + nom_commun
+    commun.sous_rep_archive = "transfert_" + nom_commun
 
     # on récupère le nom de l'utilisateur qui lance ExeFilter, avec nom de
     # domaine (ou de machine) sous Windows:

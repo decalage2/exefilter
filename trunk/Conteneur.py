@@ -7,7 +7,7 @@ Module qui contient la classe L{Conteneur.Conteneur},
 pour manipuler des conteneurs génériques de fichiers (repertoire, archive).
 
 Ce fichier fait partie du projet ExeFilter.
-URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
+URL du projet: U{http://www.decalage.info/exefilter}
 
 @organization: DGA/CELAR
 @author: U{Philippe Lagadec<mailto:philippe.lagadec(a)laposte.net>}
@@ -16,24 +16,24 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 @contact: U{Philippe Lagadec<mailto:philippe.lagadec(a)laposte.net>}
 
 @copyright: DGA/CELAR 2004-2008
-@copyright: NATO/NC3A 2008 (PL changes after v1.1.0)
+@copyright: NATO/NC3A 2008-2010 (PL changes after ExeFilter v1.1.0)
 @license: CeCILL (open-source compatible GPL) - cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.03
+@version: 1.04
 
 @status: beta
 """
 #==============================================================================
 __docformat__ = 'epytext en'
 
-__date__    = "2008-04-20"
-__version__ = "1.03"
+__date__    = "2010-02-04"
+__version__ = "1.04"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
 
 # Copyright DGA/CELAR 2004-2008
-# Copyright NATO/NC3A 2008 (modifications PL apres v1.1.0)
+# Copyright NATO/NC3A 2008-2010 (modifications PL apres ExeFilter v1.1.0)
 # Auteurs:
 # - Philippe Lagadec (PL) - philippe.lagadec(a)laposte.net
 # - Arnaud Kerréneur (AK) - arnaud.kerreneur(a)dga.defense.gouv.fr
@@ -77,6 +77,7 @@ __version__ = "1.03"
 #                      - amelioration portabilite creer_rep_temp avec os.path.join
 # 2008-03-24 v1.02 PL: - ajout de _() pour traduction gettext des chaines
 # 2008-04-20 v1.03 PL: - ajout parametre politique a Conteneur.__init__
+# 2010-02-04 v1.04 PL: - fixed temp dir creation to avoid race conditions
 
 #------------------------------------------------------------------------------
 # A FAIRE:
@@ -176,14 +177,19 @@ class Conteneur:
     def creer_rep_temp(self):
         """Pour initialiser le répertoire temporaire nécessaire à l'analyse du
         conteneur."""
-        # rep_temp_complet est la concaténation de rep_temp, sous_rep_temp et rep_relatif_source
-        # ex: le rép source est titi. rep_temp_complet devient temp\transfert_19-07-2005_11h30m12s\titi
-        RACINE2 = os.path.join(self.rep_temp, commun.sous_rep_temp, self.rep_relatif_source)
-        if os.path.exists(RACINE2) == False:
-            os.makedirs(RACINE2)
-        self.rep_temp_complet = path(RACINE2)
-        RACINE3 = os.path.join(self.rep_temp, commun.sous_rep_temp)
-        self.rep_temp_partiel = path(RACINE3)
+        # create a temp subdir only accessible to current user,
+        # without race conditions:
+        self.rep_temp_complet = path(tempfile.mkdtemp(dir=self.rep_temp))
+
+        # old code leading to race conditions when running several ExeFilter instances:
+##        # rep_temp_complet est la concaténation de rep_temp, sous_rep_temp et rep_relatif_source
+##        # ex: le rép source est titi. rep_temp_complet devient temp\transfert_19-07-2005_11h30m12s\titi
+##        RACINE2 = os.path.join(self.rep_temp, commun.sous_rep_temp, self.rep_relatif_source)
+##        if os.path.exists(RACINE2) == False:
+##            os.makedirs(RACINE2)
+##        self.rep_temp_complet = path(RACINE2)
+##        RACINE3 = os.path.join(self.rep_temp, commun.sous_rep_temp)
+##        self.rep_temp_partiel = path(RACINE3)
 
 
     def __str__(self):
