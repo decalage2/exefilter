@@ -26,7 +26,7 @@ URL du projet: U{http://www.decalage.info/exefilter}
 @contact: U{Philippe Lagadec<mailto:philippe.lagadec(a)laposte.net>}
 
 @copyright: DGA/CELAR 2004-2008
-@copyright: NATO/NC3A 2008-2010 (modifications PL apres v1.1.0)
+@copyright: NATO/NC3A 2008-2010 (modifications PL apres ExeFilter v1.1.0)
 
 @license: CeCILL (open-source compatible GPL)
           cf. code source ou fichier LICENCE.txt joint
@@ -107,6 +107,7 @@ __version__ = "1.08"
 #                      - avoid exceptions when username or locale cannot be
 #                        determined
 # 2010-02-07 v1.08 PL: - added batch mode option to disable HTML report display
+#                      - removed path module import
 
 #------------------------------------------------------------------------------
 # TODO:
@@ -180,13 +181,6 @@ if sys.platform == 'win32':
     except:
         raise ImportError, "the pywin32 module is not installed: "\
                            "see http://sourceforge.net/projects/pywin32"
-
-# import du module path.py pour simplifier la gestion des fichiers/repertoires:
-try:
-    from path import path
-except:
-    raise ImportError, "the path module is not installed: "\
-                       "see http://www.jorendorff.com/articles/python/path/"
 
 # modules d'ExeFilter:
 from commun import *

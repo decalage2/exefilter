@@ -21,15 +21,15 @@ URL du projet: U{http://www.decalage.info/exefilter}
 @license: CeCILL (open-source compatible GPL)
           cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.04
+@version: 1.05
 
 @status: beta
 """
 #==============================================================================
 __docformat__ = 'epytext en'
 
-__date__    = "2010-02-04"
-__version__ = "1.04"
+__date__    = "2010-02-07"
+__version__ = "1.05"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
@@ -80,6 +80,8 @@ __version__ = "1.04"
 # 2008-04-20 v1.03 PL: - ajout parametre politique a Conteneur_Repertoire.__init__
 #                      - archivage en fonction du parametre 'archive_after'
 # 2010-02-04 v1.04 PL: - fixed temp dir deletion
+# 2010-02-07 v1.05 PL: - removed path import
+
 
 #------------------------------------------------------------------------------
 # A FAIRE:
@@ -89,9 +91,6 @@ __version__ = "1.04"
 
 # modules standards Python
 import os, stat
-
-# module path.py pour manipuler plus facilement les fichiers/répertoires
-from path import path
 
 # modules du projet:
 from commun import *

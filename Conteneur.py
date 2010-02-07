@@ -19,15 +19,15 @@ URL du projet: U{http://www.decalage.info/exefilter}
 @copyright: NATO/NC3A 2008-2010 (PL changes after ExeFilter v1.1.0)
 @license: CeCILL (open-source compatible GPL) - cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.04
+@version: 1.05
 
 @status: beta
 """
 #==============================================================================
 __docformat__ = 'epytext en'
 
-__date__    = "2010-02-04"
-__version__ = "1.04"
+__date__    = "2010-02-07"
+__version__ = "1.05"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
@@ -78,6 +78,7 @@ __version__ = "1.04"
 # 2008-03-24 v1.02 PL: - ajout de _() pour traduction gettext des chaines
 # 2008-04-20 v1.03 PL: - ajout parametre politique a Conteneur.__init__
 # 2010-02-04 v1.04 PL: - fixed temp dir creation to avoid race conditions
+# 2010-02-07 v1.05 PL: - removed path module import
 
 #------------------------------------------------------------------------------
 # A FAIRE:
@@ -86,9 +87,6 @@ __version__ = "1.04"
 #=== IMPORTS ==================================================================
 
 import tempfile, os, time
-
-# module path.py pour manipuler plus facilement les fichiers/répertoires
-from path import path
 
 # modules du projet:
 import commun
