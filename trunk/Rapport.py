@@ -15,25 +15,25 @@ URL du projet: http://admisource.gouv.fr/projects/exefilter
 @contact: U{Philippe Lagadec<mailto:philippe.lagadec(a)laposte.net>}
 
 @copyright: DGA/CELAR 2004-2008
-@copyright: NATO/NC3A 2008 (modifications PL apres v1.1.0)
+@copyright: NATO/NC3A 2008-2010 (modifications PL apres ExeFilter v1.1.0)
 
 @license: CeCILL (open-source compatible GPL)
           cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.02
+@version: 1.03
 
 @status: beta
 """
 __docformat__ = 'epytext en'
 
-__date__    = "2008-03-27"
-__version__ = "1.02"
+__date__    = "2010-02-07"
+__version__ = "1.03"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
 
 # Copyright DGA/CELAR 2004-2008
-# Copyright NATO/NC3A 2008 (PL changes after v1.1.0)
+# Copyright NATO/NC3A 2008-2010 (PL changes after ExeFilter v1.1.0)
 # Auteurs:
 # - Philippe Lagadec (PL) - philippe.lagadec(a)laposte.net
 # - Arnaud Kerréneur (AK) - arnaud.kerreneur(a)dga.defense.gouv.fr
@@ -77,6 +77,7 @@ __version__ = "1.02"
 #                      - renommage de parametres generer_rapport
 #                      - retrait date de la version ExeFilter des rapports
 # 2008-03-23 v1.02 PL: - ajout _() a chaque constante chaine pour traduction
+# 2010-02-07 v1.03 PL: - removed path module import
 
 #------------------------------------------------------------------------------
 # A FAIRE:
@@ -94,7 +95,6 @@ __version__ = "1.02"
 #=== IMPORTS ==================================================================
 
 import sys, os, socket, codecs, xml.sax.saxutils, os.path, time, locale
-from path import path
 
 # modules du projet:
 from commun import *

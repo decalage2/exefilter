@@ -9,7 +9,7 @@ Les fonctions du module permettent de journaliser les évènements à l'écran sur
 la console, dans un fichier texte et/ou un serveur syslog via UDP.
 
 Ce fichier fait partie du projet ExeFilter.
-URL du projet: http://admisource.gouv.fr/projects/exefilter
+URL du projet: U{http://www.decalage.info/exefilter}
 
 @organization: DGA/CELAR
 @author: U{Philippe Lagadec<mailto:philippe.lagadec(a)laposte.net>}
@@ -18,10 +18,13 @@ URL du projet: http://admisource.gouv.fr/projects/exefilter
 
 @contact: U{Philippe Lagadec<mailto:philippe.lagadec(a)laposte.net>}
 
-@copyright: DGA/CELAR 2004-2007
-@license: CeCILL (open-source compatible GPL) - cf. code source ou fichier LICENCE.txt joint
+@copyright: DGA/CELAR 2004-2008
+@copyright: NATO/NC3A 2008-2010 (modifications PL apres ExeFilter v1.1.0)
 
-@version: 1.01
+@license: CeCILL (open-source compatible GPL)
+          cf. code source ou fichier LICENCE.txt joint
+
+@version: 1.02
 
 @status: beta
 """
@@ -30,13 +33,14 @@ URL du projet: http://admisource.gouv.fr/projects/exefilter
 __docformat__ = 'epytext en'
 
 #__author__  = "Philippe Lagadec, Tanguy Vinceleux, Arnaud Kerréneur (DGA/CELAR)"
-__date__    = "2007-09-10"
-__version__ = "1.01"
+__date__    = "2010-02-07"
+__version__ = "1.02"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
 
-# Copyright DGA/CELAR 2004-2007
+# Copyright DGA/CELAR 2004-2008
+# Copyright NATO/NC3A 2008-2010 (modifications PL apres ExeFilter v1.1.0)
 # Auteurs:
 # - Philippe Lagadec (PL) - philippe.lagadec(a)laposte.net
 # - Arnaud Kerréneur (AK) - arnaud.kerreneur(a)dga.defense.gouv.fr
@@ -77,6 +81,7 @@ __version__ = "1.01"
 #                        et C. Catherin
 # 12/01/2007 v1.00 PL: - version 1.00 officielle
 # 2007-09-20 v1.01 PL: - licence CeCILL
+# 2010-02-07 v1.02 PL: - removed path module import
 
 #------------------------------------------------------------------------------
 # A FAIRE:
@@ -92,8 +97,6 @@ __version__ = "1.01"
 #=== IMPORTS ==================================================================
 
 import logging, logging.handlers, os.path, sys
-
-from path import path
 
 # modules du projet:
 from commun import *

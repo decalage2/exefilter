@@ -17,7 +17,7 @@ URL du projet: U{http://www.decalage.info/exefilter}
 
 @license: CeCILL (open-source compatible GPL) - cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.02
+@version: 1.03
 @status: beta
 
 @var MODE_DEBUG: Activation du mode debug
@@ -25,8 +25,8 @@ URL du projet: U{http://www.decalage.info/exefilter}
 __docformat__ = 'epytext en'
 
 #__author__    = "Philippe Lagadec, Arnaud Kerréneur (DGA/CELAR)"
-__date__      = "2010-02-04"
-__version__   = "1.02"
+__date__      = "2010-02-07"
+__version__   = "1.03"
 
 
 #------------------------------------------------------------------------------
@@ -79,6 +79,7 @@ __version__   = "1.02"
 #                      - amelioration imports
 #                      - ajout de display_html_file
 # 2010-02-04 v1.02 PL: - disabled sous_rep_temp to avoid race conditions
+# 2010-02-07 v1.03 PL: - updated path module import
 
 #------------------------------------------------------------------------------
 # A FAIRE:
@@ -92,10 +93,10 @@ __version__   = "1.02"
 
 # import du module path.py pour simplifier la gestion des fichiers/repertoires:
 try:
-    from path import path
+    from thirdparty.path.path import path
 except:
     raise ImportError, "the path module is not installed: "\
-                        +"see http://www.jorendorff.com/articles/python/path/"
+                       "see http://pypi.python.org/pypi/path.py"
 
 # module plx pour ameliorer la portabilite
 try:

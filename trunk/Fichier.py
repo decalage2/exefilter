@@ -16,10 +16,10 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 @contact: U{Philippe Lagadec<mailto:philippe.lagadec(a)laposte.net>}
 
 @copyright: DGA/CELAR 2004-2008
-@copyright: NATO/NC3A 2008 (PL changes after v1.1.0)
+@copyright: NATO/NC3A 2008-2010 (PL changes after ExeFilter v1.1.0)
 @license: CeCILL (open-source compatible GPL) - cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.02
+@version: 1.03
 
 @status: beta
 """
@@ -27,14 +27,14 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 #==============================================================================
 __docformat__ = 'epytext en'
 
-__date__    = "2008-03-24"
-__version__ = "1.02"
+__date__    = "2010-02-07"
+__version__ = "1.03"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
 
 # Copyright DGA/CELAR 2004-2008
-# Copyright NATO/NC3A 2008 (PL changes after v1.1.0)
+# Copyright NATO/NC3A 2008-2010 (PL changes after ExeFilter v1.1.0)
 # Auteurs:
 # - Philippe Lagadec (PL) - philippe.lagadec(a)laposte.net
 # - Arnaud Kerréneur (AK) - arnaud.kerreneur(a)dga.defense.gouv.fr
@@ -80,6 +80,7 @@ __version__ = "1.02"
 # 2007-10-22       PL: - ajout support antivirus F-Prot 6 (fpscan)
 # 2007-10-28       PL: - ajout Fichier.remplacer_copie_temp()
 # 2008-03-24 v1.02 PL: - ajout de _() pour traduction gettext des chaines
+# 2010-02-07 v1.03 PL: - removed path module import
 
 #------------------------------------------------------------------------------
 # A FAIRE:
@@ -123,8 +124,6 @@ try:
 except:
     raise ImportError, "Module pyclamd absent: voir http://lagasoft.free.fr/python/pyclamd"
 
-# module path.py pour manipuler plus facilement les fichiers/répertoires
-from path import path
 
 #=== CONSTANTES ===============================================================
 

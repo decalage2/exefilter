@@ -7,6 +7,7 @@ Le fichier __init__.py sert à dresser dynamiquement la liste des filtres
 présents dans ce package Filtres.
 
 Ce fichier fait partie du projet ExeFilter.
+URL du projet: U{http://www.decalage.info/exefilter}
 
 @author: U{Philippe Lagadec<mailto:philippe.lagadec(a)laposte.net>}
 @author: U{Yannick Bidan}
@@ -14,21 +15,25 @@ Ce fichier fait partie du projet ExeFilter.
 
 @contact: U{Philippe Lagadec<mailto:philippe.lagadec(a)laposte.net>}
 
-@copyright: DGA/CELAR 2004-2007
-@license: CeCILL (open-source compatible GPL) - cf. code source ou fichier LICENCE.txt joint
+@copyright: DGA/CELAR 2004-2008
+@copyright: NATO/NC3A 2008-2010 (modifications PL apres ExeFilter v1.1.0)
 
-@version: 1.01
+@license: CeCILL (open-source compatible GPL)
+          cf. code source ou fichier LICENCE.txt joint
+
+@version: 1.02
 @status: beta
 """
 __docformat__ = 'epytext en'
 
-__date__      = "06/02/2008"
-__version__   = "1.01"
+__date__      = "2010-02-07"
+__version__   = "1.02"
 
 #------------------------------------------------------------------------------
 # LICENCE:
 
-# Copyright DGA/CELAR 2004-2007
+# Copyright DGA/CELAR 2004-2008
+# Copyright NATO/NC3A 2008-2010 (modifications PL apres ExeFilter v1.1.0)
 # Auteurs:
 # - Philippe Lagadec (PL) - philippe.lagadec(a)laposte.net
 # - Arnaud Kerréneur (AK) - arnaud.kerreneur(a)dga.defense.gouv.fr
@@ -75,6 +80,7 @@ __version__   = "1.01"
 # 06/02/2006 v0.05 PL: - chargement optionnel du filtre MIME, qq corrections
 # 12/01/2007 v1.00 PL: - version 1.00 officielle
 # 06/02/2008 v1.01 PL: - ajout licence CeCILL
+# 2010-02-07 v1.02 PL: - removed path module import
 
 # A FAIRE:
 # + supprimer liste_filtres si plus utilisé (obsolète)
@@ -91,8 +97,6 @@ import os.path
 import glob
 import string
 import re
-
-from path import path
 
 from commun import *
 import Filtres.Filtre
