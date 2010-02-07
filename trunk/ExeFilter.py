@@ -31,7 +31,7 @@ URL du projet: U{http://www.decalage.info/exefilter}
 @license: CeCILL (open-source compatible GPL)
           cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.07
+@version: 1.08
 
 @status: beta
 """
@@ -40,8 +40,8 @@ URL du projet: U{http://www.decalage.info/exefilter}
 __docformat__ = 'epytext en'
 
 #__author__  = "Philippe Lagadec, Tanguy Vinceleux, Arnaud Kerréneur (DGA/CELAR)"
-__date__    = "2010-02-04"
-__version__ = "1.07"
+__date__    = "2010-02-07"
+__version__ = "1.08"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
@@ -106,6 +106,7 @@ __version__ = "1.07"
 # 2010-02-04 v1.07 PL: - removed commun.sous_rep_temp to avoid race conditions
 #                      - avoid exceptions when username or locale cannot be
 #                        determined
+# 2010-02-07 v1.08 PL: - added batch mode option to disable HTML report display
 
 #------------------------------------------------------------------------------
 # TODO:
@@ -671,7 +672,6 @@ def transfert(liste_source, destination, type_transfert="entree", handle=None,
     resume = Rapport.generer_rapport(chemin_rapport,
                                       ', '.join(liste_source),  destination ,
                                       XF_VERSION,  XF_DATE, commun.continuer_transfert)
-    plx.display_html_file(os.path.abspath(chemin_rapport+'.html'))
     Journal.info2(u"Fin de l'analyse")
     # log du résumé de la dépollution
     Journal.important(_(u'Résumé : %d fichiers analysés ; '
@@ -743,6 +743,8 @@ if __name__ == '__main__':
         help=_("Creer une nouvelle politique dans un fichier INI/CFG"))
     op.add_option("-e", "--export", dest="export_html", default='',
         help=_("Exporter la politique dans un fichier HTML"))
+    op.add_option("-b", "--batch", action="store_true", dest="batchmode",
+        default=False, help=_("Batch mode (do not open HTML report after analysis)"))
 
     # on parse les options de ligne de commande:
     (options, args) = op.parse_args(sys.argv[1:])
@@ -795,6 +797,10 @@ if __name__ == '__main__':
     except:
         Journal.exception('Error during analysis')
         exitcode = pol.parametres['exitcode_error'].valeur
+
+    # display HTML report in browser, unless batch mode is enabled:
+    if not options.batchmode:
+        plx.display_html_file(os.path.abspath(get_rapport()+'.html'))
 
     sys.exit(exitcode)
 
