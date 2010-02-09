@@ -31,7 +31,7 @@ URL du projet: U{http://www.decalage.info/exefilter}
 @license: CeCILL (open-source compatible GPL)
           cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.08
+@version: 1.09
 
 @status: beta
 """
@@ -40,8 +40,8 @@ URL du projet: U{http://www.decalage.info/exefilter}
 __docformat__ = 'epytext en'
 
 #__author__  = "Philippe Lagadec, Tanguy Vinceleux, Arnaud Kerréneur (DGA/CELAR)"
-__date__    = "2010-02-07"
-__version__ = "1.08"
+__date__    = "2010-02-09"
+__version__ = "1.09"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
@@ -108,6 +108,7 @@ __version__ = "1.08"
 #                        determined
 # 2010-02-07 v1.08 PL: - added batch mode option to disable HTML report display
 #                      - removed path module import
+# 2010-02-09 v1.09 PL: - workaround when username cannot be determined
 
 #------------------------------------------------------------------------------
 # TODO:
@@ -534,9 +535,10 @@ def transfert(liste_source, destination, type_transfert="entree", handle=None,
     # domaine (ou de machine) sous Windows:
     try:
         username = get_username()
+        username_withdomain = get_username(with_domain=True)
     except:
         # workaround if user name cannot be determined
-        username = 'unknown'
+        username = username_withdomain = 'unknown'
 
     # création du tronc commun pour les noms des journaux et des rapports:
     nom_machine = socket.gethostname()
@@ -578,7 +580,7 @@ def transfert(liste_source, destination, type_transfert="entree", handle=None,
     commun.sous_rep_archive = "transfert_" + nom_commun
 
     Journal.important(_(u"ExeFilter v%s lancé par utilisateur %s sur la machine %s") %
-        (XF_VERSION, get_username(with_domain=True), nom_machine))
+        (XF_VERSION, username_withdomain, nom_machine))
 
     # on ajoute la politique dans le journal:
     p.journaliser()
