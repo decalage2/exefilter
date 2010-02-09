@@ -20,14 +20,14 @@ URL du projet: http://admisource.gouv.fr/projects/exefilter
 @license: CeCILL (open-source compatible GPL)
           cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.03
+@version: 1.04
 
 @status: beta
 """
 __docformat__ = 'epytext en'
 
-__date__    = "2010-02-07"
-__version__ = "1.03"
+__date__    = "2010-02-09"
+__version__ = "1.04"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
@@ -78,6 +78,7 @@ __version__ = "1.03"
 #                      - retrait date de la version ExeFilter des rapports
 # 2008-03-23 v1.02 PL: - ajout _() a chaque constante chaine pour traduction
 # 2010-02-07 v1.03 PL: - removed path module import
+# 2010-02-09 v1.04 PL: - workaround when username cannot be determined
 
 #------------------------------------------------------------------------------
 # A FAIRE:
@@ -180,7 +181,11 @@ def generer_rapport(nom_rapport, repertoire_src, repertoire_dest, version,
 
     # on récupère le nom de l'utilisateur qui lance ExeFilter, avec nom de
     # domaine (ou de machine) sous Windows:
-    user = get_username(with_domain=True)
+    try:
+        username_withdomain = get_username(with_domain=True)
+    except:
+        # workaround if user name cannot be determined
+        username_withdomain = 'unknown'
     hostname = socket.gethostname()
 
     # création du rapport HTML "nom_rapport", ouverture en écriture
@@ -200,7 +205,7 @@ def generer_rapport(nom_rapport, repertoire_src, repertoire_dest, version,
     f.write(_(u'Rapport ExeFilter v%(version)s') % {'version': version} + '\n<br>')
     date = unicode(time.strftime("%c", time.localtime()), 'latin_1')
     f.write(_(u"généré le %(date)s sur la machine %(hostname)s par l'utilisateur %(user)s")\
-        % {'date':date, 'hostname':hostname, 'user':user})
+        % {'date':date, 'hostname':hostname, 'user':username_withdomain})
     f.write("\n<br>")
     f.write(_(u'Répertoire de destination : ') + echap(repertoire_dest))
     f.write('\n<br>')
@@ -273,7 +278,7 @@ def generer_rapport(nom_rapport, repertoire_src, repertoire_dest, version,
     f.write(u'    <titre>\n')
     f.write(u'        <ver-dat>Rapport ExeFilter v' + version + '</ver-dat>\n')
     f.write(u'        <hostname>' + echap(hostname) + '</hostname>\n')
-    f.write(u'        <user>' + echap(user) + '</user>\n')
+    f.write(u'        <user>' + echap(username_withdomain) + '</user>\n')
     f.write(u'        <heure>' + time.strftime("%d/%m/%Y : %H:%M", time.localtime()) + '</heure>\n')
     # nom répertoire avec accent dcm2205
     f.write(u'        <rep_src>' + echap(repertoire_src) + '</rep_src>\n')
