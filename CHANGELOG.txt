@@ -1,0 +1,31 @@
+Main changes in ExeFilter versions:
+
+v1.1.2-alpha5 2010-02-09:
+  - new "batch mode" option (-b) to disable automatic display of HTML reports
+  - bugfix when running under chroot (username and locale workarounds)
+  - bugfix when running several instances (temp dir race condition)
+  - updated documentation
+
+v1.1.2-alpha4 2009-12-18:
+  - new "single file output" option (-o)
+  - exit code according to overall analysis results
+  - bugfix for 64 bit systems
+  - updated documentation
+
+v1.1.2-alpha3 2009-11-02:
+  - completed English documentation for v1.1.2
+  - completed English translation of all config parameter descriptions
+  - minor changes
+
+v1.1.2-alpha2 2009-10-22:
+  - updated origapy 0.08 / origami 1.0.0beta1
+  - updated pdfid 0.0.9
+  - archiving disabled by default
+  - a few more demo files
+
+v1.1.2-alpha1 2009-10-19:
+  - Added origami and pdfid engines to improve PDF sanitization. 
+  - Added demo files to quickly test ExeFilter.
+
+v1.1.1 2008-03-28:
+  - initial public release for CanSecWest08
