@@ -10,3 +10,4 @@ integration into Python applications as a module.
 See also:
 http://blog.didierstevens.com/programs/pdf-tools/
 http://blog.didierstevens.com/2009/04/29/quickpost-disarming-a-pdf-file/
+http://www.decalage.info/python/pdfid
