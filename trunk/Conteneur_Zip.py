@@ -21,15 +21,15 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 @license: CeCILL (open-source compatible GPL)
           cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.04
+@version: 1.05
 
 @status: beta
 """
 #==============================================================================
 __docformat__ = 'epytext en'
 
-__date__    = "2010-02-07"
-__version__ = "1.04"
+__date__    = "2010-02-22"
+__version__ = "1.05"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
@@ -79,6 +79,7 @@ __version__ = "1.04"
 # 2008-03-24 v1.02 PL: - ajout de _() pour traduction gettext des chaines
 # 2008-04-20 v1.03 PL: - ajout parametre politique a Conteneur_Zip.__init__
 # 2010-02-07 v1.04 PL: - removed import path
+# 2010-02-22 v1.05 PL: - fixed import zipfile_PL
 
 #------------------------------------------------------------------------------
 # A FAIRE:
@@ -93,7 +94,7 @@ import zipfile, tempfile, os, os.path , stat
 import commun
 from commun import *
 import Conteneur, Fichier, Resultat
-import zipfile_PL
+import thirdparty.zipfile_PL.zipfile_PL as zipfile_PL
 
 
 #=== CONSTANTES ===============================================================
