@@ -1,0 +1,17 @@
+Metadata-Version: 1.0
+Name: OleFileIO_PL
+Version: 0.21
+Summary: A Python module to parse and read Microsoft OLE2 files (Structured Storage or Compound Document, Microsoft Office) - Improved version of the OleFileIO module from PIL, the Python Image Library.
+Home-page: http://www.decalage.info/python/olefileio
+Author: Fredrik Lundh (Secret Labs AB), Philippe Lagadec
+Author-email: UNKNOWN
+License: updated PIL license (see source code or LICENCE.txt)
+Download-URL: http://www.decalage.info/python/olefileio
+Description: UNKNOWN
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: License :: OSI Approved
+Classifier: Intended Audience :: Developers
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
