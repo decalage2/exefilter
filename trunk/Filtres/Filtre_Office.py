@@ -83,7 +83,7 @@ __version__ = "1.04"
 # 2008-03-24       PL: - ajout de _() pour traduction gettext des chaines
 #                      - simplification dans nettoyer() en appelant resultat_*
 # 2009-11-02 v1.03 PL: - updated parameters for gettext translation
-# 2010-02-23 v1.04 PL: - updated OleFileIO_PL import
+# 2010-02-23 v1.04 PL: - updated OleFileIO_PL and RechercherRemplacer imports
 
 #------------------------------------------------------------------------------
 # A FAIRE:
@@ -112,7 +112,7 @@ if sys.platform == 'win32':
 
 # modules spécifiques:
 from thirdparty.OleFileIO_PL.OleFileIO_PL import OleFileIO
-import RechercherRemplacer
+import thirdparty.RechercherRemplacer.RechercherRemplacer as RechercherRemplacer
 
 # modules du projet:
 from commun import *

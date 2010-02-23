@@ -17,26 +17,26 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 @contact: U{Philippe Lagadec<mailto:philippe.lagadec(a)laposte.net>}
 
 @copyright: DGA/CELAR 2004-2008
-@copyright: NATO/NC3A 2008 (modifications PL apres v1.1.0)
+@copyright: NATO/NC3A 2008-2010 (modifications PL apres ExeFilter v1.1.0)
 
 @license: CeCILL (open-source compatible GPL)
           cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.06
+@version: 1.07
 
 @status: beta
 """
 #==============================================================================
 __docformat__ = 'epytext en'
 
-__date__    = "2009-10-09"
-__version__ = "1.06"
+__date__    = "2010-02-23"
+__version__ = "1.07"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
 
 # Copyright DGA/CELAR 2004-2008
-# Copyright NATO/NC3A 2008-2009 (PL changes after v1.1.0)
+# Copyright NATO/NC3A 2008-2010 (PL changes after ExeFilter v1.1.0)
 # Auteurs:
 # - Philippe Lagadec (PL) - philippe.lagadec(a)laposte.net
 # - Arnaud Kerréneur (AK) - arnaud.kerreneur(a)dga.defense.gouv.fr
@@ -84,7 +84,9 @@ __version__ = "1.06"
 # 2009-10-07 v1.05 PL: - launch origami engine only if policy requires it
 #                      - new option to ignore origami errors
 # 2009-10-09 v1.06 PL: - added pdfid engine to improve PDF cleaning
+# 2010-02-23 v1.07 PL: - updated RechercherRemplacer import
 
+#------------------------------------------------------------------------------
 # TODO:
 # + when origami fails, include warning text into result, without blocking
 # - add options disable_richmedia and detect_cve_2009_xxxx for pdfid
@@ -104,7 +106,7 @@ __version__ = "1.06"
 #=== IMPORTS ==================================================================
 
 import os, tempfile, sys
-import RechercherRemplacer
+import thirdparty.RechercherRemplacer.RechercherRemplacer as RechercherRemplacer
 
 # modules du projet:
 from commun import *
