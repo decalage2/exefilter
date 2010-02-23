@@ -19,7 +19,7 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 @copyright: NATO/NC3A 2008-2010 (PL changes after ExeFilter v1.1.0)
 @license: CeCILL (open-source compatible GPL) - cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.03
+@version: 1.04
 
 @status: beta
 """
@@ -27,8 +27,8 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 #==============================================================================
 __docformat__ = 'epytext en'
 
-__date__    = "2010-02-07"
-__version__ = "1.03"
+__date__    = "2010-02-23"
+__version__ = "1.04"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
@@ -81,6 +81,7 @@ __version__ = "1.03"
 # 2007-10-28       PL: - ajout Fichier.remplacer_copie_temp()
 # 2008-03-24 v1.02 PL: - ajout de _() pour traduction gettext des chaines
 # 2010-02-07 v1.03 PL: - removed path module import
+# 2010-02-23 v1.04 PL: - updated pyclamd import
 
 #------------------------------------------------------------------------------
 # A FAIRE:
@@ -120,9 +121,10 @@ import Resultat, Journal, Rapport, Politique
 
 # module pyclamd pour utiliser l'antivirus ClamAV (daemon clamd)
 try:
-    import pyclamd
+    import thirdparty.pyclamd.pyclamd as pyclamd
 except:
-    raise ImportError, "Module pyclamd absent: voir http://lagasoft.free.fr/python/pyclamd"
+    raise ImportError, "missing pyclamd module: "\
+        "see http://www.decalage.info/en/python/pyclamd"
 
 
 #=== CONSTANTES ===============================================================
