@@ -18,26 +18,26 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 @contact: U{Philippe Lagadec<mailto:philippe.lagadec(a)laposte.net>}
 
 @copyright: DGA/CELAR 2004-2008
-@copyright: NATO/NC3A 2008-2009 (modifications PL apres v1.1.0)
+@copyright: NATO/NC3A 2008-2010 (modifications PL apres ExeFilter v1.1.0)
 
 @license: CeCILL (open-source compatible GPL)
           cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.03
+@version: 1.04
 
 @status: beta
 """
 #==============================================================================
 __docformat__ = 'epytext en'
 
-__date__    = "2009-11-02"
-__version__ = "1.03"
+__date__    = "2010-02-23"
+__version__ = "1.04"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
 
 # Copyright DGA/CELAR 2004-2008
-# Copyright NATO/NC3A 2008-2009 (PL changes after v1.1.0)
+# Copyright NATO/NC3A 2008-2010 (PL changes after ExeFilter v1.1.0)
 # Auteurs:
 # - Philippe Lagadec (PL) - philippe.lagadec(a)laposte.net
 # - Arnaud Kerréneur (AK) - arnaud.kerreneur(a)dga.defense.gouv.fr
@@ -83,6 +83,7 @@ __version__ = "1.03"
 # 2008-03-24       PL: - ajout de _() pour traduction gettext des chaines
 #                      - simplification dans nettoyer() en appelant resultat_*
 # 2009-11-02 v1.03 PL: - updated parameters for gettext translation
+# 2010-02-23 v1.04 PL: - updated OleFileIO_PL import
 
 #------------------------------------------------------------------------------
 # A FAIRE:
@@ -110,7 +111,7 @@ if sys.platform == 'win32':
     from win32com.storagecon import *
 
 # modules spécifiques:
-from OleFileIO_PL import OleFileIO
+from thirdparty.OleFileIO_PL.OleFileIO_PL import OleFileIO
 import RechercherRemplacer
 
 # modules du projet:
