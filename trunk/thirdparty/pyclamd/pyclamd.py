@@ -4,17 +4,19 @@
 """
 pyclamd.py - v0.2.0 - 2007-10-09
 
-Author      : Alexandre Norman - norman@xael.org (AN)
-Contributor : Philippe Lagadec - philippe.lagadec at laposte.net (PL)
-License     : GPL
+Author      : Alexandre Norman (AN) - norman@xael.org
+Contributor : Philippe Lagadec (PL) - philippe.lagadec at laposte.net
+License     : GPL (see GPL.txt or http://www.gnu.org/copyleft/gpl.html)
+
+website: http://xael.org/norman/python/pyclamd  (version 0.1.1)
+         http://www.decalage.info/en/python/pyclamd (version 0.2.0)
 
 Usage :
-
 
     # Init the connexion to clamd, either :
     # Network
     pyclamd.init_network_socket('localhost', 3310)
-    # Unix local socket 
+    # Unix local socket
     #pyclamd.init_unix_socket('/var/run/clamd')
 
     # Get Clamscan version
@@ -33,7 +35,7 @@ Test strings :
 ...     init_unix_socket('/var/run/clamd')
 ... except ScanError:
 ...     init_network_socket('localhost', 3310)
-... 
+...
 >>> ping()
 True
 >>> version()[:6]=='ClamAV'
@@ -50,16 +52,35 @@ True
 
 """
 
+#------------------------------------------------------------------------------
+# LICENSE:
+
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 2 of the License, or (at your option) any later
+# version. See http://www.gnu.org/copyleft/gpl.html.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc.,
+# 675 Mass Ave, Cambridge, MA 02139, USA.
+
+
+#------------------------------------------------------------------------------
 # CHANGELOG
 # 2006-07-15 v0.1.1 AN: - released version
 # 2007-10-09 v0.2.0 PL: - fixed error with deprecated string exceptions
 #                       - added optional timeout to sockets to avoid blocking operations
 
+#------------------------------------------------------------------------------
 # TODO:
 # - improve tests for Win32 platform (avoid to write EICAR file to disk, or
-#   protect it somehow from on-access AV, inside a ZIP/GZip archive doesn't work)
+#   protect it somehow from on-access AV, inside a ZIP/GZip archive isn't enough)
 # - use SESSION/END commands to launch several scans in one session
-#   (provide session mode in a Clamd class)
+#   (for example provide session mode in a Clamd class)
 # - add support for RAWSCAN and MULTISCAN commands ?
 # ? Maybe use os.abspath to ensure scan_file uses absolute paths for files
 
@@ -99,15 +120,15 @@ EICAR = 'WDVPIVAlQEFQWzRcUFpYNTQoUF4pN0NDKTd9JEVJQ0FSLVNUQU5E'.decode('base64') 
 import socket
 import types
 import string
-            
+
 ############################################################################
 
 def init_unix_socket(filename="/var/run/clamd"):
     """
-    Init pyclamd to use clamd unix local socket 
-    
+    Init pyclamd to use clamd unix local socket
+
     filename (string) : clamd file for local unix socket
-    
+
     return : Nothing
 
     May raise :
@@ -120,8 +141,8 @@ def init_unix_socket(filename="/var/run/clamd"):
     global clamd_SOCKET
 
     if type(filename)!=types.StringType:
-        raise TypeError, 'filename should be a string not "%s"' % filename 
-    
+        raise TypeError, 'filename should be a string not "%s"' % filename
+
     use_socket = "UNIX"
     clamd_SOCKET = filename
 
@@ -132,12 +153,12 @@ def init_unix_socket(filename="/var/run/clamd"):
 
 def init_network_socket(host='127.0.0.1', port=3310, timeout=None):
     """
-    Init pyclamd to use clamd network socket 
-    
+    Init pyclamd to use clamd network socket
+
     host (string) : clamd server adresse
     port (int)    : clamd server port
     timeout (int) : socket timeout (in seconds, none by default)
-    
+
     return : Nothing
 
     May raise :
@@ -170,9 +191,9 @@ def ping():
     """
     Send a PING to the clamav server, which should reply
     by a PONG.
-    
+
     return : True if the server replies to PING
-    
+
     May raise :
       - ScanError : if the server do not reply by PONG
     """
@@ -191,8 +212,8 @@ def ping():
         s.close()
     except:
         raise ScanError, 'Could not ping clamd server'
-        
-    
+
+
     if result=='PONG\n':
         return True
     else:
@@ -206,7 +227,7 @@ def version():
     Get Clamscan version
 
     return : (string) clamscan version
-    
+
     May raise :
       - ScanError : in case of communication problem
     """
@@ -214,7 +235,7 @@ def version():
     global clamd_HOST
     global clamd_PORT
     global clamd_SOCKET
-    
+
     s = __init_socket__()
 
     s.send('VERSION')
@@ -229,7 +250,7 @@ def reload():
     Force Clamd to reload signature database
 
     return : (string) "RELOADING"
-    
+
     May raise :
       - ScanError : in case of communication problem
     """
@@ -237,7 +258,7 @@ def reload():
     global clamd_HOST
     global clamd_PORT
     global clamd_SOCKET
-    
+
     s = __init_socket__()
 
     s.send('RELOAD')
@@ -252,7 +273,7 @@ def shutdown():
     Force Clamd to shutdown and exit
 
     return : nothing
-    
+
     May raise :
       - ScanError : in case of communication problem
     """
@@ -260,7 +281,7 @@ def shutdown():
     global clamd_HOST
     global clamd_PORT
     global clamd_SOCKET
-    
+
     s = __init_socket__()
 
     s.send('SHUTDOWN')
@@ -280,7 +301,7 @@ def scan_file(file):
     return either :
       - (dict) : {filename1: "virusname"}
       - None if no virus found
-    
+
     May raise :
       - ScanError : in case of communication problem
       - socket.timeout: if timeout has expired
@@ -289,7 +310,7 @@ def scan_file(file):
     global clamd_HOST
     global clamd_PORT
     global clamd_SOCKET
-    
+
     global ScanError
 
     s = __init_socket__()
@@ -386,13 +407,13 @@ def scan_stream(buffer):
     port = int(s.recv(200).strip().split(' ')[1])
     n=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     n.connect((clamd_HOST, port))
-    
+
     sended = n.send(buffer)
     n.close()
-    
+
     if sended<len(buffer):
         raise BufferTooLong
-        
+
     result='...'
     dr={}
     while result!='':
@@ -457,7 +478,7 @@ def __non_regression_test__():
     import doctest
     doctest.testmod()
     return
-    
+
 
 ############################################################################
 
@@ -475,7 +496,7 @@ if __name__ == '__main__':
 ##     doctest.testmod()
     sys.exit(0)
 
-    
+
     # Print autodoc
     if sys.argv[0].find(os.path.sep)==-1:
         os.system("pydoc ./"+sys.argv[0])
