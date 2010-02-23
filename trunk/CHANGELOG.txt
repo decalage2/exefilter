@@ -1,5 +1,9 @@
 Main changes in ExeFilter versions:
 
+v1.1.2-alpha6 2010-02-23:
+  - updated pdfid to v0.0.10
+  - code reorganization
+
 v1.1.2-alpha5 2010-02-09:
   - new "batch mode" option (-b) to disable automatic display of HTML reports
   - bugfix when running under chroot (username and locale workarounds)
