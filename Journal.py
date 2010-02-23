@@ -24,7 +24,7 @@ URL du projet: U{http://www.decalage.info/exefilter}
 @license: CeCILL (open-source compatible GPL)
           cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.02
+@version: 1.03
 
 @status: beta
 """
@@ -33,8 +33,8 @@ URL du projet: U{http://www.decalage.info/exefilter}
 __docformat__ = 'epytext en'
 
 #__author__  = "Philippe Lagadec, Tanguy Vinceleux, Arnaud Kerréneur (DGA/CELAR)"
-__date__    = "2010-02-07"
-__version__ = "1.02"
+__date__    = "2010-02-23"
+__version__ = "1.03"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
@@ -82,6 +82,7 @@ __version__ = "1.02"
 # 12/01/2007 v1.00 PL: - version 1.00 officielle
 # 2007-09-20 v1.01 PL: - licence CeCILL
 # 2010-02-07 v1.02 PL: - removed path module import
+# 2010-02-23 v1.03 PL: - updated plx import
 
 #------------------------------------------------------------------------------
 # A FAIRE:
@@ -101,7 +102,7 @@ import logging, logging.handlers, os.path, sys
 # modules du projet:
 from commun import *
 import commun
-from plx import *
+from thirdparty.plx.plx import *
 
 #=== CONSTANTES ===============================================================
 
