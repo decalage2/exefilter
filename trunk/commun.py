@@ -17,7 +17,7 @@ URL du projet: U{http://www.decalage.info/exefilter}
 
 @license: CeCILL (open-source compatible GPL) - cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.03
+@version: 1.04
 @status: beta
 
 @var MODE_DEBUG: Activation du mode debug
@@ -25,8 +25,8 @@ URL du projet: U{http://www.decalage.info/exefilter}
 __docformat__ = 'epytext en'
 
 #__author__    = "Philippe Lagadec, Arnaud Kerréneur (DGA/CELAR)"
-__date__      = "2010-02-07"
-__version__   = "1.03"
+__date__      = "2010-02-23"
+__version__   = "1.04"
 
 
 #------------------------------------------------------------------------------
@@ -80,6 +80,7 @@ __version__   = "1.03"
 #                      - ajout de display_html_file
 # 2010-02-04 v1.02 PL: - disabled sous_rep_temp to avoid race conditions
 # 2010-02-07 v1.03 PL: - updated path module import
+# 2010-02-23 v1.04 PL: - updated plx import
 
 #------------------------------------------------------------------------------
 # A FAIRE:
@@ -100,7 +101,7 @@ except:
 
 # module plx pour ameliorer la portabilite
 try:
-    import plx
+    import thirdparty.plx.plx as plx
 except:
     raise ImportError, "the plx module is not installed: "\
                         +"see http://www.decalage.info/python/plx/"

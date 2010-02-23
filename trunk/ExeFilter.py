@@ -31,7 +31,7 @@ URL du projet: U{http://www.decalage.info/exefilter}
 @license: CeCILL (open-source compatible GPL)
           cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.09
+@version: 1.10
 
 @status: beta
 """
@@ -40,8 +40,8 @@ URL du projet: U{http://www.decalage.info/exefilter}
 __docformat__ = 'epytext en'
 
 #__author__  = "Philippe Lagadec, Tanguy Vinceleux, Arnaud Kerréneur (DGA/CELAR)"
-__date__    = "2010-02-09"
-__version__ = "1.09"
+__date__    = "2010-02-23"
+__version__ = "1.10"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
@@ -109,6 +109,7 @@ __version__ = "1.09"
 # 2010-02-07 v1.08 PL: - added batch mode option to disable HTML report display
 #                      - removed path module import
 # 2010-02-09 v1.09 PL: - workaround when username cannot be determined
+# 2010-02-23 v1.10 PL: - removed plx import
 
 #------------------------------------------------------------------------------
 # TODO:
@@ -129,7 +130,7 @@ def init_gettext():
     # Gettext pour adapter certaines chaines de caracteres a la langue du
     # systeme (traduction en anglais ou francais)
     # => DOIT etre fait avant toute constante chaine _("...") et tout import
-    import gettext, locale, plx, os.path
+    import gettext, locale, os.path
     # repertoire "locale": normalement un sous-repertoire du script principal
     #locale_dir = os.path.join(plx.get_main_dir(), "locale")
     # locale dir is a subfolder of this script's folder:
