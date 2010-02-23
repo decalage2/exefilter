@@ -17,26 +17,26 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 @contact: U{Philippe Lagadec<mailto:philippe.lagadec(a)laposte.net>}
 
 @copyright: DGA/CELAR 2004-2008
-@copyright: NATO/NC3A 2008 (modifications PL apres v1.1.0)
+@copyright: NATO/NC3A 2008-2010 (modifications PL apres ExeFilter v1.1.0)
 
 @license: CeCILL (open-source compatible GPL)
           cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.02
+@version: 1.03
 
 @status: beta
 """
 #==============================================================================
 __docformat__ = 'epytext en'
 
-__date__    = "2008-03-24"
-__version__ = "1.02"
+__date__    = "2010-02-23"
+__version__ = "1.03"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
 
 # Copyright DGA/CELAR 2004-2008
-# Copyright NATO/NC3A 2008 (PL changes after v1.1.0)
+# Copyright NATO/NC3A 2008-2010 (PL changes after ExeFilter v1.1.0)
 # Auteurs:
 # - Philippe Lagadec (PL) - philippe.lagadec(a)laposte.net
 # - Arnaud Kerréneur (AK) - arnaud.kerreneur(a)dga.defense.gouv.fr
@@ -78,6 +78,7 @@ __version__ = "1.02"
 # 2008-02-24 v1.01 PL: - licence CeCILL
 # 2008-03-24 v1.02 PL: - ajout de _() pour traduction gettext des chaines
 #                      - simplification dans nettoyer() en appelant resultat_*
+# 2010-02-23 v1.03 PL: - updated HTMLParser_PL import
 
 #------------------------------------------------------------------------------
 # A FAIRE:
@@ -93,7 +94,7 @@ import commun
 from commun import *
 import Resultat, Conteneur
 import Filtre
-import HTMLParser_PL
+import thirdparty.HTMLParser_PL.HTMLParser_PL as HTMLParser_PL
 
 
 #=== CONSTANTES ===============================================================
