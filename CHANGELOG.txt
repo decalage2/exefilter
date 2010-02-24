@@ -1,5 +1,16 @@
 Main changes in ExeFilter versions:
 
+v1.1.2 2010-02-24 main changes since v1.1.1:
+  - full English documentation
+  - demo files
+  - improved PDF sanitization, based on pdfid and origami engines
+  - new option -o for single file output
+  - new option -b for batch mode
+  - exit code according to results, for better integration
+  - several bug fixes
+  
+-------------------------------------------------------------------------------
+
 v1.1.2-alpha6 2010-02-23:
   - updated pdfid to v0.0.10
   - code reorganization
@@ -30,6 +41,8 @@ v1.1.2-alpha2 2009-10-22:
 v1.1.2-alpha1 2009-10-19:
   - Added origami and pdfid engines to improve PDF sanitization. 
   - Added demo files to quickly test ExeFilter.
+  
+-------------------------------------------------------------------------------
 
 v1.1.1 2008-03-28:
   - initial public release for CanSecWest08
