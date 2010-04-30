@@ -21,15 +21,15 @@ URL du projet: U{http://www.decalage.info/exefilter}
 @license: CeCILL (open-source compatible GPL)
           cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.06
+@version: 1.07
 
 @status: beta
 """
 #==============================================================================
 __docformat__ = 'epytext en'
 
-__date__    = "2010-02-07"
-__version__ = "1.06"
+__date__    = "2010-04-20"
+__version__ = "1.07"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
@@ -81,6 +81,7 @@ __version__ = "1.06"
 # 2009-11-11 v1.04 PL: - added option to have a filename as destination
 # 2010-02-04 v1.05 PL: - fixed temp dir deletion
 # 2010-02-07 v1.06 PL: - removed path module import
+# 2010-04-20 v1.07 PL: - added force_extension attrib to Conteneur_Fichier
 
 #------------------------------------------------------------------------------
 # A FAIRE:
@@ -115,7 +116,7 @@ class Conteneur_Fichier (Conteneur_Repertoire.Conteneur_Repertoire):
     """
 
     def __init__(self, nom_fichier, repertoire_destination, rep_relatif_source,
-        fichier=None, politique=None, dest_is_a_file=False):
+        fichier=None, politique=None, dest_is_a_file=False, force_extension=None):
         """
         Constructeur d'objet Conteneur_Fichier.
 
@@ -129,11 +130,17 @@ class Conteneur_Fichier (Conteneur_Repertoire.Conteneur_Repertoire):
         @param dest_is_a_file: False if repertoire_destination is a dir (default),
                                True if it's a filename.
         @type dest_is_a_file: bool
+        
+        @param force_extension: if set, force filename extension to a specific value
+                                (used to control which filters are applied)
+                                Note: force_extension may be "" or must start with a dot
+        @type  force_extension: str, unicode
         """
         # nom source est le chemin absolu du répertoire source:
         chem_source = path(nom_fichier).abspath().normpath().dirname()
         Journal.debug(u"chem_source = %s" % chem_source)
         self.dest_is_a_file = dest_is_a_file
+        self.force_extension = force_extension
         if dest_is_a_file:
             # if dest is a file, store filename and use its parent dir:
             self.dest_filename = os.path.abspath(repertoire_destination)
@@ -156,7 +163,8 @@ class Conteneur_Fichier (Conteneur_Repertoire.Conteneur_Repertoire):
         # pour le chemin du fichier on ne garde que le
         # chemin relatif par rapport au répertoire
         if len(self.liste_fichiers) == 0:
-            f = Fichier.Fichier(self.nom_fichier, conteneur=self)
+            f = Fichier.Fichier(self.nom_fichier, conteneur=self, 
+                                force_extension=self.force_extension)
             self.liste_fichiers.append(f)
         return self.liste_fichiers
 
