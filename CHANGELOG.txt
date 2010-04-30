@@ -1,5 +1,8 @@
 Main changes in ExeFilter versions:
 
+v1.1.3 2010-04-20:
+  - new "force extension" option (-f) to control which filters are applied
+
 v1.1.2 2010-02-24 main changes since v1.1.1:
   - full English documentation
   - demo files

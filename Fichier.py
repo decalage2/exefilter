@@ -19,7 +19,7 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 @copyright: NATO/NC3A 2008-2010 (PL changes after ExeFilter v1.1.0)
 @license: CeCILL (open-source compatible GPL) - cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.04
+@version: 1.05
 
 @status: beta
 """
@@ -27,8 +27,8 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 #==============================================================================
 __docformat__ = 'epytext en'
 
-__date__    = "2010-02-23"
-__version__ = "1.04"
+__date__    = "2010-04-20"
+__version__ = "1.05"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
@@ -82,6 +82,7 @@ __version__ = "1.04"
 # 2008-03-24 v1.02 PL: - ajout de _() pour traduction gettext des chaines
 # 2010-02-07 v1.03 PL: - removed path module import
 # 2010-02-23 v1.04 PL: - updated pyclamd import
+# 2010-04-20 v1.05 PL: - added force_extension param to Fichier.__init__
 
 #------------------------------------------------------------------------------
 # A FAIRE:
@@ -174,7 +175,7 @@ class Fichier:
         - resultat_fichier: objet L{Resultat} qui liste les résultats des filtres appliqués sur le fichier.
     """
 
-    def __init__(self, nom_fichier, conteneur):
+    def __init__(self, nom_fichier, conteneur, force_extension=None):
         """Constructeur de la classe Fichier.
 
         @param nom_fichier : nom du fichier, chemin relatif par rapport à la racine du conteneur.
@@ -182,6 +183,11 @@ class Fichier:
 
         @param conteneur   : objet Conteneur qui contient le fichier
         @type  conteneur   : L{Conteneur.Conteneur}
+        
+        @param force_extension: if set, force filename extension to a specific value
+                                (used to control which filters are applied)
+                                Note: force_extension may be "" or must start with a dot
+        @type  force_extension: str, unicode
         """
         # on vérifie si le nom de fichier fourni est bien un chemin relatif par
         # rapport au conteneur:
@@ -198,7 +204,13 @@ class Fichier:
         self.nom = self.chemin.name
         # on extrait l'extension du fichier, convertie en minuscules
         # pour permettre une comparaison correcte:
-        self.extension = self.chemin.ext.lower()
+        # unless force_extension is used
+        if force_extension is not None:
+            # check if it starts with a dot or if it's empty:
+            assert force_extension.startswith('.') or force_extension==''
+            self.extension = force_extension
+        else:
+            self.extension = self.chemin.ext.lower()
         self.buffer_debut = ""
         self.fich_ouvert = None
         self._copie_temp = None        # chemin vers une copie temporaire du fichier

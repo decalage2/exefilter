@@ -31,7 +31,7 @@ URL du projet: U{http://www.decalage.info/exefilter}
 @license: CeCILL (open-source compatible GPL)
           cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.10
+@version: 1.11
 
 @status: beta
 """
@@ -40,8 +40,8 @@ URL du projet: U{http://www.decalage.info/exefilter}
 __docformat__ = 'epytext en'
 
 #__author__  = "Philippe Lagadec, Tanguy Vinceleux, Arnaud Kerréneur (DGA/CELAR)"
-__date__    = "2010-02-23"
-__version__ = "1.10"
+__date__    = "2010-04-20"
+__version__ = "1.11"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
@@ -110,6 +110,7 @@ __version__ = "1.10"
 #                      - removed path module import
 # 2010-02-09 v1.09 PL: - workaround when username cannot be determined
 # 2010-02-23 v1.10 PL: - removed plx import
+# 2010-04-20 v1.11 PL: - added new option -f to force filename extension
 
 #------------------------------------------------------------------------------
 # TODO:
@@ -160,7 +161,8 @@ def init_gettext():
             __builtins__._ = lambda text: text
     else:
         # si la langue est 'fr', on n'utilise aucune traduction:
-        __builtins__._ = lambda text: text
+        gettext.NullTranslations().install()
+        #__builtins__._ = lambda text: text
 
 
 # always init gettext first
@@ -497,7 +499,7 @@ def init_archivage(politique, taille_src):
 #def transfert(liste_source, destination, type_transfert="entree", handle=None,
 #              taille_temp = TAILLE_ARCHIVE*1000000, pol=None):
 def transfert(liste_source, destination, type_transfert="entree", handle=None,
-              pol=None, dest_is_a_file=False):
+              pol=None, dest_is_a_file=False, force_extension=None):
     """
     Lance le transfert et l'analyse des répertoires et/ou fichiers source
 
@@ -519,6 +521,11 @@ def transfert(liste_source, destination, type_transfert="entree", handle=None,
     @param dest_is_a_file: False if destination is a dir (default),
                            True if it's a filename.
     @type dest_is_a_file: bool
+        
+    @param force_extension: if set, force filename extension to a specific value
+                            (used to control which filters are applied)
+                            Note: force_extension may be "" or must start with a dot
+    @type  force_extension: str, unicode
     """
 
     global nom_journal_secu
@@ -623,7 +630,7 @@ def transfert(liste_source, destination, type_transfert="entree", handle=None,
             rep_relatif_source = ""
             rep_source = Conteneur_Fichier.Conteneur_Fichier (source,
                 destination, rep_relatif_source, politique=p,
-                dest_is_a_file=dest_is_a_file)
+                dest_is_a_file=dest_is_a_file, force_extension=force_extension)
 
             # calcul de la taille du fichier source
             taille_src += os.stat(source).st_size
@@ -742,6 +749,8 @@ if __name__ == '__main__':
         help=_("Exporter la politique dans un fichier HTML"))
     op.add_option("-b", "--batch", action="store_true", dest="batchmode",
         default=False, help=_("Batch mode (do not open HTML report after analysis)"))
+    op.add_option("-f", "--force-ext", dest="force_extension", default=None,
+        help='Force filename extension to control which filters are applied')
 
     # on parse les options de ligne de commande:
     (options, args) = op.parse_args(sys.argv[1:])
@@ -781,6 +790,14 @@ if __name__ == '__main__':
         pol.ecrire_html(options.export_html)
         print _('Politique exportee dans le fichier %s') % options.export_html
         sys.exit()
+        
+    # check force_extension option (-f):
+    if options.force_extension is not None:
+        # should be empty or start with a dot
+        if options.force_extension != '' \
+        and not options.force_extension.startswith('.'):
+            # add the dot if missing:
+            options.force_extension = '.' + options.force_extension
 
     # enfin on lance le transfert:
     # (les répertoires et/ou fichiers source sont dans la liste args)
@@ -790,7 +807,9 @@ if __name__ == '__main__':
             exitcode = transfert(args, options.destination, pol=pol)
         else:
             # destination is a filename:
-            exitcode = transfert(args, options.output_file, pol=pol, dest_is_a_file=True)
+            exitcode = transfert(args, options.output_file, pol=pol, 
+                                 dest_is_a_file=True, 
+                                 force_extension=options.force_extension)
     except:
         Journal.exception('Error during analysis')
         exitcode = pol.parametres['exitcode_error'].valeur
