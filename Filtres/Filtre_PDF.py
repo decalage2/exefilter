@@ -22,15 +22,15 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 @license: CeCILL (open-source compatible GPL)
           cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.07
+@version: 1.08
 
 @status: beta
 """
 #==============================================================================
 __docformat__ = 'epytext en'
 
-__date__    = "2010-02-23"
-__version__ = "1.07"
+__date__    = "2010-05-02"
+__version__ = "1.08"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
@@ -85,6 +85,7 @@ __version__ = "1.07"
 #                      - new option to ignore origami errors
 # 2009-10-09 v1.06 PL: - added pdfid engine to improve PDF cleaning
 # 2010-02-23 v1.07 PL: - updated RechercherRemplacer import
+# 2010-05-02 v1.08 PL: - added parameter to disable launch actions with PDFiD
 
 #------------------------------------------------------------------------------
 # TODO:
@@ -94,6 +95,7 @@ __version__ = "1.07"
 
 #------------------------------------------------------------------------------
 # REFERENCES:
+# http://www.decalage.info/file_formats_security/pdf
 # http://www.adobe.com/devnet/pdf/pdf_reference.html
 # http://www.adobe.com/devnet/pdf/pdf_reference_archive.html
 # http://www.adobe.com/products/acrobat/pdfs/OpenFilenAttach.pdf
@@ -215,6 +217,11 @@ class Filtre_PDF (Filtre.Filtre):
             description=u"Disable all OpenAction objects, which may trigger "
                         +"active content. (pdfid)",
             valeur_defaut=True).ajouter(self.parametres)
+        Parametres.Parametre(u"disable_launch", bool,
+            nom=u"Disable Launch objects",
+            description=u"Disable all Launch objects, which may launch "
+                        "executable files or scripts. (pdfid)",
+            valeur_defaut=True).ajouter(self.parametres)
         Parametres.Parametre(u"disable_jbig2decode", bool,
             nom=u"Disable JBIG2Decode objects",
             description=u"Disable all JBIG2Decode objects, subject to vulnerabilities "
@@ -307,6 +314,8 @@ class Filtre_PDF (Filtre.Filtre):
             active_keywords.append('/AA')
         if self.parametres["disable_openaction"].valeur == True:
             active_keywords.append('/OpenAction')
+        if self.parametres["disable_launch"].valeur == True:
+            active_keywords.append('/Launch')
         if self.parametres["disable_jbig2decode"].valeur == True:
             active_keywords.append('/JBIG2Decode')
         try:
