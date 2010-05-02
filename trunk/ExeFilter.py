@@ -31,7 +31,7 @@ URL du projet: U{http://www.decalage.info/exefilter}
 @license: CeCILL (open-source compatible GPL)
           cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.11
+@version: 1.12
 
 @status: beta
 """
@@ -40,8 +40,8 @@ URL du projet: U{http://www.decalage.info/exefilter}
 __docformat__ = 'epytext en'
 
 #__author__  = "Philippe Lagadec, Tanguy Vinceleux, Arnaud Kerréneur (DGA/CELAR)"
-__date__    = "2010-04-20"
-__version__ = "1.11"
+__date__    = "2010-05-02"
+__version__ = "1.12"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
@@ -111,6 +111,7 @@ __version__ = "1.11"
 # 2010-02-09 v1.09 PL: - workaround when username cannot be determined
 # 2010-02-23 v1.10 PL: - removed plx import
 # 2010-04-20 v1.11 PL: - added new option -f to force filename extension
+# 2010-05-02 v1.12 PL: - added display_html_report to display HTML report
 
 #------------------------------------------------------------------------------
 # TODO:
@@ -394,6 +395,14 @@ def get_rapport() :
         chemin_rapport = chemin_rapport.abspath()
     return chemin_rapport
 
+
+def display_html_report():
+    """
+    Display HTML report in the web browser
+    """
+    plx.display_html_file(os.path.abspath(get_rapport()+'.html'))
+
+
 #------------------------------------------------------------------------------
 # CANCEL_TRANSFERT
 #-------------------
@@ -521,7 +530,7 @@ def transfert(liste_source, destination, type_transfert="entree", handle=None,
     @param dest_is_a_file: False if destination is a dir (default),
                            True if it's a filename.
     @type dest_is_a_file: bool
-        
+
     @param force_extension: if set, force filename extension to a specific value
                             (used to control which filters are applied)
                             Note: force_extension may be "" or must start with a dot
@@ -790,7 +799,7 @@ if __name__ == '__main__':
         pol.ecrire_html(options.export_html)
         print _('Politique exportee dans le fichier %s') % options.export_html
         sys.exit()
-        
+
     # check force_extension option (-f):
     if options.force_extension is not None:
         # should be empty or start with a dot
@@ -807,8 +816,8 @@ if __name__ == '__main__':
             exitcode = transfert(args, options.destination, pol=pol)
         else:
             # destination is a filename:
-            exitcode = transfert(args, options.output_file, pol=pol, 
-                                 dest_is_a_file=True, 
+            exitcode = transfert(args, options.output_file, pol=pol,
+                                 dest_is_a_file=True,
                                  force_extension=options.force_extension)
     except:
         Journal.exception('Error during analysis')
@@ -816,7 +825,7 @@ if __name__ == '__main__':
 
     # display HTML report in browser, unless batch mode is enabled:
     if not options.batchmode:
-        plx.display_html_file(os.path.abspath(get_rapport()+'.html'))
+        display_html_report()
 
     sys.exit(exitcode)
 
