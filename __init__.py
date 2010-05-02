@@ -77,7 +77,7 @@ termes.
 __docformat__ = 'epytext en'
 
 __author__    = 'Philippe Lagadec, Tanguy Vinceleux, Arnaud Kerréneur (DGA/CELAR)'
-__date__      = '2010-04-20'
+__date__      = '2010-05-02'
 __version__   = '1.1.3' #: le numero de version ExeFilter global suit la logique Linux
 
 # ce fichier __init__.py sert uniquement à faire en sorte que Python considère
