@@ -2,8 +2,8 @@
 
 __description__ = 'Tool to test a PDF file'
 __author__ = 'Didier Stevens, Philippe Lagadec'
-__version__ = '0.0.10_PL'
-__date__ = '2010/02/22'
+__version__ = '0.0.11_PL'
+__date__ = '2010/05/02'
 
 """
 
@@ -33,6 +33,8 @@ History:
   2009/10/19: v0.0.9_PL: modified for easier integration as Python module
   2010/01/11: V0.0.10: relaxed %PDF header checking
   2010/02/22: v0.0.10_PL: updated from v0.0.10
+  2010/04/28: V0.0.11: added /Launch
+  2010/05/02: v0.0.11_PL: updated from v0.0.11 (see ACTIVE_KEYWORDS)
 
 Todo:
   - update XML example (entropy, EOF)
@@ -49,8 +51,9 @@ import operator
 import os.path
 import sys
 
-#[PL] Keywords to be cleaned:
-ACTIVE_KEYWORDS = ('/JS', '/JavaScript', '/AA', '/OpenAction', '/JBIG2Decode', '/RichMedia')
+#[PL] Default keywords to be cleaned:
+ACTIVE_KEYWORDS = ('/JS', '/JavaScript', '/AA', '/OpenAction', '/JBIG2Decode',
+    '/RichMedia', '/Launch')
 
 class cBinaryFile:
     def __init__(self, file):
@@ -341,6 +344,7 @@ def PDFiD(file, allNames=False, extraData=False, disarm=False, force=False,
                 '/AcroForm',
                 '/JBIG2Decode',
                 '/RichMedia',
+                '/Launch',
                )
     words = {}
     dates = []
