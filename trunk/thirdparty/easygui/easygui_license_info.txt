@@ -1,0 +1,9 @@
+EasyGui (http://easygui.sourceforge.net)
+is licensed under the Creative Commons Attribution 2.0 License
+http://creativecommons.org/licenses/by/2.0/
+
+You are free to copy, distribute, and display the work, and to make derivative 
+works (including translations). If you do, you must give the original author 
+(http://easygui.sourceforge.net) credit. The author specifically permits (and 
+encourages) teachers to post, reproduce, and distribute some or all of this 
+material for use in their classes or by their students.
