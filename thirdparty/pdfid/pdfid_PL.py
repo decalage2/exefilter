@@ -35,6 +35,7 @@ History:
   2010/02/22: v0.0.10_PL: updated from v0.0.10
   2010/04/28: V0.0.11: added /Launch
   2010/05/02: v0.0.11_PL: updated from v0.0.11 (see ACTIVE_KEYWORDS)
+  2010/06/15: v0.0.11b_PL: fixed bug in PDFiD (return_cleaned for all active keywords)
 
 Todo:
   - update XML example (entropy, EOF)
@@ -327,7 +328,7 @@ def PDFiD(file, allNames=False, extraData=False, disarm=False, force=False,
     hexcode = False
     lastName = ''
     insideStream = False
-    keywords = ('obj',
+    keywords = ['obj',
                 'endobj',
                 'stream',
                 'endstream',
@@ -345,7 +346,11 @@ def PDFiD(file, allNames=False, extraData=False, disarm=False, force=False,
                 '/JBIG2Decode',
                 '/RichMedia',
                 '/Launch',
-               )
+               ]
+    #[PL] Also add active keywords:
+    for keyword in active_keywords:
+        if keyword not in keywords:
+            keywords.append(keyword)
     words = {}
     dates = []
     for keyword in keywords:
@@ -562,7 +567,7 @@ def PDFiD(file, allNames=False, extraData=False, disarm=False, force=False,
     if return_cleaned:
         #print words
         cleaned=False
-        for active_keyword in ("/JS", "/JavaScript", "/AA", "/OpenAction"):
+        for active_keyword in active_keywords:
             if words[active_keyword][0]:
                 cleaned=True
                 break

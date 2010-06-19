@@ -1,10 +1,11 @@
 Main changes in ExeFilter versions:
 
-v1.1.3 2010-05-02:
+v1.1.3 2010-06-19:
+  - added minimal GUI
   - new "force extension" option (-f) to control which filters are applied
   - PDF filter: new parameter to disable launch actions with PDFiD
   - updated PDFiD to v0.0.11
-  - added minimal GUI
+  - fixed bug in PDFiD_PL (return cleaned for non-default keywords)
 
 v1.1.2 2010-02-24 main changes since v1.1.1:
   - full English documentation
