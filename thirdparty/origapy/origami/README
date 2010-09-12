@@ -18,14 +18,14 @@ documents.
 :: LICENSE
 ==========
 
-This software is distributed under the GPL license.
-See the COPYING file for more details.
+This software is distributed under the LGPL license.
+See the COPYING.LESSER file for more details.
 
 
 :: RELEASE
 ==========
 
-- Current : Version 1.0.0 Alpha 0 release
+- Current : Version 1.0.0 beta2
 
 
 :: DEPENDENCIES
@@ -68,7 +68,7 @@ Frédéric Raynal   <fred@security-labs.org>          - Contributor
 :: NOTES
 ========
 
-This is a very first alpha release. It contains many bugs and many incomplete
+This is a beta release. It contains many bugs and many incomplete
 features. If you encounter a problem, feel free to report it by mail at
 <guillaume@security-labs.org>, with a short explanation of what you did and
 any necessary PDF documents.

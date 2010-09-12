@@ -5,16 +5,16 @@
 
 = Info
 	Origami is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
+  it under the terms of the GNU Lesser General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
   Origami is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+  GNU Lesser General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
+  You should have received a copy of the GNU Lesser General Public License
   along with Origami.  If not, see <http://www.gnu.org/licenses/>.
 
 =end
@@ -67,7 +67,7 @@ module Origami
     def gen_id
       fileInfo = get_trailer_info
       if fileInfo.nil?
-        raise InvalidPDF, "Cannot access trailer information"
+        raise InvalidPDFError, "Cannot access trailer information"
       end
 
       id = Digest::MD5.hexdigest( rand.to_s )
@@ -76,7 +76,7 @@ module Origami
 
   end
 
-  class InvalidTrailer < Exception #:nodoc:
+  class InvalidTrailerError < Exception #:nodoc:
   end
 
   #
@@ -123,7 +123,7 @@ module Origami
       end
       
       if not stream.scan(@@regexp_xref)
-        raise InvalidTrailer, "Cannot get startxref value"
+        raise InvalidTrailerError, "Cannot get startxref value"
       end
 
       startxref = stream[3].to_i

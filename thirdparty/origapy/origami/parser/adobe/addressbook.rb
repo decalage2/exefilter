@@ -5,35 +5,35 @@
 
 = Info
 	This file is part of Origami, PDF manipulation framework for Ruby
-	Copyright (C) 2009	Guillaume Delugré <guillaume@security-labs.org>
+	Copyright (C) 2010	Guillaume Delugré <guillaume@security-labs.org>
 	All right reserved.
 	  
   Origami is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
+  it under the terms of the GNU Lesser General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
   Origami is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+  GNU Lesser General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
+  You should have received a copy of the GNU Lesser General Public License
   along with Origami.  If not, see <http://www.gnu.org/licenses/>.
 
 =end
 
-require 'adobe/header.rb'
-require 'object.rb'
-require 'name.rb'
-require 'dictionary.rb'
-require 'reference.rb'
-require 'boolean.rb'
-require 'numeric.rb'
-require 'string.rb'
-require 'array.rb'
-require 'trailer.rb'
-require 'xreftable.rb'
+require 'origami/adobe/header'
+require 'origami/object'
+require 'origami/name'
+require 'origami/dictionary'
+require 'origami/reference'
+require 'origami/boolean'
+require 'origami/numeric'
+require 'origami/string'
+require 'origami/array'
+require 'origami/trailer'
+require 'origami/xreftable'
 
 require 'openssl'
 
@@ -41,7 +41,6 @@ module Origami
 
   module Adobe
     
-   
     #
     # Class representing an Adobe Reader certificate store.
     #
@@ -260,7 +259,7 @@ module Origami
         field   :PPK,       :Type => Dictionary, :Required => true
         
         def initialize(hash = {}) #:nodoc:
-          super(hash, true)
+          super(hash)
         end
         
       end
@@ -275,7 +274,7 @@ module Origami
         field   :V,           :Type => Integer, :Default => 0x10001, :Required => true
         
         def initialize(hash = {}) #:nodoc:
-          super(hash, false)
+          super(hash)
         end
         
       end
@@ -287,7 +286,7 @@ module Origami
         field   :Type,        :Type => Name, :Default => :User, :Required => true
         
         def initialize(hash = {})
-          super(hash, false)
+          super(hash)
         end
         
       end
@@ -301,7 +300,7 @@ module Origami
         field   :Entries,     :Type => Array, :Default => [], :Required => true
         
         def initialize(hash = {}) #:nodoc:
-          super(hash, false)
+          super(hash)
         end
         
       end
@@ -317,7 +316,7 @@ module Origami
         end
         
         def initialize(hash = {}) #:nodoc:
-          super(hash, true)
+          super(hash)
         end
         
       end

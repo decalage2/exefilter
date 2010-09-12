@@ -5,20 +5,20 @@
 
 = Info
 	This file is part of Origami, PDF manipulation framework for Ruby
-	Copyright (C) 2009	Guillaume DelugrÈ <guillaume@security-labs.org>
+	Copyright (C) 2010	Guillaume DelugrÈ <guillaume@security-labs.org>
 	All right reserved.
 	
   Origami is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
+  it under the terms of the GNU Lesser General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
   Origami is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+  GNU Lesser General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
+  You should have received a copy of the GNU Lesser General Public License
   along with Origami.  If not, see <http://www.gnu.org/licenses/>.
 
 =end
@@ -69,23 +69,15 @@ module Origami
         if object.is_a?(Array) or object.is_a?(ObjectStream)
           
           object.each { |subobj|
-            
-            if subobj.is_a?(Reference) then subobj = pdf.indirect_objects[subobj] end
-            
-            unless subobj.nil?
-              fd << "\t#{object.object_id} -> #{subobj.object_id}\n"
-            end
+            subobj = subobj.solve if subobj.is_a?(Reference) 
+            fd << "\t#{object.object_id} -> #{subobj.object_id}\n" unless subobj.nil?
           }
           
         elsif object.is_a?(Dictionary)
           
           object.each_pair { |name, subobj|
-            
-            if subobj.is_a?(Reference) then subobj = pdf.indirect_objects[subobj] end
-            
-            unless subobj.nil?
-              fd << "\t#{object.object_id} -> #{subobj.object_id} [label=\"#{name.value}\",fontsize=7];\n"
-            end
+            subobj = subobj.solve if subobj.is_a?(Reference) 
+            fd << "\t#{object.object_id} -> #{subobj.object_id} [label=\"#{name.value}\",fontsize=7];\n" unless subobj.nil?
           }
           
         end
@@ -93,12 +85,8 @@ module Origami
         if object.is_a?(Stream)
           
           object.dictionary.each_pair { |key, value|
-          
-            if value.is_a?(Reference) then value = pdf.indirect_objects[subobj] end
-            
-            unless value.nil?
-              fd << "\t#{object.object_id} -> #{value.object_id} [label=\"#{key.value}\",fontsize=7];\n"
-            end
+            value = value.solve if value.is_a?(Reference)
+            fd << "\t#{object.object_id} -> #{value.object_id} [label=\"#{key.value}\",fontsize=7];\n" unless value.nil?
           }
           
         end
@@ -106,17 +94,14 @@ module Origami
       end
       
       graphname = "PDF" if graphname.nil? or graphname.empty?
-      
       fd = File.open(filename, "w")
     
       begin
-        
         fd << "digraph #{graphname} {\n\n"
         
-        objects = self.objects(true).find_all{ |obj| not obj.is_a?(Reference) }
+        objects = self.objects(:include_keys => false).find_all{ |obj| not obj.is_a?(Reference) }
         
         objects.each { |object|
-          
           attr = appearance(object)
           
           fd << "\t#{object.object_id} [label=\"#{attr[:label]}\",shape=#{attr[:shape]},color=#{attr[:color]},style=filled,fontcolor=#{attr[:fontcolor]}];\n"
@@ -124,22 +109,17 @@ module Origami
           if object.is_a?(Stream)
             
             object.dictionary.each { |value|
-            
               unless value.is_a?(Reference)
                 attr = appearance(value)
                 fd << "\t#{value.object_id} [label=\"#{attr[:label]}\",shape=#{attr[:shape]},color=#{attr[:color]},style=filled,fontcolor=#{attr[:fontcolor]}];\n"
               end
-            
             }
             
           end
           
           add_edges(self, fd, object)
-        
         }
-        
         fd << "\n}"
-        
       ensure
         fd.close
       end

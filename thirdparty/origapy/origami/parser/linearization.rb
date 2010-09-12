@@ -5,20 +5,20 @@
 
 = Info
 	This file is part of Origami, PDF manipulation framework for Ruby
-	Copyright (C) 2009	Guillaume Delugré <guillaume@security-labs.org>
+	Copyright (C) 2010	Guillaume Delugré <guillaume@security-labs.org>
 	All right reserved.
 	
   Origami is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
+  it under the terms of the GNU Lesser General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
   Origami is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+  GNU Lesser General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
+  You should have received a copy of the GNU Lesser General Public License
   along with Origami.  If not, see <http://www.gnu.org/licenses/>.
 
 =end
@@ -31,8 +31,12 @@ module Origami
     # Returns whether the current document is linearized.
     #
     def is_linearized?
-      obj = @revisions.first.body.values.first
-      
+      begin
+        obj = @revisions.first.body.values.sort_by{|obj| obj.file_offset}.first
+      rescue
+        return false
+      end
+
       obj.is_a?(Dictionary) and obj.has_key? :Linearized
     end   
 
@@ -41,7 +45,7 @@ module Origami
     # This operation is xrefs destructive, should be fixed in the future to merge tables.
     #
     def delinearize!
-      raise InvalidPDF, 'Not a linearized document' unless is_linearized?
+      raise RuntimeError, 'Not a linearized document' unless is_linearized?
       
       #
       # Saves the catalog location.
@@ -67,7 +71,7 @@ module Origami
       end
 
       #
-      # Should be merged instead.
+      # Fix: Should be merged instead.
       #
       remove_xrefs
 
@@ -80,6 +84,7 @@ module Origami
       # Restore the Catalog.
       #
       @revisions.last.trailer ||= Trailer.new
+      @revisions.last.trailer.dictionary ||= Dictionary.new
       @revisions.last.trailer.dictionary[:Root] = catalog_ref
 
       self
@@ -109,7 +114,7 @@ module Origami
 
   end
 
-  class InvalidHintTable < Exception #:nodoc:
+  class InvalidHintTableError < Exception #:nodoc:
   end
 
   module HintTable
@@ -163,7 +168,7 @@ module Origami
       nitems = self.class.nb_header_items
       for no in (1..nitems)
         unless @header_items.include?(no)
-          raise InvalidHintTable, "Missing item #{no} in header section of #{self.class}"
+          raise InvalidHintTableError, "Missing item #{no} in header section of #{self.class}"
         end
 
         value = @header_items[no]
@@ -181,7 +186,7 @@ module Origami
       @entries.each do |entry|
         for no in (1..items)
           unless entry.include?(no)
-            raise InvalidHintTable, "Missing item #{no} in entry #{i} of #{self.class}"
+            raise InvalidHintTableError, "Missing item #{no} in entry #{i} of #{self.class}"
           end
 
           value = entry[no]
@@ -245,7 +250,7 @@ module Origami
 
   end
 
-  class InvalidHintStream < InvalidStream #:nodoc:
+  class InvalidHintStreamObjectError < InvalidStreamObjectError #:nodoc:
   end
 
   class HintStream < Stream
@@ -277,11 +282,11 @@ module Origami
 
     def pre_build
       if @page_offset_table.nil?
-        raise InvalidHintStream, "No page offset hint table"
+        raise InvalidHintStreamObjectError, "No page offset hint table"
       end
 
       if @shared_objects_table.nil?
-        raise InvalidHintStream, "No shared objects hint table"
+        raise InvalidHintStreamObjectError, "No shared objects hint table"
       end
 
       @data = ""

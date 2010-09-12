@@ -5,20 +5,20 @@
 
 = Info
 	This file is part of Origami, PDF manipulation framework for Ruby
-	Copyright (C) 2009	Guillaume DelugrÈ <guillaume@security-labs.org>
+	Copyright (C) 2010	Guillaume DelugrÈ <guillaume@security-labs.org>
 	All right reserved.
 	
   Origami is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
+  it under the terms of the GNU Lesser General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
   Origami is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+  GNU Lesser General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
+  You should have received a copy of the GNU Lesser General Public License
   along with Origami.  If not, see <http://www.gnu.org/licenses/>.
 
 =end
@@ -26,7 +26,7 @@
 
 module Origami
 
-  class InvalidArray < InvalidObject #:nodoc:
+  class InvalidArrayObjectError < InvalidObjectError #:nodoc:
   end
 
   #
@@ -34,28 +34,33 @@ module Origami
   # Arrays contain a set of Object.
   #
   class Array < ::Array
-
     include Origami::Object
     
     TOKENS = %w{ [ ] } #:nodoc:
- 
     @@regexp_open = Regexp.new('\A' + WHITESPACES + Regexp.escape(TOKENS.first) + WHITESPACES)   
     @@regexp_close = Regexp.new('\A' + WHITESPACES + Regexp.escape(TOKENS.last) + WHITESPACES)    
+
+    attr_reader :strings_cache
+
     #
     # Creates a new PDF Array Object.
     # _data_:: An array of objects.
     #
     def initialize(data = [])
-      
-      unless data.is_a?(::Array)
-        raise TypeError, "Expected type Array, received #{data.class}."
-      end
-      
+      raise TypeError, "Expected type Array, received #{data.class}." unless data.is_a?(::Array)
       super()
 
+      @strings_cache = []
       i = 0
       while i < data.size
-        self[i] = data[i].to_o
+        case val = data[i].to_o
+          when String then @strings_cache << val
+          when Dictionary,Array then 
+            @strings_cache |= val.strings_cache
+            val.strings_cache.clear
+        end
+
+        self[i] = val
         i = i + 1
       end
       
@@ -72,14 +77,14 @@ module Origami
       data = []
       
       if not stream.skip(@@regexp_open)
-        raise InvalidArray, "No token '#{TOKENS.first}' found"
+        raise InvalidArrayObjectError, "No token '#{TOKENS.first}' found"
       end
       
       while stream.skip(@@regexp_close).nil? do
         
         type = Object.typeof(stream)
         if type.nil?
-          raise InvalidArray, "Bad embedded object format"
+          raise InvalidArrayObjectError, "Bad embedded object format"
         end
         
         value = type.parse(stream)  

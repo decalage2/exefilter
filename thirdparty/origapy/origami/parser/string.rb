@@ -5,19 +5,25 @@
 
 = Info
 	Origami is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
+  it under the terms of the GNU Lesser General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
   Origami is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+  GNU Lesser General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
+  You should have received a copy of the GNU Lesser General Public License
   along with Origami.  If not, see <http://www.gnu.org/licenses/>.
 
 =end
+
+if RUBY_VERSION < '1.9'
+  class Fixnum
+    def ord; self; end
+  end
+end
 
 module Origami
 
@@ -27,6 +33,8 @@ module Origami
   module String
     
     module Encoding
+      class EncodingError < Exception #:nodoc:
+      end
 
       module PDFDocEncoding
 
@@ -76,6 +84,10 @@ module Origami
           utf16bestr
         end
 
+        def PDFDocEncoding.to_pdfdoc(str)
+          str
+        end
+
       end
 
       module UTF16BE
@@ -84,6 +96,20 @@ module Origami
 
         def UTF16BE.to_utf16be(str)
           str
+        end
+
+        def UTF16BE.to_pdfdoc(str)
+          pdfdoc = []
+          i = 2
+
+          while i < str.size
+            char = PDFDocEncoding::CHARMAP.index(str[i,2])
+            raise EncodingError, "Can't convert UTF16-BE character to PDFDocEncoding" if char.nil?
+            pdfdoc << char
+            i = i + 2
+          end
+
+          pdfdoc.pack("C*")
         end
 
       end
@@ -96,31 +122,52 @@ module Origami
     
     def real_type ; Origami::String end
 
-    def initialize(str)
-      
+    def initialize(str) #:nodoc:
+      infer_encoding  
+      super(str)
+    end
+
+    #
+    # Convert String object to an UTF8 encoded Ruby string.
+    #
+    def to_utf8
+      require 'iconv'
+
+      infer_encoding
+      i = Iconv.new("UTF-8", "UTF16")
+        utf8str = i.iconv(self.encoding.to_utf16be(self.value))
+      i.close
+
+      utf8str
+    end
+
+    #
+    # Convert String object to an UTF16-BE encoded Ruby string.
+    #
+    def to_utf16be
+      infer_encoding
+      self.encoding.to_utf16be(self.value)
+    end
+
+    #
+    # Convert String object to a PDFDocEncoding encoded Ruby string.
+    #
+    def to_pdfdoc
+      infer_encoding
+      self.encoding.to_pdfdoc(self.value)
+    end
+
+    def infer_encoding #:nodoc:
       @encoding = 
-      if str[0,2] == Encoding::UTF16BE::MAGIC
+      if self.value[0,2] == Encoding::UTF16BE::MAGIC
         Encoding::UTF16BE
       else
         Encoding::PDFDocEncoding
       end
-
-      super(str)
     end
-
-    def to_utf8
-      require 'iconv'
-
-      i = Iconv.new("UTF-8", "UTF16")
-        utf16str = i.iconv(self.encoding.to_utf16be(self.value))
-      i.close
-
-      utf16str
-    end
-
   end
 
-  class InvalidHexaString < Exception #:nodoc:
+  class InvalidHexaStringObjectError < InvalidObjectError #:nodoc:
   end
   
   #
@@ -151,12 +198,12 @@ module Origami
     def self.parse(stream) #:nodoc:
         
       if stream.skip(@@regexp_open).nil?
-        raise InvalidHexaString, "Hexadecimal string shall start with a '#{TOKENS.first}' token"
+        raise InvalidHexaStringObjectError, "Hexadecimal string shall start with a '#{TOKENS.first}' token"
       end
         
       hexa = stream.scan_until(@@regexp_close)
       if hexa.nil?
-        raise InvalidHexaString, "Hexadecimal string shall end with a '#{TOKENS.last}' token"
+        raise InvalidHexaStringObjectError, "Hexadecimal string shall end with a '#{TOKENS.last}' token"
       end
 
       decoded = Filter::ASCIIHex.decode(hexa.chomp!(TOKENS.last))
@@ -174,12 +221,15 @@ module Origami
     def to_raw
       ByteString.new(self.value)
     end
-    
-    alias value to_str
-    
+
+    def value
+      self.decrypt! if self.is_a?(Encryption::EncryptedString) and not @decrypted
+
+      to_str
+    end
   end
  
-  class InvalidByteString < Exception #:nodoc:
+  class InvalidByteStringObjectError < InvalidObjectError #:nodoc:
   end
 
   #
@@ -210,7 +260,7 @@ module Origami
     def self.parse(stream) #:nodoc:
       
       if not stream.skip(@@regexp_open)
-        raise InvalidByteString, "No literal string start token found"
+        raise InvalidByteStringObjectError, "No literal string start token found"
       end
       
       result = ""
@@ -218,7 +268,7 @@ module Origami
       while depth != 0 or stream.peek(1) != TOKENS.last do
 
         if stream.eos?
-          raise InvalidByteString, "Non-terminated string"
+          raise InvalidByteStringObjectError, "Non-terminated string"
         end
 
         c = stream.get_byte
@@ -265,7 +315,7 @@ module Origami
       end
 
       if not stream.skip(@@regexp_close)
-        raise InvalidByteString, "Byte string shall be terminated with '#{TOKENS.last}'"
+        raise InvalidByteStringObjectError, "Byte string shall be terminated with '#{TOKENS.last}'"
       end
 
       ByteString.new(result)
@@ -293,8 +343,11 @@ module Origami
       HexaString.new(self.value)
     end
     
-    alias value to_str
-    
+    def value
+      self.decrypt! if self.is_a?(Encryption::EncryptedString) and not @decrypted
+
+      to_str
+    end
   end
 
   #
@@ -302,7 +355,7 @@ module Origami
   # _Not used_
   # _Not tested_
   #
-  class Date < ByteString
+  class Date < ByteString #:nodoc:
 
     REGEXP_TOKEN = "(D:)?(\\d{4})(\\d{2})?(\\d{2})?(\\d{2})?(\\d{2})?(\\d{2})?(?:([\\+-Z])(?:(\\d{2})')?(?:(\\d{2})')?)?"
     

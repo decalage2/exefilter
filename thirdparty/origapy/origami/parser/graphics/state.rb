@@ -5,20 +5,20 @@
 
 = Info
 	This file is part of Origami, PDF manipulation framework for Ruby
-	Copyright (C) 2009	Guillaume Delugré <guillaume@security-labs.org>
+	Copyright (C) 2010	Guillaume Delugré <guillaume@security-labs.org>
 	All right reserved.
 	
   Origami is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
+  it under the terms of the GNU Lesser General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
   Origami is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+  GNU Lesser General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
+  You should have received a copy of the GNU Lesser General Public License
   along with Origami.  If not, see <http://www.gnu.org/licenses/>.
 
 =end
@@ -106,29 +106,6 @@ module Origami
 
     end
 
-    module Instruction
-      class QPush
-        include PDF::Instruction
-        def initialize; super('q') end
-
-        def update_state(gs)
-          gs.save
-          gs.reset
-          self
-        end
-      end
-
-      class QPop
-        include PDF::Instruction
-        def initialize; super('Q') end
-
-        def update_state(gs)
-          gs.restore
-          self
-        end
-      end
-    end
-
     #
     # Generic Graphic state
     # 4.3.4 Graphics State Parameter Dictionaries p219
@@ -169,5 +146,19 @@ module Origami
 
   end #module Graphics 
  
+  class PDF::Instruction
+    insn  'q' do |gs| gs.save; gs.reset end
+    insn  'Q' do |gs| gs.restore end
+    insn  'w', Real do |gs, lw| gs.line_width = lw end
+    insn  'J', Real do |gs, lc| gs.line_cap = lc end
+    insn  'j', Real do |gs, lj| gs.line_join = lj end
+    insn  'M', Real do |gs, ml| gs.miter_limit = ml end
+    
+    insn  'd', Array, Integer do |gs, array, phase| 
+      gs.dash_pattern = Graphics::DashPattern.new array, phase
+    end
+
+    insn  'ri', Name do |gs, ri| gs.rendering_intent = ri end
+  end
 end
 

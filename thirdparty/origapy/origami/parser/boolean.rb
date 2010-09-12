@@ -5,27 +5,27 @@
 
 = Info
 	This file is part of Origami, PDF manipulation framework for Ruby
-	Copyright (C) 2009	Guillaume DelugrÈ <guillaume@security-labs.org>
+	Copyright (C) 2010	Guillaume DelugrÈ <guillaume@security-labs.org>
 	All right reserved.
 	
   Origami is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
+  it under the terms of the GNU Lesser General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
   Origami is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+  GNU Lesser General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
+  You should have received a copy of the GNU Lesser General Public License
   along with Origami.  If not, see <http://www.gnu.org/licenses/>.
 
 =end
 
 module Origami
 
-  class InvalidBoolean < InvalidObject #:nodoc:
+  class InvalidBooleanObjectError < InvalidObjectError #:nodoc:
   end
 
   #
@@ -62,7 +62,7 @@ module Origami
     def self.parse(stream) #:nodoc:
     
       if stream.scan(@@regexp).nil?
-        raise InvalidBoolean
+        raise InvalidBooleanObjectError
       end
 
       value = stream[2] == "true" ? true : false

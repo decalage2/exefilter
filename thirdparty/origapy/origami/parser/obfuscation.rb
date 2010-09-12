@@ -112,10 +112,6 @@ module Origami
 
   end
 
-  module Object
-    alias :to_obfuscated_str :to_s
-  end
-
   class Dictionary
     
     def to_obfuscated_str
@@ -130,6 +126,10 @@ module Origami
       super(content)
     end
 
+  end
+
+  module Object
+    alias :to_obfuscated_str :to_s
   end
 
   class Array
@@ -183,7 +183,7 @@ module Origami
 
   class Name
     def to_obfuscated_str(prop = 2)
-      name = (self.value == :" ") ? "" : self.id2name
+      name = @value.dup
       
       forbiddenchars = [ " ","#","\t","\r","\n","\0","[","]","<",">","(",")","%","/","\\" ]
 
@@ -212,14 +212,6 @@ module Origami
       content << EOL << TOKENS.last
       
       super(content)
-    end
-  end
-
-  class PDF
-
-    def obfuscate_and_saveas(filename, options = {})
-      options[:obfuscate] = true
-      saveas(filename, options)
     end
   end
 

@@ -5,41 +5,37 @@
 
 = Info
 	This file is part of Origami, PDF manipulation framework for Ruby
-	Copyright (C) 2009	Guillaume Delugré <guillaume@security-labs.org>
+	Copyright (C) 2010	Guillaume Delugré <guillaume@security-labs.org>
 	All right reserved.
 	  
   Origami is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
+  it under the terms of the GNU Lesser General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
   Origami is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+  GNU Lesser General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
+  You should have received a copy of the GNU Lesser General Public License
   along with Origami.  If not, see <http://www.gnu.org/licenses/>.
 
 =end
 
 module Origami
 
-  module Action
+  #
+  # Class representing an action to launch in a PDF.
+  #
+  class Action < Dictionary
     
-    #
-    # Class representing an action to launch in a PDF.
-    #
-    class Action < Dictionary
-      
-      include Configurable
+    include Configurable
 
-      field   :Type,    :Type => Name, :Default => :Action
-      field   :S,       :Type => Name, :Required => true
-      field   :Next,    :Type => [ Array, Dictionary ], :Version => "1.2"
-     
-    end
-    
+    field   :Type,    :Type => Name, :Default => :Action
+    field   :S,       :Type => Name, :Required => true
+    field   :Next,    :Type => [ Array, Dictionary ], :Version => "1.2"
+   
     #
     # Class representing a action going to a destination in the current document.
     #
@@ -79,9 +75,7 @@ module Origami
       # _ismap_::
       #
       def initialize(uri, ismap = false)
-       
         super(:URI => uri, :IsMap => ismap)
-        
       end
     
     end
@@ -99,9 +93,7 @@ module Origami
       # _script_:: The script to be executed.
       #
       def initialize(script)
-       
         super(:JS => script)
-        
       end
       
     end
@@ -171,9 +163,7 @@ module Origami
       # _newwindow_:: Specifies whether the file has to be opened in a new window.
       #
       def initialize(file, dest = Destination::GlobalFit.new(0), newwindow = false)
-       
         super(:F => file, :D => dest, :NewWindow => newwindow)
-        
       end
       
     end
@@ -189,31 +179,29 @@ module Origami
       field   :NewWindow, :Type => Boolean
       field   :T,         :Type => Dictionary
 
-      def initialize(filespec, dest, newwindow = false)
-       
-        super(:F => filespec, :D => dest, :NewWindow => newwindow)
+      #
+      # A class representing a target for a GoToE to an embedded file.
+      #
+      class EmbeddedTarget < Dictionary
+        
+        include Configurable
+        
+        module Relationship
+          PARENT = :P
+          CHILD = :C
+        end
+
+        field   :R,           :Type => Name, :Required => true
+        field   :N,           :Type => ByteString
+        field   :P,           :Type => [ Integer, ByteString ]
+        field   :A,           :Type => [ Integer, ByteString ]
+        field   :T,           :Type => Dictionary
         
       end
-      
-    end
     
-    #
-    # A class representing a target for a GoToE to an embedded file.
-    #
-    class EmbeddedTarget < Dictionary
-      
-      include Configurable
-      
-      module Relationship
-        PARENT = :P
-        CHILD = :C
+      def initialize(filespec, dest, newwindow = false)
+        super(:F => filespec, :D => dest, :NewWindow => newwindow)
       end
-
-      field   :R,           :Type => Name, :Required => true
-      field   :N,           :Type => ByteString
-      field   :P,           :Type => [ Integer, ByteString ]
-      field   :A,           :Type => [ Integer, ByteString ]
-      field   :T,           :Type => Dictionary
       
     end
     
@@ -244,13 +232,11 @@ module Origami
       field   :Flags,       :Type => Integer, :Default => 0
 
       def initialize(url, fields = [], flags = 0)
-               
         if not url.is_a? FileSpec
           url = FileSpec.new(:FS => :URL, :F => url)
         end
         
         super(:F => url, :Fields => fields, :Flags => flags)
-        
       end
       
     end
@@ -261,17 +247,36 @@ module Origami
       field   :F,           :Type => Dictionary, :Required => true
 
       def initialize(file)
-       
         if not file.is_a? FileSpec
           file = FileSpec.new(:FS => :File, :F => file)
         end
         
         super(:F => file)
-        
       end
     
     end
+
+    class RichMediaExecute < Action
+
+      field   :S,           :Type => Name, :Default => :RichMediaExecute, :Version => "1.7", :ExtensionLevel => 3, :Required => true
+      field   :TA,          :Type => Dictionary, :Version => "1.7", :ExtensionLevel => 3, :Required => true
+      field   :TI,          :Type => Dictionary, :Version => "1.7", :ExtensionLevel => 3
+      field   :CMD,         :Type => Dictionary, :Version => "1.7", :ExtensionLevel => 3, :Required => true
+
+      class Command < Dictionary
+        include Configurable
+
+        field   :Type,      :Type => Name, :Default => :RichMediaCommand, :Version => "1.7", :ExtensionLevel => 3
+        field   :C,         :Type => String, :Version => "1.7", :ExtensionLevel => 3, :Required => true
+        field   :A,         :Type => Object, :Version => "1.7", :ExtensionLevel => 3
+      end
+
+      def initialize(annotation, command)
+        super(:TA => annotation, :CMD => command)
+      end
     
+    end
+  
   end
 
 end

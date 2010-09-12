@@ -1,0 +1,53 @@
+# CHANGELOG
+
+beta3 (26/08/10):
+  |origami|:
+    - Faster decryption process.
+    - Can now properly parse objects with no endobj token.
+  |walker|:
+    - Image viewer.
+
+beta2 (01/04/10):
+  Directory tree has changed. Sources are in the origami folder, and you
+  have to require origami.rb located in the root directory.
+
+  |origami|:
+    - Added a force flag to detect PDF header in the file.
+    - Support for Flash/RichMedia integration.
+    - PDF#objects prototype has changed.
+    - XFA forms.
+    - Fixed various bugs.
+  |walker|:
+    - Search feature.
+
+beta1 (15/09/09):
+  |sources/parser|:
+    - Renamed 'Action::WindowsApplication' to 'Action::Launch::WindowsLaunchParams'.
+    - Basic support for graphics drawing as lines, colors, shading, shapes...
+    - Support for numerical functions.
+    - Support for date strings.
+    - Added PDF#insert_page(index, page) method.
+    - Added a forms widgets template.
+    - Ability to delinearize documents.
+    - Fixed various bugs.
+
+beta0 (06/07/09):
+  |sources/parser|:
+    - Support for XRef streams. 
+    - Support for Object streams creation. 
+    - Support for PNG stream predictor functions.
+  |sources/scripts/scan|:
+    - Added a scanning script.
+  |sources/scripts/antivir|: 
+    - Added an cleaning script.
+  |sources/scripts/metadata|: 
+    - Metadata printer.
+  |sources/samples/open|:
+    - Various methods to trigger an action at the document opening.
+
+alpha1 (19/06/09):
+  |sources/scripts/crypto|:
+    - Added an encryption script.
+  |sources/parser|:
+    - Bugfix in Array handling.
+

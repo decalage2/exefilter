@@ -5,38 +5,36 @@
 
 = Info
 	This file is part of Origami, PDF manipulation framework for Ruby
-	Copyright (C) 2009	Guillaume Delugré <guillaume@security-labs.org>
+	Copyright (C) 2010	Guillaume Delugré <guillaume@security-labs.org>
 	All right reserved.
 	
   Origami is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
+  it under the terms of the GNU Lesser General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
   Origami is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+  GNU Lesser General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
+  You should have received a copy of the GNU Lesser General Public License
   along with Origami.  If not, see <http://www.gnu.org/licenses/>.
 
 =end
-
-require 'delegate'
 
 module Origami
 
   REGULARCHARS = "([^ \\t\\r\\n\\0\\[\\]<>()%\\/]|#[a-fA-F0-9][a-fA-F0-9])*" #:nodoc:
 
-  class InvalidName < InvalidObject #:nodoc:
+  class InvalidNameObjectError < InvalidObjectError #:nodoc:
   end
 
   #
   # Class representing a Name Object.
   # Name objects are strings which identify some PDF file inner structures.
   #
-  class Name < DelegateClass(Symbol)
+  class Name #< DelegateClass(Symbol)
     
     include Origami::Object
     
@@ -54,38 +52,35 @@ module Origami
         raise TypeError, "Expected type Symbol or String, received #{name.class}."
       end
       
-      value = (name.to_s.empty?) ? :" " : name.to_sym
+      @value = name.to_s
       
-      super(value)
+      super()
     end
 
-    def set(value)
-      initialize(value, @indirect)
-    end
-    
     def value
-      self.to_sym
+      @value.to_sym
+    end
+
+    def ==(object) #:nodoc:
+      @value.to_sym == object
     end
     
     def eql?(object) #:nodoc:
-      object.is_a?(Name) and self.id2name == object.id2name
+      object.is_a?(Name) and self.to_s == object.to_s
     end
     
     def hash #:nodoc:
-      self.value.hash
+      @value.hash
     end
     
     def to_s #:nodoc:
-      
-      name = (self.value == :" ") ? "" : self.id2name
-      
-      super(TOKENS.first + Name.expand(name))
+      super(TOKENS.first + Name.expand(@value))
     end
     
     def self.parse(stream) #:nodoc:
       
       if stream.scan(@@regexp).nil?
-        raise InvalidName, "Bad name format"
+        raise InvalidNameObjectError, "Bad name format"
       else
         value = stream[2]
         
@@ -103,13 +98,13 @@ module Origami
           digits = name[i+1, 2]
           
           unless /^[A-Za-z0-9]{2}$/ === digits
-            raise InvalidName, "Irregular use of # token"
+            raise InvalidNameObjectError, "Irregular use of # token"
           end
           
           char = digits.hex.chr
           
           if char == "\0"
-            raise InvalidName, "Null byte forbidden inside name definition"
+            raise InvalidNameObjectError, "Null byte forbidden inside name definition"
           end
           
           name[i, 3] = char
