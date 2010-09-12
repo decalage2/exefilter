@@ -5,16 +5,16 @@
 
 = Info
 	Origami is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
+  it under the terms of the GNU Lesser General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
   Origami is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+  GNU Lesser General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
+  You should have received a copy of the GNU Lesser General Public License
   along with Origami.  If not, see <http://www.gnu.org/licenses/>.
 
 =end
@@ -53,7 +53,7 @@ module Origami
 
   end
 
-  class InvalidXRef < Exception #:nodoc:
+  class InvalidXRefError < Exception #:nodoc:
   end
 
   #
@@ -63,7 +63,7 @@ module Origami
     
     FREE = "f"
     USED = "n"
-    LASTFREE = 65535
+    FIRSTFREE = 65535
 
     @@regexp = /\A(\d{10}) (\d{5}) (n|f)(\r| )\n/
     
@@ -84,7 +84,7 @@ module Origami
     def self.parse(stream) #:nodoc:
       
       if stream.scan(@@regexp).nil?
-        raise InvalidXRef, "Invalid XRef format"
+        raise InvalidXRefError, "Invalid XRef format"
       end
       
       offset = stream[1].to_i
@@ -105,7 +105,6 @@ module Origami
     end
 
     def to_xrefstm_data(type_w, field1_w, field2_w)
-
       type_w <<= 3
       field1_w <<= 3
       field2_w <<= 3
@@ -115,12 +114,13 @@ module Origami
       offset = @offset.to_s(2)
       offset = '0' * (field1_w - offset.size) + offset
       generation = @generation.to_s(2)
+
       generation = '0' * (field2_w - generation.size) + generation
 
       [ type , offset, generation ].pack("B#{type_w}B#{field1_w}B#{field2_w}")
     end
     
-    class InvalidSubsection < Exception #:nodoc:
+    class InvalidXRefSubsectionError < Exception #:nodoc:
     end
   
     #
@@ -148,7 +148,7 @@ module Origami
       def self.parse(stream) #:nodoc:
         
         if stream.scan(@@regexp).nil?
-          raise InvalidSubsection, "Bad subsection format"
+          raise InvalidXRefSubsectionError, "Bad subsection format"
         end
         
         start = stream[1].to_i
@@ -199,7 +199,7 @@ module Origami
       
     end
 
-    class InvalidSection < Exception #:nodoc:
+    class InvalidXRefSectionError < Exception #:nodoc:
     end
 
     #
@@ -222,7 +222,7 @@ module Origami
       def self.parse(stream) #:nodoc:
         
         if stream.skip(@@regexp_open).nil?
-          raise InvalidSection, "No xref token found"
+          raise InvalidXRefSectionError, "No xref token found"
         end
         
         subsections = []
@@ -301,7 +301,7 @@ module Origami
 
   end
   
-  class InvalidXRefStream < InvalidStream ; end
+  class InvalidXRefStreamObjectError < InvalidStreamObjectError ; end
 
   #
   # Class representing a XRef Stream.
@@ -389,6 +389,11 @@ module Origami
       nil
     end
 
+    def clear
+      @rawdata = ""
+      @xrefs = []
+    end
+
     private
 
     def load! #:nodoc:
@@ -396,7 +401,7 @@ module Origami
         widths = self.W
 
         if not widths.is_a?(Array) or widths.length != 3 or widths.any?{|width| not width.is_a?(Integer) }
-          raise InvalidXRefStream, "W field must be an array of 3 integers"
+          raise InvalidXRefStreamObjectError, "W field must be an array of 3 integers"
         end
 
         decode!

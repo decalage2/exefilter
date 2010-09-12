@@ -5,23 +5,23 @@
 
 = Info
 	Origami is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
+  it under the terms of the GNU Lesser General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
   Origami is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+  GNU Lesser General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
+  You should have received a copy of the GNU Lesser General Public License
   along with Origami.  If not, see <http://www.gnu.org/licenses/>.
 
 =end
 
 module Origami
 
-  class InvalidReference < Exception #:nodoc:
+  class InvalidReferenceError < Exception #:nodoc:
   end
 
   #
@@ -45,7 +45,7 @@ module Origami
     def self.parse(stream) #:nodoc:
       
       if stream.scan(@@regexp).nil?
-        raise InvalidReference, "Bad reference to indirect objet format"
+        raise InvalidReferenceError, "Bad reference to indirect objet format"
       end
       
       refno = stream[2].to_i
@@ -59,13 +59,13 @@ module Origami
       pdfdoc = self.pdf
 
       if pdfdoc.nil?
-        raise InvalidReference, "Not attached to any PDF"
+        raise InvalidReferenceError, "Not attached to any PDF"
       end
       
       target = pdfdoc.get_object(self)
       
       if target.nil?
-        raise InvalidReference, "Cannot resolve reference"
+        raise InvalidReferenceError, "Cannot resolve reference : #{self.to_s}"
       end
 
       target

@@ -5,33 +5,75 @@
 
 = Info
 	This file is part of Origami, PDF manipulation framework for Ruby
-	Copyright (C) 2009	Guillaume Delugr» <guillaume@security-labs.org>
+	Copyright (C) 2010	Guillaume Delugr» <guillaume@security-labs.org>
 	All right reserved.
 	
   Origami is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
+  it under the terms of the GNU Lesser General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
   Origami is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+  GNU Lesser General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
+  You should have received a copy of the GNU Lesser General Public License
   along with Origami.  If not, see <http://www.gnu.org/licenses/>.
 
 =end
 
 module Origami
 
-  module Annotation
-  
+  #
+  # Class representing an annotation.
+  # Annotations are objects which user can interact with.
+  #
+  class Annotation < Dictionary
+    
+    include Configurable
+    
+    field   :Type,            :Type => Name, :Default => :Annot
+    field   :Subtype,         :Type => Name, :Default => :Text, :Required => true
+    field   :Rect,            :Type => Array, :Default => [ 0 , 0 , 0 , 0 ], :Required => true
+    field   :Contents,        :Type => String
+    field   :P,               :Type => Dictionary, :Version => "1.3"
+    field   :NM,              :Type => String, :Version => "1.4"
+    field   :M,               :Type => ByteString, :Version => "1.1"
+    field   :F,               :Type => Integer, :Default => 0, :Version => "1.1"
+    field   :AP,              :Type => Dictionary, :Version => "1.2"
+    field   :AS,              :Type => Name, :Version => "1.2"
+    field   :Border,          :Type => Array, :Default => [ 0 , 0 , 1 ]
+    field   :C,               :Type => Array, :Version => "1.1"
+    field   :StructParent,    :Type => Integer, :Version => "1.3"
+    field   :OC,              :Type => Dictionary, :Version => "1.5"
+
+    def set_normal_appearance(apstm)
+      self.AP ||= AppearanceDictionary.new
+      self.AP[:N] = apstm
+
+      self
+    end
+
+    def set_rollover_appearance(apstm)
+      self.AP ||= AppearanceDictionary.new
+      self.AP[:R] = apstm
+
+      self
+    end
+
+    def set_down_appearance(apstm)
+      self.AP ||= AppearanceStream.new
+      self.AP[:D] = apstm
+
+      self
+    end
+
     module Triggerable
       
       def onMouseOver(action)        
         
-        unless action.is_a?(Action::Action)
+        unless action.is_a?(Action)
           raise TypeError, "An Action object must be passed."
         end
         
@@ -42,7 +84,7 @@ module Origami
       
       def onMouseOut(action)        
         
-        unless action.is_a?(Action::Action)
+        unless action.is_a?(Action)
           raise TypeError, "An Action object must be passed."
         end
         
@@ -53,7 +95,7 @@ module Origami
       
       def onMouseDown(action)        
         
-        unless action.is_a?(Action::Action)
+        unless action.is_a?(Action)
           raise TypeError, "An Action object must be passed."
         end
         
@@ -64,7 +106,7 @@ module Origami
       
       def onMouseUp(action)        
         
-        unless action.is_a?(Action::Action)
+        unless action.is_a?(Action)
           raise TypeError, "An Action object must be passed."
         end
         
@@ -75,7 +117,7 @@ module Origami
       
       def onFocus(action)        
         
-        unless action.is_a?(Action::Action)
+        unless action.is_a?(Action)
           raise TypeError, "An Action object must be passed."
         end
         
@@ -86,7 +128,7 @@ module Origami
       
       def onBlur(action)        
         
-        unless action.is_a?(Action::Action)
+        unless action.is_a?(Action)
           raise TypeError, "An Action object must be passed."
         end
         
@@ -97,7 +139,7 @@ module Origami
       
       def onPageOpen(action)        
         
-        unless action.is_a?(Action::Action)
+        unless action.is_a?(Action)
           raise TypeError, "An Action object must be passed."
         end
         
@@ -108,7 +150,7 @@ module Origami
       
       def onPageClose(action)        
         
-        unless action.is_a?(Action::Action)
+        unless action.is_a?(Action)
           raise TypeError, "An Action object must be passed."
         end
         
@@ -119,7 +161,7 @@ module Origami
 
       def onPageVisible(action)        
         
-        unless action.is_a?(Action::Action)
+        unless action.is_a?(Action)
           raise TypeError, "An Action object must be passed."
         end
         
@@ -130,7 +172,7 @@ module Origami
       
       def onPageInvisible(action)        
         
-        unless action.is_a?(Action::Action)
+        unless action.is_a?(Action)
           raise TypeError, "An Action object must be passed."
         end
         
@@ -170,52 +212,6 @@ module Origami
         receiver.field    :RT,            :Type => Name, :Default => :R, :Version => "1.6"
         receiver.field    :IT,            :Type => Name, :Version => "1.6"
         receiver.field    :ExData,        :Type => Dictionary, :Version => "1.7"
-      end
-
-    end
-
-    #
-    # Class representing an annotation.
-    # Annotations are objects which user can interact with.
-    #
-    class Annotation < Dictionary
-      
-      include Configurable
-      
-      field   :Type,            :Type => Name, :Default => :Annot
-      field   :Subtype,         :Type => Name, :Default => :Text, :Required => true
-      field   :Rect,            :Type => Array, :Default => [ 0 , 0 , 0 , 0 ], :Required => true
-      field   :Contents,        :Type => String
-      field   :P,               :Type => Dictionary, :Version => "1.3"
-      field   :NM,              :Type => String, :Version => "1.4"
-      field   :M,               :Type => ByteString, :Version => "1.1"
-      field   :F,               :Type => Integer, :Default => 0, :Version => "1.1"
-      field   :AP,              :Type => Dictionary, :Version => "1.2"
-      field   :AS,              :Type => Name, :Version => "1.2"
-      field   :Border,          :Type => Array, :Default => [ 0 , 0 , 1 ]
-      field   :C,               :Type => Array, :Version => "1.1"
-      field   :StructParent,    :Type => Integer, :Version => "1.3"
-      field   :OC,              :Type => Dictionary, :Version => "1.5"
-
-      def set_normal_appearance(apstm)
-        self.AP ||= AppearanceDictionary.new
-        self.AP[:N] = apstm
-
-        self
-      end
-
-      def set_rollover_appearance(apstm)
-        self.AP ||= AppearanceDictionary.new
-        self.AP[:R] = apstm
-
-        self
-      end
-
-      def set_down_appearance(apstm)
-        self.AP ||= AppearanceStream.new
-        self.AP[:D] = apstm
-
-        self
       end
 
     end
@@ -448,9 +444,177 @@ module Origami
       field   :Name,                :Type => Name, :Default => Icons::SPEAKER
 
     end
+
+    class RichMedia < Annotation
+      
+      field   :Subtype,             :Type => Name, :Default => :RichMedia, :Version => "1.7", :ExtensionLevel => 3, :Required => true
+      field   :RichMediaSettings,   :Type => Dictionary, :Version => "1.7", :ExtensionLevel => 3
+      field   :RichMediaContent,    :Type => Dictionary, :Version => "1.7", :ExtensionLevel => 3, :Required => true
+
+      class Settings < Dictionary
+        include Configurable
+
+        field   :Type,              :Type => Name, :Default => :RichMediaSettings, :Version => "1.7", :ExtensionLevel => 3
+        field   :Activation,        :Type => Dictionary, :Version => "1.7", :ExtensionLevel => 3
+        field   :Deactivation,      :Type => Dictionary, :Version => "1.7", :ExtensionLevel => 3
+      end
+      
+      class Activation < Dictionary
+        include Configurable
+
+        USER_ACTION   = :XA
+        PAGE_OPEN     = :PO
+        PAGE_VISIBLE  = :PV
+
+        field   :Type,              :Type => Name, :Default => :RichMediaActivation, :Version => "1.7", :ExtensionLevel => 3
+        field   :Condition,         :Type => Name, :Default => USER_ACTION, :Version  => "1.7", :ExtensionLevel => 3
+        field   :Animation,         :Type => Dictionary, :Version => "1.7", :ExtensionLevel => 3
+        field   :View,              :Type => Dictionary, :Version => "1.7", :ExtensionLevel => 3
+        field   :Configuration,     :Type => Dictionary, :Version => "1.7", :ExtensionLevel => 3
+        field   :Presentation,      :Type => Dictionary, :Version => "1.7", :ExtensionLevel => 3
+        field   :Scripts,           :Type => Array, :Version => "1.7", :ExtensionLevel => 3
+      end
+
+      class Deactivation < Dictionary
+        include Configurable
+
+        USER_ACTION     = :XD
+        PAGE_CLOSE      = :PC
+        PAGE_INVISIBLE  = :PV
+
+        field   :Type,              :Type => Name, :Default => :RichMediaDeactivation, :Version => "1.7", :ExtensionLevel => 3
+        field   :Condition,         :Type => Name, :Default => USER_ACTION, :Version => "1.7", :ExtensionLevel => 3
+      end
+
+      class Animation < Dictionary
+        include Configurable
+
+        NONE          = :None
+        LINEAR        = :Linear
+        OSCILLATING   = :Oscillating
+
+        field   :Type,              :Type => Name, :Default => :RichMediaAnimation, :Version => "1.7", :ExtensionLevel => 3
+        field   :Subtype,           :Type => Name, :Default => NONE, :Version => "1.7", :ExtensionLevel => 3
+        field   :PlayCount,         :Type => Integer, :Default => -1, :Version => "1.7", :ExtensionLevel => 3
+        field   :Speed,             :Type => Number, :Default => 1, :Version => "1.7", :ExtensionLevel => 3
+      end
+
+      class Presentation < Dictionary
+        include Configurable
+
+        WINDOWED = :Windowed
+        EMBEDDED = :Embedded
+
+        field   :Type,              :Type => Name, :Default => :RichMediaPresentation, :Version => "1.7", :ExtensionLevel => 3
+        field   :Style,             :Type => Name, :Default => EMBEDDED, :Version => "1.7", :ExtensionLevel => 3
+        field   :Window,            :Type => Dictionary, :Version => "1.7", :ExtensionLevel => 3
+        field   :Transparent,       :Type => Boolean, :Default => false, :Version => "1.7", :ExtensionLevel => 3
+        field   :NavigationPane,    :Type => Boolean, :Default => false, :Version => "1.7", :ExtensionLevel => 3
+        field   :Toolbar,           :Type => Boolean, :Version => "1.7", :ExtensionLevel => 3
+        field   :PassContextClick,  :Type => Boolean, :Default => false, :Version => "1.7", :ExtensionLevel => 3
+      end
+
+      class Window < Dictionary
+        include Configurable
+
+        field   :Type,              :Type => Name, :Default => :RichMediaWindow, :Version => "1.7", :ExtensionLevel => 3 
+        field   :Width,             :Type => Dictionary, :Default => {:Default => 288, :Max => 576, :Min => 72}, :Version => "1.7", :ExtensionLevel => 3
+        field   :Height,            :Type => Dictionary, :Default => {:Default => 216, :Max => 432, :Min => 72}, :Version => "1.7", :ExtensionLevel => 3
+        field   :Position,          :Type => Dictionary, :Version => "1.7", :ExtensionLevel => 3  
+      end
+
+      class Position < Dictionary
+        include Configurable
+
+        NEAR    = :Near
+        CENTER  = :Center
+        FAR     = :Far
+        
+        field   :Type,              :Type => Name, :Default => :RichMediaPosition, :Version => "1.7", :ExtensionLevel => 3 
+        field   :HAlign,            :Type => Name, :Default => FAR, :Version => "1.7", :ExtensionLevel => 3 
+        field   :VAlign,            :Type => Name, :Default => NEAR, :Version => "1.7", :ExtensionLevel => 3 
+        field   :HOffset,           :Type => Number, :Default => 18, :Version => "1.7", :ExtensionLevel => 3 
+        field   :VOffset,           :Type => Number, :Default => 18, :Version => "1.7", :ExtensionLevel => 3 
+      end
+
+      class Content < Dictionary
+        include Configurable
+
+        field   :Type,              :Type => Name, :Default => :RichMediaContent, :Version => "1.7", :ExtensionLevel => 3 
+        field   :Assets,            :Type => Dictionary, :Version => "1.7", :ExtensionLevel => 3 
+        field   :Configurations,    :Type => Array, :Version => "1.7", :ExtensionLevel => 3 
+        field   :Views,             :Type => Array, :Version => "1.7", :ExtensionLevel => 3 
+      end
+      
+      class Configuration < Dictionary
+        include Configurable
+
+        U3D     = :"3D"
+        FLASH   = :Flash
+        SOUND   = :Sound
+        VIDEO   = :Video
+
+        field   :Type,              :Type => Name, :Default => :RichMediaConfiguration, :Version => "1.7", :ExtensionLevel => 3 
+        field   :Subtype,           :Type => Name, :Version => "1.7", :ExtensionLevel => 3 
+        field   :Name,              :Type => String, :Version => "1.7", :ExtensionLevel => 3 
+        field   :Instances,         :Type => Array, :Version => "1.7", :ExtensionLevel => 3 
+      end
+
+      class Instance < Dictionary
+        include Configurable
+
+        U3D     = :"3D"
+        FLASH   = :Flash
+        SOUND   = :Sound
+        VIDEO   = :Video
+        
+        field   :Type,              :Type => Name, :Default => :RichMediaInstance, :Version => "1.7", :ExtensionLevel => 3 
+        field   :Subtype,           :Type => Name, :Version => "1.7", :ExtensionLevel => 3 
+        field   :Params,            :Type => Dictionary, :Version => "1.7", :ExtensionLevel => 3 
+        field   :Asset,             :Type => Dictionary, :Version => "1.7", :ExtensionLevel => 3 
+      end
+
+      class Parameters < Dictionary
+        include Configurable
+
+        module Binding
+          NONE        = :None
+          FOREGROUND  = :Foreground
+          BACKGROUND  = :Background
+          MATERIAL    = :Material
+        end
+
+        field   :Type,              :Type => Name, :Default => :RichMediaParams, :Version => "1.7", :ExtensionLevel => 3 
+        field   :FlashVars,         :Type => [String, Stream], :Version => "1.7", :ExtensionLevel => 3  
+        field   :Binding,           :Type => Name, :Default => Binding::NONE, :Version => "1.7", :ExtensionLevel => 3 
+        field   :BindingMaterialName, :Type => String, :Version => "1.7", :ExtensionLevel => 3 
+        field   :CuePoints,         :Type => Array, :Default => [], :Version => "1.7", :ExtensionLevel => 3  
+        field   :Settings,          :Type => [String, Stream], :Version => "1.7", :ExtensionLevel => 3  
+      end
+
+      class CuePoint < Dictionary
+        include Configurable
+
+        NAVIGATION  = :Navigation
+        EVENT       = :Event
+
+        field   :Type,              :Type => Name, :Default => :CuePoint, :Version => "1.7", :ExtensionLevel => 3 
+        field   :Subtype,           :Type => Name, :Version => "1.7", :ExtensionLevel => 3 
+        field   :Name,              :Type => String, :Version => "1.7", :ExtensionLevel => 3, :Required => true
+        field   :Time,              :Type => Number, :Version => "1.7", :ExtensionLevel => 3, :Required => true
+        field   :A,                 :Type => Dictionary, :Version => "1.7", :ExtensionLevel => 3, :Required => true
+      end
+    end
     
-    module Widget
-    
+    #
+    # Class representing a widget Annotation.
+    # Interactive forms use widget annotations to represent the appearance of fields and to manage user interactions. 
+    #
+    class Widget < Annotation
+      
+      include Field
+      include Triggerable
+ 
       module Highlight
         # No highlighting
         NONE    = :N
@@ -469,33 +633,22 @@ module Origami
         
       end
   
-      #
-      # Class representing a widget Annotation.
-      # Interactive forms use widget annotations to represent the appearance of fields and to manage user interactions. 
-      #
-      class Widget < Annotation
+      field   :Subtype,           :Type => Name, :Default => :Widget, :Required => true
+      field   :H,                 :Type => Name, :Default => Highlight::INVERT
+      field   :MK,                :Type => Dictionary
+      field   :A,                 :Type => Dictionary, :Version => "1.1"
+      field   :AA,                :Type => Dictionary, :Version => "1.2"
+      field   :BS,                :Type => Dictionary, :Version => "1.2"
+      
+      def onActivate(action)        
         
-        include Field
-        include Triggerable
-   
-        field   :Subtype,           :Type => Name, :Default => :Widget, :Required => true
-        field   :H,                 :Type => Name, :Default => Highlight::INVERT
-        field   :MK,                :Type => Dictionary
-        field   :A,                 :Type => Dictionary, :Version => "1.1"
-        field   :AA,                :Type => Dictionary, :Version => "1.2"
-        field   :BS,                :Type => Dictionary, :Version => "1.2"
-        
-        def onActivate(action)        
-          
-          unless action.is_a?(Action::Action)
-            raise TypeError, "An Action object must be passed."
-          end
-          
-          self.A = action
+        unless action.is_a?(Action)
+          raise TypeError, "An Action object must be passed."
         end
-      
+        
+        self.A = action
       end
-      
+    
       class Button < Widget
         
         module Flags
@@ -616,7 +769,7 @@ module Origami
       end
     
     end
-    
+      
     #
     # Class representing additional actions which can be associated with an annotation having an AA field.
     #
@@ -636,7 +789,7 @@ module Origami
       field   :PI,             :Type => Dictionary, :Version => "1.2" # Page Invisible
       
     end
-    
+
   end
 
 end

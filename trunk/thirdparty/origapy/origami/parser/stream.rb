@@ -5,16 +5,16 @@
 
 = Info
 	Origami is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
+  it under the terms of the GNU Lesser General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
   Origami is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+  GNU Lesser General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
+  You should have received a copy of the GNU Lesser General Public License
   along with Origami.  If not, see <http://www.gnu.org/licenses/>.
 
 =end
@@ -23,7 +23,7 @@ require 'strscan'
 
 module Origami
 
-  class InvalidStream < InvalidObject #:nodoc:
+  class InvalidStreamObjectError < InvalidObjectError #:nodoc:
   end
 
   #
@@ -88,10 +88,7 @@ module Origami
     end
 
     def post_build
-     
-      unless self.Length.nil?
-        self.Length = @rawdata.length
-      end
+      self.Length = @rawdata.length
  
       super
     end
@@ -99,23 +96,22 @@ module Origami
     def self.parse(stream) #:nodoc:
     
       dictionary = Dictionary.parse(stream)
-     
-      if not stream.skip(@@regexp_open)
-        return dictionary
-      end
+      return dictionary if not stream.skip(@@regexp_open)
      
       len = dictionary[:Length]
       if not len.is_a?(Integer)
         rawdata = stream.scan_until(@@regexp_close)
         if rawdata.nil?
-          raise InvalidStream, "Stream shall end with a '#{TOKENS.last}' statement"
+          raise InvalidStreamObjectError, 
+            "Stream shall end with a '#{TOKENS.last}' statement"
         end
 
       else
         rawdata = stream.peek(len)
         stream.pos += len
         if not ( unmatched = stream.scan_until(@@regexp_close) )
-          raise InvalidStream, "Stream shall end with a '#{TOKENS.last}' statement"
+          raise InvalidStreamObjectError, 
+            "Stream shall end with a '#{TOKENS.last}' statement"
         end
 
         rawdata << unmatched
@@ -123,11 +119,18 @@ module Origami
        
       rawdata.chomp!(TOKENS.last)
 
-      stm = if dictionary[:Type] and @@stm_special_types.include?(dictionary[:Type].value)
-        @@stm_special_types[dictionary[:Type].value].new("", dictionary.to_h)
-      else
-        Stream.new("", dictionary.to_h)
+      stm = 
+      if dictionary.has_key? :Type
+        if @@stm_special_types.include?(dictionary[:Type].value)
+          @@stm_special_types[dictionary[:Type].value].new("", dictionary.to_h)
+        elsif dictionary[:Type] == :XObject and dictionary.has_key? :Subtype
+          if @@stm_xobj_subtypes.include?(dictionary[:Subtype].value)
+            @@stm_xobj_subtypes[dictionary[:Subtype].value].new("", dictionary.to_h)
+          end
+        end
       end
+
+      stm ||= Stream.new("", dictionary.to_h)
 
       rawdata.chomp! if len.is_a?(Integer) and len < rawdata.length
       stm.rawdata = rawdata
@@ -140,15 +143,19 @@ module Origami
       filters = @dictionary[:Filter].is_a?(::Array) ? filters : [ @dictionary[:Filter] ]
 
       if not filters.include?(:FlateDecode) and not filters.include?(:LZWDecode)
-        raise InvalidStream, 'Predictor functions can only be used with Flate or LZW filters'
+        raise InvalidStreamObjectError, 'Predictor functions can only be used with Flate or LZW filters'
       end
 
-      params = @dictionary[:DecodeParms] ||= Filter::LZW::DecodeParms.new
+      nfilter = filters.index(:FlateDecode) or filters.index(:LZWDecode)
+
+      params = Filter::LZW::DecodeParms.new
       params[:Predictor] = predictor
       params[:Colors] = colors if colors != 1
       params[:BitsPerComponent] = bitspercomponent if bitspercomponent != 8
       params[:Columns] = columns if columns != 1
 
+      set_decode_params(nfilter, params)
+  
       self
     end
 
@@ -196,28 +203,24 @@ module Origami
     # Uncompress the stream data.
     #
     def decode!
+      self.decrypt! if self.is_a?(Encryption::EncryptedStream)
       
       if @rawdata
-      
-        filters = @dictionary[:Filter]
+        filters = self.Filter
         
         if filters.nil?
           @data = @rawdata
-        elsif filters.type == :Array
-          
+        elsif filters.is_a?(Array)
           @data = @rawdata
           
-          filters.each { |filter|
-            @data = decodedata(@data, filter)
-          }
-          
-        elsif filters.type == :Name
-          
-          @data = decodedata(@rawdata, filters)
+          filters.length.times do |nfilter|
+            @data = decode_data(@data, nfilter)
+          end
+        elsif filters.is_a?(Name)
+          @data = decode_data(@rawdata, 0)
         else
-          raise InvalidStream, "Invalid Filter type parameter"
+          raise InvalidStreamObjectError, "Invalid Filter type parameter"
         end
-        
       end
       
       self
@@ -227,31 +230,24 @@ module Origami
     # Compress the stream data.
     #
     def encode!
-      
       if @data
-      
-        filters = @dictionary[:Filter]
+        filters = self.Filter
         
         if filters.nil?
           @rawdata = @data
         elsif filters.is_a?(Array)
-          
           @rawdata = @data
           
-          filters.to_a.reverse.each { |filter|
-            @rawdata = encodedata(@rawdata, filter)
-          }
-        
+          (filters.length - 1).downto(0) do |nfilter|
+            @rawdata = encode_data(@rawdata, nfilter)
+          end
         elsif filters.is_a?(Name)
-          
-          @rawdata = encodedata(@data, filters)
-          
+          @rawdata = encode_data(@data, 0)
         else
-          raise InvalidStream, "Invalid filter type parameter"
+          raise InvalidStreamObjectError, "Invalid filter type parameter"
         end
         
         self.Length = @rawdata.length
-      
       end
       
       self
@@ -284,30 +280,60 @@ module Origami
     def real_type ; Stream end
 
     private
+
+    def set_decode_params(nfilter, params) #:nodoc:
+      dparms = self.DecodeParms
+      unless dparms.is_a? ::Array
+        @dictionary[:DecodeParms] = []
+        dparms = @dictionary[:DecodeParms]
+      end 
+
+      if nfilter > dparms.length - 1
+        dparms.concat(::Array.new(nfilter - dparms.length + 1, Null.new))
+      end
+
+      dparms[nfilter] = params
+      @dictionary[:DecodeParms] = dparms.first if dparms.length == 1
+
+      self
+    end
     
-    def decodedata(data, filter) #:nodoc:
-      
-      if not @@defined_filters.include? filter.value
-        raise InvalidStream, "Unknown filter : #{filter}"
+    def decode_data(data, nfilter) #:nodoc:
+      filters = self.Filter
+      filters = [ filters ] unless filters.is_a?(::Array)
+
+      filter = filters[nfilter]
+
+      unless @@defined_filters.include? filter.value
+        raise InvalidStreamObjectError, "Unknown filter : #{filter}"
       end
 
       begin
-        params = self.DecodeParms.is_a?(Dictionary) ? self.DecodeParms : {}
+        params = self.DecodeParms
+        params = [ params ] unless params.is_a?(::Array)
 
-        Origami::Filter.const_get(filter.value.to_s.sub(/Decode$/,"")).decode(data, params)
+        dparms = params[nfilter].is_a?(Null) ? nil : params[nfilter]
+        Origami::Filter.const_get(filter.value.to_s.sub(/Decode$/,"")).decode(data, dparms)
       rescue Exception => e
-        raise InvalidStream, "Error while decoding stream : #{e.message}"
+        raise InvalidStreamObjectError, "Error while decoding stream #{self.reference}\n\t-> [#{e.class}] #{e.message}"
       end
     end
     
-    def encodedata(data, filter) #:nodoc:
-      
+    def encode_data(data, nfilter) #:nodoc:
+      filters = self.Filter
+      filters = [ filters ] unless filters.is_a?(::Array)
+
+      filter = filters[nfilter]
+
       if not @@defined_filters.include? filter.value
-        raise InvalidStream, "Unknown filter : #{filter}"
+        raise InvalidStreamObjectError, "Unknown filter : #{filter}"
       end
  
-      params = self.DecodeParms.is_a?(Dictionary) ? self.DecodeParms : {}
-      encoded = Origami::Filter.const_get(filter.value.to_s.sub(/Decode$/,"")).encode(data, params)
+      params = self.DecodeParms
+      params = [ params ] unless params.is_a?(::Array)
+
+      dparms = params[nfilter].is_a?(Null) ? nil : params[nfilter]
+      encoded = Origami::Filter.const_get(filter.value.to_s.sub(/Decode$/,"")).encode(data, dparms)
 
       if filter.value == :ASCIIHexDecode or filter.value == :ASCII85Decode
         encoded << Origami::Filter.const_get(filter.value.to_s.sub(/Decode$/,""))::EOD
@@ -331,7 +357,7 @@ module Origami
 
   end
   
-  class InvalidObjectStream < InvalidStream  #:nodoc:
+  class InvalidObjectStreamObjectError < InvalidStreamObjectError  #:nodoc:
   end
 
   #
@@ -355,14 +381,12 @@ module Origami
     # _rawdata_:: The Stream data.
     #
     def initialize(rawdata = "", dictionary = {})
-    
       @objects = nil
      
       super(rawdata, dictionary)
     end
     
     def pre_build #:nodoc:
-      
       load! if @objects.nil?
 
       prolog = ""
@@ -389,18 +413,17 @@ module Origami
       super
     end
     
-    # TODO
+    # 
     # Adds a new Object to this Stream.
     # _object_:: The Object to append.
     #
     def <<(object)
-      
       unless object.generation == 0
-        raise InvalidObject, "Cannot store an object with generation > 0 in an ObjectStream"
+        raise InvalidObjectError, "Cannot store an object with generation > 0 in an ObjectStream"
       end
 
       if object.is_a?(Stream)
-        raise InvalidObject, "Cannot store a Stream in an ObjectStream"
+        raise InvalidObjectError, "Cannot store a Stream in an ObjectStream"
       end
 
       load! if @objects.nil?
@@ -414,6 +437,7 @@ module Origami
      
       Reference.new(object.no, 0)
     end
+    alias :insert :<<
 
     #
     # Deletes Object _no_.
@@ -489,7 +513,6 @@ module Origami
     private
     
     def load! #:nodoc:
-      
       decode!
       
       data = StringScanner.new(@data)
@@ -497,19 +520,15 @@ module Origami
       offsets = []
       
       @dictionary[:N].to_i.times do
-        
         nums << Integer.parse(data).to_i
         offsets << Integer.parse(data)
-        
       end
       
       @objects = {}
       nums.size.times do |i|
-        
         type = Object.typeof(data)
-        if type.nil?
-          raise InvalidObjectStream, "Bad embedded object format in object stream"
-        end
+        raise InvalidObjectStreamObjectError, 
+          "Bad embedded object format in object stream" if type.nil?
         
         embeddedobj = type.parse(data)
         embeddedobj.set_indirect(true) # object is indirect
@@ -518,33 +537,8 @@ module Origami
         embeddedobj.set_pdf(@pdf)      # indirect objects need pdf information
         embeddedobj.objstm_offset = offsets[i]
         @objects[nums[i]] = embeddedobj
-        
       end
       
     end
-
   end
-  
-  #
-  # A class for the Sound stream (section 9.2 p782)
-  # TODO: should probably be defined as Encoded Stream ...
-  class Sound < Stream
-    
-    module Encoding
-      RAW = :Raw
-      SIGNED = :Signed
-      MULAW = :muLaw
-      ALAW = :aLaw
-    end
-
-    field   :Type,            :Type => Name, :Default => :Sound
-    field   :R,               :Type => Number
-    field   :C,               :Type => Integer, :Default => 1
-    field   :B,               :Type => Integer, :Default => 8
-    field   :E,               :Type => Name, :Default => Encoding::RAW
-    field   :CO,              :Type => Name
-    field   :CP,              :Type => Object 
-    
-  end
-
 end

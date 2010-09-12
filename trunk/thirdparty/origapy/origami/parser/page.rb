@@ -5,16 +5,16 @@
 
 = Info
 	Origami is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
+  it under the terms of the GNU Lesser General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
   Origami is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+  GNU Lesser General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
+  You should have received a copy of the GNU Lesser General Public License
   along with Origami.  If not, see <http://www.gnu.org/licenses/>.
 
 =end
@@ -24,10 +24,9 @@ module Origami
   class PDF
 
     def append_page(page = Page.new, *more)
-    
       pages = [ page ].concat(more)
       
-      fail "Expecting Page type, instead of #{page.class}" unless pages.all?{|page| page.is_a?(Page)}
+      raise TypeError, "Expecting Page type, instead of #{page.class}" unless pages.all?{|page| page.is_a?(Page)}
       
       treeroot = self.Catalog.Pages
       
@@ -45,7 +44,7 @@ module Origami
     def insert_page(index, page)
       
       treeroot = self.Catalog.Pages
-      raise InvalidPDF, "No page tree" if treeroot.nil?
+      raise InvalidPDFError, "No page tree" if treeroot.nil?
 
       treeroot.insert_page(index, page)
 
@@ -69,12 +68,80 @@ module Origami
 
   end
   
+  module ResourcesHolder
+
+    def add_extgstate(name, extgstate)
+      target = self.is_a?(Resources) ? self : (self.Resources ||= Resources.new)
+
+      target.ExtGState ||= {}
+      target.ExtGState[name] = extgstate
+
+      self
+    end
+
+    def add_colorspace(name, colorspace)
+      target = self.is_a?(Resources) ? self : (self.Resources ||= Resources.new)
+
+      target.ColorSpace ||= {}
+      target.ColorSpace[name] = colorspace
+    
+      self
+    end
+    
+    def add_pattern(name, pattern)
+      target = self.is_a?(Resources) ? self : (self.Resources ||= Resources.new)
+
+      target.Pattern ||= {}
+      target.Pattern[name] = pattern
+    
+      self
+    end
+    
+    def add_shading(name, shading)
+      target = self.is_a?(Resources) ? self : (self.Resources ||= Resources.new)
+
+      target.Shading ||= {}
+      target.Shading[name] = shading
+    
+      self
+    end
+
+    def add_xobject(name, xobject)
+      target = self.is_a?(Resources) ? self : (self.Resources ||= Resources.new)
+
+      target.XObject ||= {}
+      target.XObject[name] = xobject
+    
+      self
+    end
+    
+    def add_font(name, font)
+      target = self.is_a?(Resources) ? self : (self.Resources ||= Resources.new)
+
+      target.Font ||= {}
+      target.Font[name] = font
+    
+      self
+    end
+
+    def add_properties(name, properties)
+      target = self.is_a?(Resources) ? self : (self.Resources ||= Resources.new)
+
+      target.Properties ||= {}
+      target.Properties[name] = properties
+    
+      self
+    end
+    
+  end
+
   #
   # Class representing a Resources Dictionary for a Page.
   #
   class Resources < Dictionary
     
     include Configurable
+    include ResourcesHolder
 
     field   :ExtGState,   :Type => Dictionary
     field   :ColorSpace,  :Type => Dictionary
@@ -85,41 +152,6 @@ module Origami
     field   :ProcSet,     :Type => Array
     field   :Properties,  :Type => Dictionary, :Version => "1.2"
 
-    def add_extgstate(name, extgstate)
-      self.ExtGState ||= {}
-      self.ExtGState[name] = extgstate
-    end
-
-    def add_colorspace(name, colorspace)
-      self.ColorSpace ||= {}
-      self.ColorSpace[name] = colorspace
-    end
-    
-    def add_pattern(name, pattern)
-      self.Pattern ||= {}
-      self.Pattern[name] = pattern
-    end
-    
-    def add_shading(name, shading)
-      self.Shading ||= {}
-      self.Shading[name] = shading
-    end
-
-    def add_xobject(name, xobject)
-      self.XObject ||= {}
-      self.XObject[name] = xobject
-    end
-    
-    def add_font(name, font)
-      self.Font ||= {}
-      self.Font[name] = font
-    end
-
-    def add_properties(name, properties)
-      self.Properties ||= {}
-      self.Properties[name] = properties
-    end
-    
     def pre_build
       
       unless self.Font
@@ -138,7 +170,6 @@ module Origami
   # Class representing a node in a Page tree.
   #
   class PageTreeNode < Dictionary
-    
     include Configurable
    
     field   :Type,          :Type => Name, :Default => :Pages, :Required => true
@@ -174,6 +205,7 @@ module Origami
         if count == index
           kids.insert(n, page)
           self.Count = self.Count + 1
+          page.Parent = self
           return self
         else
           node = kids[n].is_a?(Reference) ? kids[n].solve : kids[n]
@@ -195,8 +227,7 @@ module Origami
       }
 
       if count == index
-        kids.push(page)
-        self.Count = self.Count + 1
+        self << page
       else
         raise IndexError, "An error occured while inserting page"
       end
@@ -211,24 +242,21 @@ module Origami
       pageset = []
      
       unless self.Count.nil?
-        self.Count.value.times { |n|
-          if n < self.Kids.length
-            node = self.Kids[n].is_a?(Reference) ? self.Kids[n].solve : self.Kids[n]
-            case node
-              when PageTreeNode then pageset.concat(node.children) 
-              when Page then pageset << node
-            end
-          end      
-        }
+        [ self.Count.value, self.Kids.length ].min.times do |n|
+          node = self.Kids[n].is_a?(Reference) ? self.Kids[n].solve : self.Kids[n]
+          case node
+            when PageTreeNode then pageset.concat(node.children) 
+            when Page then pageset << node
+          end
+        end
       end
       
       pageset
     end
       
     def << (pageset)
-        
-      pageset = [pageset] unless pageset.is_a?(Enumerable)
-      fail "Cannot add anything but Page and PageTreeNode to this node" unless pageset.all? { |item| item.is_a?(Page) or item.is_a?(PageTreeNode) }
+      pageset = [pageset] unless pageset.is_a?(::Array)
+      raise TypeError, "Cannot add anything but Page and PageTreeNode to this node" unless pageset.all? { |item| item.is_a?(Page) or item.is_a?(PageTreeNode) }
 
       self.Kids ||= Array.new
       self.Kids.concat(pageset)
@@ -237,9 +265,7 @@ module Origami
       pageset.each do |node| 
         node.Parent = self 
       end
-        
     end
-      
   end
     
   #
@@ -248,6 +274,7 @@ module Origami
   class Page < Dictionary
     
     include Configurable
+    include ResourcesHolder
    
     field   :Type,                  :Type => Name, :Default => :Page, :Required => true
     field   :Parent,                :Type => Dictionary, :Required => true
@@ -297,20 +324,42 @@ module Origami
     #
     def add_annot(*annotations)
       
-      unless annotations.all?{|annot| annot.is_a?(Annotation::Annotation)}
-        raise TypeError, "An Annotation object must be passed."
+      unless annotations.all?{|annot| annot.is_a?(Annotation)}
+        raise TypeError, "Only Annotation objects must be passed."
       end
       
-      self.Annots ||= Array.new
+      self.Annots ||= []
+
       annotations.each do |annot| 
         annot.P = self if is_indirect?
         self.Annots << annot 
       end
     end
+
+    def add_flash_application(swfspec, params = {})
+      
+      options =
+      {
+        :windowed => false,
+        :transparent => false,
+        :navigation_pane => false,
+        :toolbar => false,
+        :pass_context_click => false,
+        :activation => Annotation::RichMedia::Activation::PAGE_OPEN,
+        :deactivation => Annotation::RichMedia::Deactivation::PAGE_CLOSE,
+        :flash_vars => nil
+      }
+      options.update(params)
     
+      annot = create_richmedia(:Flash, swfspec, options)
+      add_annot(annot)
+
+      annot
+    end
+
     def onOpen(action)
       
-      unless action.is_a?(Action::Action)
+      unless action.is_a?(Action)
         raise TypeError, "An Action object must be passed."
       end
       
@@ -322,13 +371,52 @@ module Origami
     
     def onClose(action)
       
-      unless action.is_a?(Action::Action)
+      unless action.is_a?(Action)
         raise TypeError, "An Action object must be passed."
       end
       
       self.AA ||= PageAdditionalActions.new
       self.AA.C = action
       
+    end
+
+    private
+
+    def create_richmedia(type, content, params)
+      richmedia = Annotation::RichMedia.new
+
+      rminstance = Annotation::RichMedia::Instance.new.set_indirect(true)
+      rmparams = rminstance.Params = Annotation::RichMedia::Parameters.new
+      rmparams.Binding = Annotation::RichMedia::Parameters::Binding::BACKGROUND
+      rmparams.FlashVars = params[:flash_vars]
+      rminstance.Asset = content
+
+      rmconfig = Annotation::RichMedia::Configuration.new.set_indirect(true)
+      rmconfig.Instances = [ rminstance ]
+      rmconfig.Subtype = type
+
+      rmcontent = richmedia.RichMediaContent = Annotation::RichMedia::Content.new.set_indirect(true)
+      rmcontent.Assets = NameTreeNode.new
+      rmcontent.Assets.Names = NameLeaf.new(content.F.value => content)
+
+      rmcontent.Configurations = [ rmconfig ]
+
+      rmsettings = richmedia.RichMediaSettings = Annotation::RichMedia::Settings.new
+      rmactivation = rmsettings.Activation = Annotation::RichMedia::Activation.new
+      rmactivation.Condition = params[:activation]
+      rmactivation.Configuration = rmconfig
+      rmactivation.Animation = Annotation::RichMedia::Animation.new(:PlayCount => -1, :Subtype => :Linear, :Speed => 1.0)
+      rmpres = rmactivation.Presentation = Annotation::RichMedia::Presentation.new
+      rmpres.Style = Annotation::RichMedia::Presentation::WINDOWED if params[:windowed]
+      rmpres.Transparent = params[:transparent]
+      rmpres.NavigationPane = params[:navigation_pane]
+      rmpres.Toolbar = params[:toolbar]
+      rmpres.PassContextClick = params[:pass_context_click]
+
+      rmdeactivation = rmsettings.Deactivation = Annotation::RichMedia::Deactivation.new
+      rmdeactivation.Condition = params[:deactivation]
+
+      richmedia
     end
     
   end

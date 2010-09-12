@@ -5,20 +5,20 @@
 
 = Info
 	This file is part of Origami, PDF manipulation framework for Ruby
-	Copyright (C) 2009	Guillaume Delugr» <guillaume@security-labs.org>
+	Copyright (C) 2010	Guillaume Delugr» <guillaume@security-labs.org>
 	All right reserved.
 	
   Origami is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
+  it under the terms of the GNU Lesser General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
   Origami is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+  GNU Lesser General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
+  You should have received a copy of the GNU Lesser General Public License
   along with Origami.  If not, see <http://www.gnu.org/licenses/>.
 
 =end
@@ -26,6 +26,19 @@
 module Origami
 
   class PDF
+
+    #
+    # Sets PDF extension level and version. Only supported values are "1.7" and 3.
+    #
+    def set_extension_level(version, level)
+      exts = (self.Catalog.Extensions ||= Extensions.new)
+
+      exts[:ADBE] = DeveloperExtension.new
+      exts[:ADBE].BaseVersion = Name.new(version)
+      exts[:ADBE].ExtensionLevel = level
+
+      self
+    end
 
     #
     # Returns the current Catalog Dictionary.
@@ -56,12 +69,12 @@ module Origami
     #
     def onDocumentOpen(action)   
       
-      unless action.is_a?(Action::Action)
+      unless action.is_a?(Action)
         raise TypeError, "An Action object must be passed."
       end
       
       unless self.Catalog
-        raise InvalidPDF, "A catalog object must exist to add this action."
+        raise InvalidPDFError, "A catalog object must exist to add this action."
       end
       
       self.Catalog.OpenAction = action
@@ -80,7 +93,7 @@ module Origami
       end
       
       unless self.Catalog
-        raise InvalidPDF, "A catalog object must exist to add this action."
+        raise InvalidPDFError, "A catalog object must exist to add this action."
       end
       
       self.Catalog.AA ||= CatalogAdditionalActions.new
@@ -100,7 +113,7 @@ module Origami
       end
       
       unless self.Catalog
-        raise InvalidPDF, "A catalog object must exist to add this action."
+        raise InvalidPDFError, "A catalog object must exist to add this action."
       end
       
       self.Catalog.AA ||= CatalogAdditionalActions.new
@@ -126,6 +139,7 @@ module Origami
       if namesroot.nil?
         names = NameTreeNode.new({:Names => [] })
         self.Catalog.Names.send((root.id2name + "=").to_sym, (self << names))
+        
         names.Names << name << value
       else
         namesroot.Names << name << value
@@ -170,6 +184,7 @@ module Origami
     field   :Requirements,        :Type => Array, :Version => "1.7"
     field   :Collection,          :Type => Dictionary, :Version => "1.7"
     field   :NeedsRendering,      :Type => Boolean, :Version => "1.7", :Default => false
+    field   :Extensions,          :Type => Dictionary, :Version => "1.7", :ExtensionLevel => 3
 
     def initialize(hash = {})
       set_indirect(true)
@@ -215,6 +230,7 @@ module Origami
       EMBEDDEDFILES = :EmbeddedFiles
       ALTERNATEPRESENTATIONS = :AlternatePresentations
       RENDITIONS = :Renditions
+      XFARESOURCES = :XFAResources
     end
 
     field   Root::DESTS,        :Type => Dictionary, :Version => "1.2"
@@ -227,7 +243,8 @@ module Origami
     field   Root::EMBEDDEDFILES,  :Type => Dictionary, :Version => "1.4"
     field   Root::ALTERNATEPRESENTATIONS, :Type => Dictionary, :Version => "1.4"
     field   Root::RENDITIONS,   :Type => Dictionary, :Version => "1.5"
-    
+    field   Root::XFARESOURCES, :Type => Dictionary, :Version => "1.7", :ExtensionLevel => 3
+
   end
   
   #
@@ -289,7 +306,29 @@ module Origami
     field   :PickTrayByPDFSize,       :Type => Boolean, :Version => "1.7"
     field   :PrintPageRange,          :Type => Array, :Version => "1.7"
     field   :NumCopies,               :Type => Integer, :Version => "1.7"
+    field   :Enforce,                 :Type => Array, :Version => "1.7", :ExtensionLevel => 3
     
+  end
+
+  #
+  # Class representing an extension Dictionary.
+  #
+  class Extensions < Dictionary
+    include Configurable
+
+    field   :Type,                    :Type => Name, :Default => :Extensions
+  end
+
+  #
+  # Class representing a developer extension.
+  #
+  class DeveloperExtension < Dictionary
+    include Configurable
+
+    field   :Type,                    :Type => Name, :Default => :DeveloperExtensions
+    field   :BaseVersion,             :Type => Name, :Required => true
+    field   :ExtensionLevel,          :Type => Integer, :Required => true
+
   end
   
 end

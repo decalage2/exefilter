@@ -5,16 +5,16 @@
 
 = Info
 	Origami is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
+  it under the terms of the GNU Lesser General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
   Origami is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+  GNU Lesser General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
+  You should have received a copy of the GNU Lesser General Public License
   along with Origami.  If not, see <http://www.gnu.org/licenses/>.
 
 =end
@@ -55,14 +55,14 @@ module Origami
       end
       
       digsig = Signature::DigitalSignature.new.set_indirect(true)
-      
+     
       if annotation.nil?
         annotation = Annotation::Widget::Signature.new
         annotation.Rect = Rectangle[:llx => 0.0, :lly => 0.0, :urx => 0.0, :ury => 0.0]        
       end
       
       annotation.V = digsig ;
-      add_field(annotation)
+      add_fields(annotation)
       self.Catalog.AcroForm.SigFlags = InteractiveForm::SigFlags::SIGNATURESEXIST | InteractiveForm::SigFlags::APPENDONLY
       
       digsig.Type = :Sig #:nodoc:

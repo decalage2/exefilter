@@ -5,20 +5,20 @@
 
 = Info
 	This file is part of Origami, PDF manipulation framework for Ruby
-	Copyright (C) 2009	Guillaume Delugré <guillaume@security-labs.org>
+	Copyright (C) 2010	Guillaume Delugré <guillaume@security-labs.org>
 	All right reserved.
 	
   Origami is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
+  it under the terms of the GNU Lesser General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
   Origami is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+  GNU Lesser General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
+  You should have received a copy of the GNU Lesser General Public License
   along with Origami.  If not, see <http://www.gnu.org/licenses/>.
 
 =end
@@ -55,6 +55,7 @@ module Origami
       EXCLUSION   = :Exclusion
     end
 
+    class InvalidColorError < Exception; end
     module Color
 
       module Space
@@ -113,76 +114,78 @@ module Origami
       end
     end
 
-    module Instruction
+  end 
 
-      class StrokeG
-        include PDF::Instruction
-        def initialize(color); super('G', color) end
+  class PDF::Instruction
 
-        def update_state(gs)
-          gs.stroking_colorspace = Color::Space::DEVICE_GRAY
-          gs.stroking_color = @operands
-          self
-        end
+    insn  'CS', Name do |gs, cs| gs.stroking_colorspace = cs end
+    insn  'cs', Name do |gs, cs| gs.nonstroking_colorspace = cs end
+    insn  'SC', '*' do |gs, *c| gs.stroking_color = c end
+    insn  'sc', '*' do |gs, *c| gs.nonstroking_color = c end
+    
+    insn  'G', Real do |gs, c|
+      unless (0..1).include? c
+        raise Graphics::InvalidColorError, 
+          "Not a valid color for DeviceGray: #{c}"
       end
 
-      class G
-        include PDF::Instruction
-        def initialize(color); super('g', color) end
-
-        def update_state(gs)
-          gs.nonstroking_colorspace = Color::Space::DEVICE_GRAY
-          gs.nonstroking_color = @operands
-          self
-        end
+      gs.stroking_colorspace = Graphics::Color::Space::DEVICE_GRAY
+      gs.stroking_color = [ c ]
+    end
+    
+    insn  'g', Real do |gs, c|
+      unless (0..1).include? c
+        raise Graphics::InvalidColorError, 
+          "Not a valid color for DeviceGray: #{c}"
       end
 
-      class StrokeRG
-        include PDF::Instruction
-        def initialize(r,g,b); super('RG', r,g,b) end
-
-        def update_state(gs)
-          gs.stroking_colorspace = Color::Space::DEVICE_RGB
-          gs.stroking_color = @operands
-          self
-        end
-      end
-      
-      class RG
-        include PDF::Instruction
-        def initialize(r,g,b); super('rg', r,g,b) end
-
-        def update_state(gs)
-          gs.nonstroking_colorspace = Color::Space::DEVICE_RGB
-          gs.nonstroking_color = @operands
-          self
-        end
-      end
-
-      class StrokeK
-        include PDF::Instruction
-        def initialize(c,m,y,k); super('K', c,m,y,k) end
-
-        def update_state(gs)
-          gs.stroking_colorspace = Color::Space::DEVICE_CMYK
-          gs.stroking_color = @operands
-          self
-        end
-      end
-      
-      class K
-        include PDF::Instruction
-        def initialize(c,m,y,k); super('k', c,m,y,k) end
-
-        def update_state(gs)
-          gs.nonstroking_colorspace = Color::Space::DEVICE_CMYK
-          gs.nonstroking_color = @operands
-          self
-        end
-      end
-
+      gs.nonstroking_colorspace = Graphics::Color::Space::DEVICE_GRAY
+      gs.nonstroking_color = [ c ]
     end
 
+    insn  'RG', Real, Real, Real do |gs, r,g,b|
+      c = [ r, g, b ]
+      unless c.all? {|b| (0..1).include? b}
+        raise Graphics::InvalidColorError, 
+          "Not a valid color for DeviceRGB: #{c.inspect}"
+      end
+
+      gs.stroking_colorspace = Graphics::Color::Space::DEVICE_RGB
+      gs.stroking_color = c
+    end
+
+    insn  'rg', Real, Real, Real do |gs, r,g,b|
+      c = [ r, g, b ]
+      unless c.all? {|b| (0..1).include? b}
+        raise Graphics::InvalidColorError, 
+          "Not a valid color for DeviceRGB: #{c.inspect}"
+      end
+
+      gs.nonstroking_colorspace = Graphics::Color::Space::DEVICE_RGB
+      gs.nonstroking_color = c
+    end
+
+    insn  'K', Real, Real, Real, Real do |gs, c,m,y,k|
+      c = [ c, m, y, k ]
+      unless c.all? {|b| (0..1).include? b}
+        raise Graphics::InvalidColorError, 
+          "Not a valid color for DeviceCMYK: #{c.inspect}"
+      end
+
+      gs.stroking_colorspace = Graphics::Color::Space::DEVICE_CMYK
+      gs.stroking_color = c
+    end
+
+    insn  'k', Real, Real, Real, Real do |gs, c,m,y,k|
+      c = [ c, m, y, k ]
+      unless c.all? {|b| (0..1).include? b}
+        raise Graphics::InvalidColorError, 
+          "Not a valid color for DeviceCMYK: #{c.inspect}"
+      end
+
+      gs.nonstroking_colorspace = Graphics::Color::Space::DEVICE_CMYK
+      gs.nonstroking_color = c
+    end
   end
 
-end
+end # module Origami

@@ -5,58 +5,59 @@
 
 = Info
 	Origami is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
+  it under the terms of the GNU Lesser General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
   Origami is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+  GNU Lesser General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
+  You should have received a copy of the GNU Lesser General Public License
   along with Origami.  If not, see <http://www.gnu.org/licenses/>.
 
 =end
 
-require 'object.rb'
-require 'null.rb'
-require 'name.rb'
-require 'dictionary.rb'
-require 'reference.rb'
-require 'boolean.rb'
-require 'numeric.rb'
-require 'string.rb'
-require 'array.rb'
-require 'stream.rb'
-require 'filters.rb'
-require 'trailer.rb'
-require 'xreftable.rb'
-require 'header.rb'
-require 'functions.rb'
-require 'catalog.rb'
-require 'font.rb'
-require 'page.rb'
-require 'graphics.rb'
-require 'destinations.rb'
-require 'outline.rb'
-require 'actions.rb'
-require 'file.rb'
-require 'acroform.rb'
-require 'annotations.rb'
-require 'signature.rb'
-require 'webcapture.rb'
-require 'metadata.rb'
-require 'export.rb'
-require 'webcapture.rb'
-require 'encryption.rb'
-require 'linearization.rb'
-require 'obfuscation.rb'
+require 'origami/object'
+require 'origami/null'
+require 'origami/name'
+require 'origami/dictionary'
+require 'origami/reference'
+require 'origami/boolean'
+require 'origami/numeric'
+require 'origami/string'
+require 'origami/array'
+require 'origami/stream'
+require 'origami/filters'
+require 'origami/trailer'
+require 'origami/xreftable'
+require 'origami/header'
+require 'origami/functions'
+require 'origami/catalog'
+require 'origami/font'
+require 'origami/page'
+require 'origami/graphics'
+require 'origami/destinations'
+require 'origami/outline'
+require 'origami/actions'
+require 'origami/file'
+require 'origami/acroform'
+require 'origami/annotations'
+require 'origami/signature'
+require 'origami/webcapture'
+require 'origami/metadata'
+require 'origami/export'
+require 'origami/webcapture'
+require 'origami/encryption'
+require 'origami/linearization'
+require 'origami/obfuscation'
+require 'origami/xfa'
 
 module Origami
 
-  VERSION = "1.0.0-beta1"
-  REVISION = "$Revision: rev 711/devel, 2009/08/28 14:19:40 darko $" #:nodoc:
+  VERSION = "1.0.0-beta3"
+  REVISION = "$Revision$" #:nodoc:
   
   @@dict_special_types = 
   { 
@@ -64,11 +65,11 @@ module Origami
     :Pages => PageTreeNode, 
     :Page => Page, 
     :Filespec => FileSpec, 
-    :Action => Action::Action,
+    :Action => Action,
     :Font => Font,
     :FontDescriptor => FontDescriptor,
     :Encoding => Encoding,
-    :Annot => Annotation::Annotation,
+    :Annot => Annotation,
     :Border => Annotation::BorderStyle,
     :Outlines => Outline,
     :Sig => Signature::DigitalSignature,
@@ -76,7 +77,19 @@ module Origami
     :SigFieldLock => Field::SignatureLock,
     :SV => Field::SignatureSeedValue,
     :SVCert => Field::CertificateSeedValue,
-    :ExtGState => Graphics::ExtGState
+    :ExtGState => Graphics::ExtGState,
+    :RichMediaSettings => Annotation::RichMedia::Settings,
+    :RichMediaActivation => Annotation::RichMedia::Activation,
+    :RichMediaDeactivation => Annotation::RichMedia::Deactivation,
+    :RichMediaAnimation => Annotation::RichMedia::Animation,
+    :RichMediaPresentation => Annotation::RichMedia::Presentation,
+    :RichMediaWindow => Annotation::RichMedia::Window,
+    :RichMediaPosition => Annotation::RichMedia::Position,
+    :RichMediaContent => Annotation::RichMedia::Content,
+    :RichMediaConfiguration => Annotation::RichMedia::Configuration,
+    :RichMediaInstance => Annotation::RichMedia::Instance,
+    :RichMediaParams => Annotation::RichMedia::Parameters,
+    :CuePoint => Annotation::RichMedia::CuePoint
   }
   
   @@stm_special_types =
@@ -86,8 +99,14 @@ module Origami
     :Metadata => MetadataStream,
     :XRef => XRefStream
   }
+  
+  @@stm_xobj_subtypes =
+  {
+    :Image => Graphics::ImageXObject,
+    :Form => Graphics::FormXObject
+  }
 
-  class InvalidPDF < Exception #:nodoc:
+  class InvalidPDFError < Exception #:nodoc:
   end
 	
   #
@@ -142,7 +161,7 @@ module Origami
       # Read and parse a PDF file from disk.
       #
       def read(filename, options = {:verbosity => Parser::VERBOSE_INSANE})
-        Parser.new(options).parse(filename)
+        PDF::LinearParser.new(options).parse(filename)
       end
       
       #
@@ -169,7 +188,6 @@ module Origami
       @revisions = []
       
       add_new_revision
-      
       @revisions.first.trailer = Trailer.new
 
       init if init_structure
@@ -201,7 +219,7 @@ module Origami
       
       options = 
       {
-        :delinearize => false,
+        :delinearize => true,
         :recompile => true,
       }
       options.update(params)
@@ -216,7 +234,6 @@ module Origami
       self.compile if options[:recompile] == true
 
       fd.write self.to_bin(options)
-        
       fd.close unless file.respond_to?(:write)
       
       self
@@ -264,11 +281,17 @@ module Origami
 
       result = []
       objects.each do |obj|
-        case obj
-          when String, Name
-            result << obj if patterns.any?{|pattern| obj.value.to_s.match(pattern)}
-          when Stream
-            result << obj if patterns.any?{|pattern| obj.data.match(pattern)}
+        begin
+          case obj
+            when String, Name
+              result << obj if patterns.any?{|pattern| obj.value.to_s.match(pattern)}
+            when Stream
+              result << obj if patterns.any?{|pattern| obj.data.match(pattern)}
+          end
+        rescue Exception => e
+          puts "[#{e.class}] #{e.message}"
+
+          next
         end
       end
 
@@ -279,10 +302,7 @@ module Origami
     # Returns an array of Objects whose name (in a Dictionary) is matching _pattern_.
     #
     def ls(*patterns)
-    
-      if patterns.empty?
-        return objects
-      end
+      return objects(:include_keys => false) if patterns.empty?
 
       result = []
 
@@ -290,13 +310,33 @@ module Origami
         pattern.is_a?(::String) ? Regexp.new(Regexp.escape(pattern)) : pattern
       end
 
-      objects.each do |obj|
-        if obj.is_a?(Dictionary)
-          obj.each_pair do |name, obj|
-            if patterns.any?{ |pattern| name.value.to_s.match(pattern) }
-              result << ( obj.is_a?(Reference) ? obj.solve : obj )
-            end
-          end
+      objects(:only_keys => true).each do |key|
+        if patterns.any?{ |pattern| key.value.to_s.match(pattern) }
+          value = key.parent[key]
+          result << ( value.is_a?(Reference) ? value.solve : value )
+        end
+      end
+
+      result
+    end
+
+    #
+    # Returns an array of Objects whose name (in a Dictionary) is matching _pattern_.
+    # Do not follow references.
+    #
+    def ls_no_follow(*patterns)
+      return objects(:include_keys => false) if patterns.empty?
+
+      result = []
+
+      patterns.map! do |pattern|
+        pattern.is_a?(::String) ? Regexp.new(Regexp.escape(pattern)) : pattern
+      end
+
+      objects(:only_keys => true).each do |key|
+        if patterns.any?{ |pattern| key.value.to_s.match(pattern) }
+          value = key.parent[key]
+          result << value
         end
       end
 
@@ -325,31 +365,40 @@ module Origami
     # _include_objstm_:: Whether it shall return objects embedded in object streams.
     # Note : Shall return to an iterator for Ruby 1.9 comp.
     #
-    def objects(include_objstm = true)
+    def objects(params = {})
       
-      def append_subobj(root, objset, inc_objstm)
+      def append_subobj(root, objset, opts)
         
         if objset.find{ |o| root.equal?(o) }.nil?
-          
-          objset << root
+          objset << root unless opts[:only_keys]
 
           if root.is_a?(Dictionary)
             root.each_pair { |name, value|
-              append_subobj(name, objset, inc_objstm)
-              append_subobj(value, objset, inc_objstm)
+              objset << name if opts[:only_keys]
+
+              append_subobj(name, objset, opts) if opts[:include_keys] and not opts[:only_keys]
+              append_subobj(value, objset, opts)
             }
-          elsif root.is_a?(Array) or (root.is_a?(ObjectStream) and inc_objstm == true)
-            root.each { |subobj| append_subobj(subobj, objset, inc_objstm) }
+          elsif root.is_a?(Array) or (root.is_a?(ObjectStream) and opts[:include_objectstreams])
+            root.each { |subobj| append_subobj(subobj, objset, opts) }
           end
-        
         end
-        
       end
+
+      options =
+      {
+        :include_objectstreams => true,
+        :include_keys => true,
+        :only_keys => false
+      }
+      options.update(params)
+
+      options[:include_keys] |= options[:only_keys]
       
       objset = []
       @revisions.each { |revision|
         revision.body.each_value { |object|
-            append_subobj(object, objset, include_objstm)
+            append_subobj(object, objset, options)
         }
       }
       
@@ -381,10 +430,9 @@ module Origami
     # _object_:: The object to add.
     #
     def <<(object)
-       
       add_to_revision(object, @revisions.last)
-      
     end
+    alias :insert :<<
     
     #
     # Adds a new object to a specific revision.
@@ -411,15 +459,17 @@ module Origami
     def alloc_new_object_number
       
       no = 1
-      no = no + 1 while get_object(no)
 
-      objset = indirect_objects
+      # Deprecated number allocation policy (first available)
+      #no = no + 1 while get_object(no)
 
-      no = 
-      if objset.size == 0 then 1
-      else 
-        indirect_objects.keys.max.refno + 1
+      objset = indirect_objects.values
+      indirect_objects.values.find_all{|obj| obj.is_a?(ObjectStream)}.each do |objstm|
+        objstm.each{|obj| objset << obj}
       end
+
+      allocated = objset.collect{|obj| obj.no}.compact
+      no = allocated.max + 1 unless allocated.empty?
 
       [ no, 0 ]
     end
@@ -445,9 +495,11 @@ module Origami
       #
       # Sets the PDF version header.
       #
-      pdf_version = version_required
-      @header.majorversion = pdf_version.to_s[0,1].to_i
-      @header.minorversion = pdf_version.to_s[2,1].to_i
+      version, level = version_required
+      @header.majorversion = version[0,1].to_i
+      @header.minorversion = version[2,1].to_i
+
+      set_extension_level(version, level) if level > 0
       
       self
     end
@@ -483,7 +535,7 @@ module Origami
       # Get trailer dictionary
       trailer_info = get_trailer_info
       if trailer_info.nil?
-        raise InvalidPDF, "No trailer information found"
+        raise InvalidPDFError, "No trailer information found"
       end
       trailer_dict = trailer_info.dictionary
  
@@ -498,12 +550,13 @@ module Origami
       # For each revision
       @revisions[0, options[:up_to_revision]].each do |rev|
         
+        # Create xref table/stream.
         if options[:rebuildxrefs] == true
           lastno_table, lastno_stm = 0, 0
           brange_table, brange_stm = 0, 0
           
-          xrefs_stm = [ XRef.new(0, XRef::LASTFREE, XRef::FREE) ]
-          xrefs_table = [ XRef.new(0, XRef::LASTFREE, XRef::FREE) ]
+          xrefs_stm = [ XRef.new(0, 0, XRef::FREE) ]
+          xrefs_table = [ XRef.new(0, XRef::FIRSTFREE, XRef::FREE) ]
 
           if options[:use_xreftable] == true
             xrefsection = XRef::Section.new
@@ -511,7 +564,11 @@ module Origami
 
           if options[:use_xrefstm] == true
             xrefstm = rev.xrefstm || XRefStream.new
-            add_to_revision(xrefstm, rev) unless xrefstm == rev.xrefstm
+            if xrefstm == rev.xrefstm
+              xrefstm.clear
+            else
+              add_to_revision(xrefstm, rev) 
+            end
           end
         end
        
@@ -521,11 +578,10 @@ module Origami
           objset |= objstm.objects
         end if options[:rebuildxrefs] == true and options[:use_xrefstm] == true
 
-        objset.sort # process objects in number order
-        
-        # For each object
+        # For each object, in number order
         objset.sort.each { |obj|
          
+          # Create xref entry.
           if options[:rebuildxrefs] == true
            
             # Adding subsections if needed
@@ -569,12 +625,15 @@ module Origami
               xrefs_stm.each do |xref| xrefstm << xref end
 
               xrefstm.W = [ 1, (xrefstm_offset.to_s(2).size + 7) >> 3, 2 ]
+              if xrefstm.DecodeParms.is_a?(Dictionary) and xrefstm.DecodeParms.has_key?(:Columns)
+                xrefstm.DecodeParms[:Columns] = xrefstm.W[0] + xrefstm.W[1] + xrefstm.W[2]
+              end
+
               xrefstm.Index ||= []
               xrefstm.Index << brange_stm << xrefs_stm.size
    
               xrefstm.dictionary = xrefstm.dictionary.merge(trailer_dict) 
               xrefstm.Prev = prev_xref_offset
-
               rev.trailer.dictionary = nil
 
               add_to_revision(xrefstm, rev)
@@ -671,7 +730,7 @@ module Origami
       end
 
       if @revisions.size == 1
-        raise InvalidPDF, "Cannot remove last revision"
+        raise InvalidPDFError, "Cannot remove last revision"
       end
 
       @revisions.delete_at(index)
@@ -711,7 +770,6 @@ module Origami
     # _generation_:: Object generation.
     #
     def get_object(no, generation = 0, use_xrefstm = true) #:nodoc:
-       
       case no
         when Reference
           target = no
@@ -898,15 +956,16 @@ module Origami
     
     def version_required #:nodoc:
       
-      max = 1.0
+      max = [ 1.0, 0 ]
       @revisions.each { |revision|
         revision.body.each_value { |object|
-          ver = object.version_required.to_s.to_f
-          max = ver if ver > max 
+          current = object.version_required
+          max = current if (current <=> max) > 0
         }
       }
+      max[0] = max[0].to_s
       
-      max.to_s.to_sym
+      max
     end
     
     #
@@ -919,7 +978,7 @@ module Origami
         lastno = 0
         brange = 0
         
-        xrefs = [ XRef.new(0, XRef::LASTFREE, XRef::FREE) ]
+        xrefs = [ XRef.new(0, XRef::FIRSTFREE, XRef::FREE) ]
 
         xrefsection = XRef::Section.new
         objects.sort.each { |object|
@@ -969,7 +1028,7 @@ module Origami
       lastno = 0
       brange = 0
       
-      xrefs = [ XRef.new(0, XRef::LASTFREE, XRef::FREE) ]
+      xrefs = [ XRef.new(0, XRef::FIRSTFREE, XRef::FREE) ]
       
       xrefsection = XRef::Section.new
       objects.sort.each { |object|

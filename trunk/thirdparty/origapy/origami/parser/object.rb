@@ -5,16 +5,16 @@
 
 = Info
 	Origami is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
+  it under the terms of the GNU Lesser General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
   Origami is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+  GNU Lesser General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
+  You should have received a copy of the GNU Lesser General Public License
   along with Origami.  If not, see <http://www.gnu.org/licenses/>.
 
 =end
@@ -129,9 +129,7 @@ module Origami
         if not @fields.has_key?(name)
           @fields[name] = attributes
         else
-          attributes.each_pair { |k,v|
-            @fields[name][k] = v
-          }
+          @fields[name].merge! attributes
         end
         
         define_field_methods(name)
@@ -178,22 +176,23 @@ module Origami
     end
 
     #
-    # Returns the version required by the current Object.
+    # Returns the version and level required by the current Object.
     #
     def version_required #:nodoc:
+      max = [ 1.0, 0 ]
       
-      max = 1.0
-      
-      self.each_key { |field|
-        
+      self.each_key do |field|
         attributes = self.class.fields[field.value]
-        if attributes[:Version] and attributes[:Version].to_s.to_f > max
-          max = attributes[:Version].to_s.to_f
-        end
 
-        localmax = self[field.value].version_required
-        if localmax.to_s.to_f > max then max = localmax end
-      }
+        current_version = attributes.has_key?(:Version) ? attributes[:Version].to_f : 0
+        current_level = attributes[:ExtensionLevel] || 0
+        current = [ current_version, current_level ]
+
+        max = current if (current <=> max) > 0
+
+        sub = self[field.value].version_required
+        max = sub if (sub <=> max) > 0
+      end
       
       max
     end
@@ -227,7 +226,15 @@ module Origami
   
   end
   
-  class InvalidObject < Exception #:nodoc:
+  class InvalidObjectError < Exception #:nodoc:
+  end
+
+  class UnterminatedObjectError < Exception #:nodoc:
+    attr_reader :obj
+    def initialize(msg,obj)
+      super(msg)
+      @obj = obj
+    end
   end
 
   #
@@ -318,7 +325,7 @@ module Origami
     #
     def reference
       unless self.is_indirect?
-        raise InvalidObject, "Cannot reference a direct object"
+        raise InvalidObjectError, "Cannot reference a direct object"
       end
 
       ref = Reference.new(@no, @generation)
@@ -332,15 +339,15 @@ module Origami
     #
     def xrefs
       unless self.is_indirect?
-        raise InvalidObject, "Cannot find xrefs to a direct object"
+        raise InvalidObjectError, "Cannot find xrefs to a direct object"
       end
 
       if self.pdf.nil?
-        raise InvalidObject, "Not attached to any PDF"
+        raise InvalidObjectError, "Not attached to any PDF"
       end
 
       thisref = self.reference
-      @pdf.objects.find_all{|obj| obj.is_a?(Reference) and obj.eql?(thisref)}
+      @pdf.objects(:include_keys => false).find_all{|obj| obj.is_a?(Reference) and obj.eql?(thisref)}
     end
 
     #
@@ -381,13 +388,13 @@ module Origami
     def set_pdf(pdf)
       if self.is_indirect? then @pdf = pdf
       else
-        raise InvalidObject, "You cannot set the PDF parent of a direct object"
+        raise InvalidObjectError, "You cannot set the PDF parent of a direct object"
       end
     end
     
     class << self
 
-      def typeof(stream) #:nodoc:
+      def typeof(stream, noref = false) #:nodoc:
         stream.skip(REGEXP_WHITESPACES)
 
         case stream.peek(1)
@@ -399,7 +406,7 @@ module Origami
           when 'n' then return Null
           when 't', 'f' then return Boolean
         else
-          if stream.check(Reference::REGEXP_TOKEN) then return Reference
+          if not noref and stream.check(Reference::REGEXP_TOKEN) then return Reference
           elsif stream.check(Real::REGEXP_TOKEN) then return Real
           elsif stream.check(Integer::REGEXP_TOKEN) then return Integer
           else
@@ -409,8 +416,7 @@ module Origami
 
       end
         
-      def parse(stream, pdf) #:nodoc:
-       
+      def parse(stream) #:nodoc:
         offset = stream.pos
 
         #
@@ -419,7 +425,8 @@ module Origami
         return nil if stream.match?(/xref/) or stream.match?(/startxref/)
  
         if stream.scan(@@regexp_obj).nil?
-          raise InvalidObject, "Object shall begin with '$no $gen obj' statement"
+          raise InvalidObjectError, 
+            "Object shall begin with '$no $gen obj' statement"
         end
           
         no = stream[2].to_i
@@ -427,13 +434,15 @@ module Origami
 
         type = typeof(stream) 
         if type.nil?
-          raise InvalidObject, "Cannot determine object (no:#{no},gen:#{gen}) type"
+          raise InvalidObjectError, 
+            "Cannot determine object (no:#{no},gen:#{gen}) type"
         end
           
         begin
           newObj = type.parse(stream)
         rescue Exception => e
-          raise InvalidObject, "Failed to parse object (no:#{no},gen:#{gen})\n\t -> [#{e.class}] #{e.message}"
+          raise InvalidObjectError, 
+            "Failed to parse object (no:#{no},gen:#{gen})\n\t -> [#{e.class}] #{e.message}"
         end
 
         newObj.set_indirect(true)
@@ -442,7 +451,7 @@ module Origami
         newObj.file_offset = offset
           
         if stream.skip(@@regexp_endobj).nil?
-          raise InvalidObject, "Object shall end with 'endobj' statement"
+          raise UnterminatedObjectError.new("Object shall end with 'endobj' statement", newObj)
         end
           
         newObj
@@ -451,7 +460,7 @@ module Origami
     end
     
     def version_required #:nodoc:
-      "1.0"
+      [ 1.0, 0 ]
     end
       
     #

@@ -1,7 +1,12 @@
 #!/usr/bin/env ruby 
 
-$: << "../../parser"
-require 'parser.rb'
+begin
+  require 'origami'
+rescue LoadError
+  ORIGAMIDIR = "#{File.dirname(__FILE__)}/../.."
+  $: << ORIGAMIDIR
+  require 'origami'
+end
 include Origami
 
 require 'getopt.rb'
@@ -13,7 +18,7 @@ FORM_PATTERNS = [ 'SubmitForm', 'ResetForm', 'ImportData' ]
 
 def disable_triggers(pdf)
 
-  objects = pdf.ls(*TRIGGER_PATTERNS.map{|str| Regexp.new("^#{str}$") })
+  objects = pdf.ls_no_follow(*TRIGGER_PATTERNS.map{|str| Regexp.new("^#{str}$") })
 
   objects.each do |obj|
     dict = obj.parent
@@ -36,7 +41,7 @@ def disable_actions(pdf, actions)
   objects.each do |obj|
     parent = obj.parent
 
-    if parent.is_a?(Dictionary) and actions.include?(parent[:S].value.to_s)
+    if parent.is_a?(Dictionary) and parent.has_key?(:S) and actions.include?(parent[:S].value.to_s)
       parent[:S] = parent[:S].value.to_s.swapcase.to_sym
     end
   end
@@ -46,17 +51,10 @@ end
 def disable_main_actions(pdf) ; disable_actions(pdf, ACTIONS_PATTERNS); end
 def disable_form_actions(pdf) ; disable_actions(pdf, FORM_PATTERNS); end
 
-if type == "all" or type == "triggers"
-  disable_triggers(pdf)
-end
 
-if type == "all" or type == "main"
-  disable_main_actions(pdf)
-end
-
-if type == "all" or type == "forms"
-  disable_form_actions(pdf)
-end
+disable_triggers(pdf) if type == "all" or type == "triggers"
+disable_main_actions(pdf) if type == "all" or type == "main" 
+disable_form_actions(pdf) if type == "all" or type == "forms"
 
 pdf.saveas(output_name)
 

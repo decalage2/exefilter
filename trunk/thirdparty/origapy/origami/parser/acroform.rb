@@ -5,20 +5,20 @@
 
 = Info
 	This file is part of Origami, PDF manipulation framework for Ruby
-	Copyright (C) 2009	Guillaume Delugré <guillaume@security-labs.org>
+	Copyright (C) 2010	Guillaume Delugré <guillaume@security-labs.org>
 	All right reserved.
 	
   Origami is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
+  it under the terms of the GNU Lesser General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
   Origami is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+  GNU Lesser General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
+  You should have received a copy of the GNU Lesser General Public License
   along with Origami.  If not, see <http://www.gnu.org/licenses/>.
 
 =end
@@ -31,14 +31,15 @@ module Origami
     # Returns true if the document contains an acrobat form.
     #
     def has_form?
-      not self.Catalog.nil? and not self.Catalog.has_field? :AcroForm
+      (not self.Catalog.nil?) and self.Catalog.has_field? :AcroForm
     end
 
+    #
+    # Creates a new AcroForm with specified fields.
+    #
     def create_acroform(*fields)
       acroform = self.Catalog.AcroForm ||= InteractiveForm.new.set_indirect(true)
-
-      acroform.Fields ||= []
-      acroform.Fields.concat(fields)
+      add_fields(*fields)
 
       acroform
     end
@@ -47,20 +48,14 @@ module Origami
     # Add a field to the Acrobat form.
     # _field_:: The Field to add.
     #
-    def add_field(field)
+    def add_fields(*fields)
+      raise TypeError, "Expected Field arguments" unless fields.all? { |f| f.is_a?(Field) }
       
-      if field.is_a?(::Array)
-        raise TypeError, "Expected array of Fields" unless field.all? { |f| f.is_a?(Field) }
-      elsif not field.is_a?(Field)
-        raise TypeError, "Expected Field, received #{field.class}"
-      end
-      
-      fields = field.is_a?(Field) ? [field] : field
-      
-      self.Catalog.AcroForm ||= InteractiveForm.new
+      self.Catalog.AcroForm ||= InteractiveForm.new.set_indirect(true)
       self.Catalog.AcroForm.Fields ||= []
       
       self.Catalog.AcroForm.Fields.concat(fields)
+      fields.each do |field| field.set_indirect(true) end
       
       self
     end
@@ -152,7 +147,7 @@ module Origami
 
     def onKeyStroke(action)
     
-      unless action.is_a?(Action::Action)
+      unless action.is_a?(Action)
         raise TypeError, "An Action object must be passed."
       end
       
@@ -163,7 +158,7 @@ module Origami
 
     def onFormat(action)
     
-      unless action.is_a?(Action::Action)
+      unless action.is_a?(Action)
         raise TypeError, "An Action object must be passed."
       end
       
@@ -174,7 +169,7 @@ module Origami
 
     def onValidate(action)
     
-      unless action.is_a?(Action::Action)
+      unless action.is_a?(Action)
         raise TypeError, "An Action object must be passed."
       end
       
@@ -185,7 +180,7 @@ module Origami
 
     def onCalculate(action)
     
-      unless action.is_a?(Action::Action)
+      unless action.is_a?(Action)
         raise TypeError, "An Action object must be passed."
       end
       
@@ -194,6 +189,19 @@ module Origami
         
     end
 
+    class Subform < Dictionary
+      include Configurable
+      include Field
+
+      def add_fields(*fields)
+        self.Kids ||= []
+        self.Kids.concat(fields)
+
+        fields.each do |field| field.Parent = self end
+
+        self
+      end
+    end
 
     class AdditionalActions < Dictionary
       

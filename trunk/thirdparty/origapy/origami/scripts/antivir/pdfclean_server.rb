@@ -32,6 +32,7 @@
 #                  cleaned, to detect it from the client.
 # 2009-10-07 PL: - avoid asking for password when parsing encrypted PDF
 #                - delinearize PDF docs if necessary
+# 2010-09-12 PL: - updated for Origami 1.0.0-beta3
 
 # TODO:
 # - add a cleaner way to close the input file in clean_pdf (instead of calling GC.start)
@@ -40,8 +41,13 @@
 
 #------------------------------------------------------------------------------
 
-$: << "../../parser"
-require 'parser.rb'
+begin
+  require 'origami'
+rescue LoadError
+  ORIGAMIDIR = "#{File.dirname(__FILE__)}/../.."
+  $: << ORIGAMIDIR
+  require 'origami'
+end
 include Origami
 
 # getopt is not used in this version:
@@ -53,7 +59,7 @@ FORM_PATTERNS = [ 'SubmitForm', 'ResetForm', 'ImportData' ]
 
 def disable_triggers(pdf)
 
-  objects = pdf.ls(*TRIGGER_PATTERNS.map{|str| Regexp.new("^#{str}$") })
+  objects = pdf.ls_no_follow(*TRIGGER_PATTERNS.map{|str| Regexp.new("^#{str}$") })
 
   objects.each do |obj|
     dict = obj.parent
@@ -77,7 +83,7 @@ def disable_actions(pdf, actions)
   objects.each do |obj|
     parent = obj.parent
 
-    if parent.is_a?(Dictionary) and actions.include?(parent[:S].value.to_s)
+    if parent.is_a?(Dictionary) and parent.has_key?(:S) and actions.include?(parent[:S].value.to_s)
       puts "[CLEANED] action " + parent[:S].value.to_s
       parent[:S] = parent[:S].value.to_s.swapcase.to_sym
     end
@@ -97,17 +103,9 @@ def clean_pdf (input_name, output_name, type)
     pdf = PDF.new.append_page
   end
 
-  if type == "all" or type == "triggers"
-    disable_triggers(pdf)
-  end
-  
-  if type == "all" or type == "main"
-    disable_main_actions(pdf)
-  end
-  
-  if type == "all" or type == "forms"
-    disable_form_actions(pdf)
-  end
+  disable_triggers(pdf) if type == "all" or type == "triggers"
+  disable_main_actions(pdf) if type == "all" or type == "main" 
+  disable_form_actions(pdf) if type == "all" or type == "forms"
   
   # save PDF: delinearize option ensures output is correct even if source is linearized
   pdf.saveas(output_name, :delinearize => true)

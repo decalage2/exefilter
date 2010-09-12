@@ -5,20 +5,20 @@
 
 = Info
 	This file is part of Origami, PDF manipulation framework for Ruby
-	Copyright (C) 2009	Guillaume Delugré <guillaume@security-labs.org>
+	Copyright (C) 2010	Guillaume Delugré <guillaume@security-labs.org>
 	All right reserved.
 	
   Origami is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
+  it under the terms of the GNU Lesser General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
   Origami is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+  GNU Lesser General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
+  You should have received a copy of the GNU Lesser General Public License
   along with Origami.  If not, see <http://www.gnu.org/licenses/>.
 
 =end
@@ -40,13 +40,20 @@ module Origami
     DEFAULT_DASHPATTERN = Graphics::DashPattern.new([], 0)
     DEFAULT_LINEWIDTH = 1.0
 
+    attr_reader :instructions
     
     def initialize(rawdata = "", dictionary = {})
     
-      @instructions = []
+      @instructions = nil
       @gs = Graphics::State.new
 
       super(rawdata, dictionary)
+    end
+
+    def instructions
+      load! if @instructions.nil?
+
+      @instructions
     end
 
     #
@@ -60,6 +67,7 @@ module Origami
     # Draw a polygon from a array of coordinates.
     #
     def draw_polygon(coords = [], attr = {})
+      load! if @instructions.nil?
 
       stroke_color  = attr[:stroke_color] || DEFAULT_STROKE_COLOR
       fill_color    = attr[:fill_color] || DEFAULT_FILL_COLOR
@@ -81,24 +89,24 @@ module Origami
       set_dash_pattern(dash_pattern)
    
       if @gs.text_state.is_in_text_object?
-        @instructions << Text::Instruction::ET.new.update_state(@gs)
+        @instructions << PDF::Instruction.new('ET').update_state(@gs)
       end
 
       unless coords.size < 1
         x,y = coords.slice!(0)
-        @instructions << Graphics::Instruction::M.new(x,y).update_state(@gs)
+        @instructions << PDF::Instruction.new('m',x,y).update_state(@gs)
 
         coords.each do |px,py|
-          @instructions << Graphics::Instruction::L.new(px,py).update_state(@gs)
+          @instructions << PDF::Instruction.new('l',px,py).update_state(@gs)
         end
 
         @instructions << (i =
           if stroke and not fill
-            Graphics::Instruction::CloseS.new
+            PDF::Instruction.new('s')
           elsif fill and not stroke
-            Graphics::Instruction::F.new
+            PDF::Instruction.new('f')
           elsif fill and stroke
-            Graphics::Instruction::CloseB.new
+            PDF::Instruction.new('b')
           end
         )
 
@@ -112,6 +120,7 @@ module Origami
     # Draw a rectangle at position (_x_,_y_) with defined _width_ and _height_.
     #
     def draw_rectangle(x, y, width, height, attr = {})
+      load! if @instructions.nil?
 
       stroke_color  = attr[:stroke_color] || DEFAULT_STROKE_COLOR
       fill_color    = attr[:fill_color] || DEFAULT_FILL_COLOR
@@ -133,18 +142,18 @@ module Origami
       set_dash_pattern(dash_pattern)
 
       if @gs.text_state.is_in_text_object?
-        @instructions << Text::Instruction::ET.new.update_state(@gs)
+        @instructions << PDF::Instruction.new('ET').update_state(@gs)
       end
 
-      @instructions << Graphics::Instruction::RE.new(x,y,width,height).update_state(@gs)
+      @instructions << PDF::Instruction.new('re', x,y,width,height).update_state(@gs)
   
       @instructions << (i =
         if stroke and not fill
-          Graphics::Instruction::S.new
+          PDF::Instruction.new('S')
         elsif fill and not stroke
-          Graphics::Instruction::F.new
+          PDF::Instruction.new('f')
         elsif fill and stroke
-          Graphics::Instruction::B.new
+          PDF::Instruction.new('B')
         end
       )
 
@@ -159,6 +168,7 @@ module Origami
     # _attr_:: Formatting attributes.
     #
     def write(text, attr = {})
+      load! if @instructions.nil?
 
       x,y       = attr[:x], attr[:y] 
       font      = attr[:font] || DEFAULT_FONT
@@ -173,10 +183,10 @@ module Origami
       rise      = attr[:rise]
       rendering = attr[:rendering]
 
-      @instructions << Text::Instruction::ET.new.update_state(@gs) if (x or y) and @gs.text_state.is_in_text_object?
+      @instructions << PDF::Instruction.new('ET').update_state(@gs) if (x or y) and @gs.text_state.is_in_text_object?
 
       unless @gs.text_state.is_in_text_object? 
-        @instructions << Text::Instruction::BT.new.update_state(@gs)
+        @instructions << PDF::Instruction.new('BT').update_state(@gs)
       end
 
       set_text_font(font, size)
@@ -197,92 +207,102 @@ module Origami
     end
 
     def paint_shading(shade)
-      @instructions << Graphics::Instruction::SH.new(shade).update_state(@gs)
+      load! if @instructions.nil?
+      @instructions << PDF::Instruction.new('sh', shade).update_state(@gs)
 
       self
     end
 
     def set_text_font(fontname, size)
+      load! if @instructions.nil?
       if fontname != @gs.text_state.font or size != @gs.text_state.font_size
-        @instructions << Text::Instruction::Tf.new(fontname, size).update_state(@gs)
+        @instructions << PDF::Instruction.new('Tf', fontname, size).update_state(@gs)
       end
 
       self
     end
 
     def set_text_pos(tx,ty)
-      @instructions << Text::Instruction::Td.new(tx, ty).update_state(@gs)
+      load! if @instructions.nil?
+      @instructions << PDF::Instruction.new('Td', tx, ty).update_state(@gs)
       
       self
     end
 
     def set_text_leading(leading)
+      load! if @instructions.nil?
       if leading != @gs.text_state.leading
-        @instructions << Text::Instruction::TL.new(leading).update_state(@gs)
+        @instructions << PDF::Instruction.new('TL', leading).update_state(@gs)
       end
 
       self
     end
 
     def set_text_rendering(rendering)
+      load! if @instructions.nil?
       if rendering != @gs.text_state.rendering_mode
-        @instructions << Text::Instruction::Tr.new(rendering).update_state(@gs)
+        @instructions << PDF::Instruction.new('Tr', rendering).update_state(@gs)
       end
 
       self
     end
 
     def set_text_rise(rise)
+      load! if @instructions.nil?
       if rise != @gs.text_state.text_rise
-        @instructions << Text::Instruction::Ts.new(rise).update_state(@gs)
+        @instructions << PDF::Instruction.new('Ts', rise).update_state(@gs)
       end
       
       self
     end
 
     def set_text_scale(scaling)
+      load! if @instructions.nil?
       if scale != @gs.text_state.scaling
-        @instructions << Text::Instruction::Tz.new(scaling).update_state(@gs)
+        @instructions << PDF::Instruction.new('Tz', scaling).update_state(@gs)
       end
 
       self
     end
 
     def set_text_word_spacing(word_spacing)
+      load! if @instructions.nil?
       if word_spacing != @gs.text_state.word_spacing
-        @instructions << Text::Instruction::Tw.new(word_spacing).update_state(@gs)
+        @instructions << PDF::Instruction.new('Tw', word_spacing).update_state(@gs)
       end
       
       self
     end
 
     def set_text_char_spacing(char_spacing)
+      load! if @instructions.nil?
       if char_spacing != @gs.text_state.char_spacing
-        @instructions << Text::Instruction::Tc.new(char_spacing).update_state(@gs)
+        @instructions << PDF::Instruction.new('Tc', char_spacing).update_state(@gs)
       end
 
       self
     end
 
     def set_fill_color(color)
+      load! if @instructions.nil?
       
       @instructions << ( i =
         if (color.respond_to? :r and color.respond_to? :g and color.respond_to? :b) or (color.is_a?(::Array) and color.size == 3)
           r = (color.respond_to?(:r) ? color.r : color[0]).to_f / 255
           g = (color.respond_to?(:g) ? color.g : color[1]).to_f / 255
           b = (color.respond_to?(:b) ? color.b : color[2]).to_f / 255
-          Graphics::Instruction::RG.new(r, g, b) if @gs.nonstroking_color != [r,g,b]
+          PDF::Instruction.new('rg', r, g, b) if @gs.nonstroking_color != [r,g,b]
 
         elsif (color.respond_to? :c and color.respond_to? :m and color.respond_to? :y and color.respond_to? :k) or (color.is_a?(::Array) and color.size == 4)
           c = (color.respond_to?(:c) ? color.c : color[0]).to_f
           m = (color.respond_to?(:m) ? color.m : color[1]).to_f
           y = (color.respond_to?(:y) ? color.y : color[2]).to_f
           k = (color.respond_to?(:k) ? color.k : color[3]).to_f
-          Graphics::Instruction::K.new(c, m, y, k) if @gs.nonstroking_color != [c,m,y,k]
+          PDF::Instruction.new('k', c, m, y, k) if @gs.nonstroking_color != [c,m,y,k]
           
         elsif color.respond_to?:g or (0.0..1.0) === color 
           g = color.respond_to?(:g) ? color.g : color
-          Graphics::Instruction::G.new(g) if @gs.nonstroking_color != [ g ]
+          PDF::Instruction.new('g', g) if @gs.nonstroking_color != [ g ]
 
         else
           raise TypeError, "Invalid color : #{color}"
@@ -294,24 +314,25 @@ module Origami
     end
     
     def set_stroke_color(color)
+      load! if @instructions.nil?
       
       @instructions << ( i =
         if (color.respond_to? :r and color.respond_to? :g and color.respond_to? :b) or (color.is_a?(::Array) and color.size == 3)
           r = (color.respond_to?(:r) ? color.r : color[0]).to_f / 255
           g = (color.respond_to?(:g) ? color.g : color[1]).to_f / 255
           b = (color.respond_to?(:b) ? color.b : color[2]).to_f / 255
-          Graphics::Instruction::StrokeRG.new(r, g, b) if @gs.stroking_color != [r,g,b]
+          PDF::Instruction.new('RG', r, g, b) if @gs.stroking_color != [r,g,b]
 
         elsif (color.respond_to? :c and color.respond_to? :m and color.respond_to? :y and color.respond_to? :k) or (color.is_a?(::Array) and color.size == 4)
           c = (color.respond_to?(:c) ? color.c : color[0]).to_f
           m = (color.respond_to?(:m) ? color.m : color[1]).to_f
           y = (color.respond_to?(:y) ? color.y : color[2]).to_f
           k = (color.respond_to?(:k) ? color.k : color[3]).to_f
-          Graphics::Instruction::StrokeK.new(c, m, y, k) if @gs.stroking_color != [c,m,y,k]
+          PDF::Instruction.new('K', c, m, y, k) if @gs.stroking_color != [c,m,y,k]
           
         elsif color.respond_to?:g or (0.0..1.0) === color 
           g = color.respond_to?(:g) ? color.g : color
-          Graphics::Instruction::StrokeG.new(g) if @gs.stroking_color != [ g ]
+          PDF::Instruction.new('G', g) if @gs.stroking_color != [ g ]
 
         else
           raise TypeError, "Invalid color : #{color}"
@@ -323,40 +344,45 @@ module Origami
     end
 
     def set_dash_pattern(pattern)
+      load! if @instructions.nil?
       unless @gs.dash_pattern.eql? pattern
-        @instructions << Graphics::Instruction::D.new(pattern.array, pattern.phase).update_state(@gs)
+        @instructions << PDF::Instruction.new('d', pattern.array, pattern.phase).update_state(@gs)
       end
 
       self
     end
 
     def set_line_width(width)
+      load! if @instructions.nil?
       if @gs.line_width != width
-        @instructions << Graphics::Instruction::W.new(width).update_state(@gs)
+        @instructions << PDF::Instruction.new('w', width).update_state(@gs)
       end
 
       self
     end
 
     def set_line_cap(cap)
+      load! if @instructions.nil?
       if @gs.line_cap != cap
-        @instructions << Graphics::Instruction::JCap.new(cap).update_state(@gs)
+        @instructions << PDF::Instruction.new('J', cap).update_state(@gs)
       end
 
       self
     end
     
     def set_line_join(join)
+      load! if @instructions.nil?
       if @gs.line_join != join
-        @instructions << Graphics::Instruction::JJoin.new(join).update_state(@gs)
+        @instructions << PDF::Instruction.new('j', join).update_state(@gs)
       end
 
       self
     end
 
     def pre_build #:nodoc:
+      load! if @instructions.nil?
       if @gs.text_state.is_in_text_object?
-        @instructions << Text::Instruction::ET.new.update_state(@gs)
+        @instructions << PDF::Instruction.new('ET').update_state(@gs)
       end
 
       @data = @instructions.join
@@ -366,13 +392,23 @@ module Origami
 
     private
 
+    def load!
+      decode!
+
+      code = StringScanner.new self.data
+      @instructions = []
+      @instructions << PDF::Instruction.parse(code) until code.eos?
+      
+      self
+    end
+
     def write_text_block(text)
       
       lines = text.split("\n").map!{|line| line.to_s}
       
-      @instructions << Text::Instruction::Tj.new(lines.slice!(0)).update_state(@gs)
+      @instructions << PDF::Instruction.new('Tj', lines.slice!(0)).update_state(@gs)
       lines.each do |line|
-        @instructions << Text::Instruction::Quote.new(line).update_state(@gs)
+        @instructions << PDF::Instruction.new("'", line).update_state(@gs)
       end
       
     end
@@ -405,6 +441,8 @@ module Origami
       field   :OPI,           :Type => Dictionary, :Version => "1.2"
       field   :OC,            :Type => Dictionary, :Version => "1.5"
       field   :Name,          :Type => Name
+      field   :Measure,       :Type => Dictionary, :Version => "1.7", :ExtensionLevel => 3
+      field   :PtData,        :Type => Dictionary, :Version => "1.7", :ExtensionLevel => 3
 
       def pre_build
         self.Resources = Resources.new.pre_build unless has_field?(:Resources)
@@ -436,6 +474,8 @@ module Origami
       field   :OPI,               :Type => Dictionary, :Version => "1.2"
       field   :Metadata,          :Type => Stream, :Version => "1.4"
       field   :OC,                :Type => Dictionary, :Version => "1.5"
+      field   :Measure,           :Type => Dictionary, :Version => "1.7", :ExtensionLevel => 3
+      field   :PtData,            :Type => Dictionary, :Version => "1.7", :ExtensionLevel => 3
 
     end
 

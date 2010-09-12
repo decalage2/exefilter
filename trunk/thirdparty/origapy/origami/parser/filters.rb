@@ -5,20 +5,20 @@
 
 = Info
 	This file is part of Origami, PDF manipulation framework for Ruby
-	Copyright (C) 2009	Guillaume Delugré <guillaume@security-labs.org>
+	Copyright (C) 2010	Guillaume Delugré <guillaume@security-labs.org>
 	All right reserved.
 	
   Origami is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
+  it under the terms of the GNU Lesser General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
   Origami is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+  GNU Lesser General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
+  You should have received a copy of the GNU Lesser General Public License
   along with Origami.  If not, see <http://www.gnu.org/licenses/>.
 
 =end
@@ -68,7 +68,7 @@ module Origami
         bpr = (nvals * bpc + 7) >> 3
 
         unless data.size % bpr == 0
-          raise PredictorError, "Invalid data size"
+          raise PredictorError, "Invalid data size #{data.size}, should be multiple of bpr=#{bpr}"
         end
 
         if predictor == TIFF
@@ -76,7 +76,7 @@ module Origami
         elsif predictor >= 10 # PNG
           do_png_pre_prediction(data, predictor, bpp, bpr)
         else
-          raise PredictorError, "Unknown predictor"
+          raise PredictorError, "Unknown predictor : #{predictor}"
         end
      end
 
@@ -99,10 +99,10 @@ module Origami
         bpp = (colors * bpc + 7) >> 3
 
         # bytes per row
-        bpr = ((nvals * bpc + 7) >> 3) + bpp
+        bpr = ((nvals * bpc + 7) >> 3) + 1
 
         unless data.size % bpr == 0
-          raise PredictorError, "Invalid data size"
+          raise PredictorError, "Invalid data size #{data.size}, should be multiple of bpr=#{bpr}"
         end
 
         if predictor == TIFF
@@ -110,26 +110,32 @@ module Origami
         elsif predictor >= 10 # PNG
           do_png_post_prediction(data, bpp, bpr)
         else
-          raise PredictorError, "Unknown predictor"
+          raise PredictorError, "Unknown predictor : #{predictor}"
         end
       end
 
       def self.do_png_post_prediction(data, bpp, bpr)
 
         result = ""
-        uprow = thisrow = "\0" * bpr
-        ncols = data.size / bpr
+        uprow = "\0" * bpr
+        thisrow = "\0" * bpr
+        nrows = data.size / bpr
         
-        ncols.times do |col|
+        nrows.times do |irow|
 
-          line = data[col * bpr, bpr]
+          line = data[irow * bpr, bpr]
           predictor = 10 + line[0]
+          line[0] = "\0"
 
-          for i in (bpp..bpr-1)
-
+          for i in (1..bpr-1)
             up = uprow[i]
-            left = thisrow[i-bpp]
-            upleft = uprow[i-bpp]
+
+            if bpp > i
+              left = upleft = 0
+            else
+              left = line[i-bpp]
+              upleft = uprow[i-bpp]
+            end
 
             case predictor
               when PNG_NONE
@@ -158,7 +164,7 @@ module Origami
             
           end
 
-          result << thisrow[bpp..-1]
+          result << thisrow[1..-1]
           uprow = thisrow
         end
   
@@ -168,14 +174,20 @@ module Origami
       def self.do_png_pre_prediction(data, predictor, bpp, bpr)
         
         result = ""
-        ncols = data.size / bpr
+        nrows = data.size / bpr
 
-        line = "\0" * bpp + data[-bpr, bpr]
+        line = "\0" + data[-bpr, bpr]
         
-        (ncols-1).downto(0) do |col|
+        (nrows-1).downto(0) do |irow|
 
-          uprow = col.zero? ? ("\0" * (bpr+bpp)) : ("\0" * bpp + data[(col-1)*bpr,bpr])
-          (bpr+bpp-1).downto(bpp) do |i|
+          uprow = 
+          if irow == 0 
+            "\0" * (bpr+1) 
+          else 
+            "\0" + data[(irow-1)*bpr,bpr]
+          end
+
+          bpr.downto(1) do |i|
 
             up = uprow[i]
             left = line[i-bpp]
@@ -201,7 +213,7 @@ module Origami
                 ) & 0xFF).chr
               when PNG_NONE
             else
-              puts "Unknown PNG predictor : #{predictor}"
+              raise PredictorError, "Unsupported PNG predictor : #{predictor}"
             end
             
           end
@@ -243,7 +255,7 @@ module Origami
       receiver.extend(ClassMethods)
     end
   
-    class InvalidASCIIHexString < Exception #:nodoc:
+    class InvalidASCIIHexStringError < Exception #:nodoc:
     end
     
     #
@@ -274,7 +286,7 @@ module Origami
         digits = input.delete(" \f\t\r\n\0").split(//)
         
         if not digits.all? { |d| d =~ /[a-fA-F0-9>]/ }
-          raise InvalidASCIIHexString, input
+          raise InvalidASCIIHexStringError, input
         end
         
         digits << "0" unless digits.size % 2 == 0
@@ -287,7 +299,7 @@ module Origami
       
     end
     
-    class InvalidASCII85String < Exception #:nodoc:
+    class InvalidASCII85StringError < Exception #:nodoc:
     end
     
     #
@@ -356,7 +368,7 @@ module Origami
           
           if input.length - i < 5
           then
-            if input.length - i == 1 then raise InvalidASCII85String, "Invalid length" end
+            if input.length - i == 1 then raise InvalidASCII85StringError, "Invalid length" end
             
             addend = 5 - (input.length - i)
             input << "u" * addend
@@ -374,14 +386,14 @@ module Origami
             # Checking if this string is in base85
             5.times { |j|
               if input[i+j] > ?u or input[i+j] < ?!
-                raise InvalidASCII85String, string
+                raise InvalidASCII85StringError, string
               else
                 inblock += (input[i+j] - ?!) * 85 ** (4 - j)
               end
             }
           
             if inblock > 2**32 - 1
-              raise InvalidASCII85String, "Invalid value"
+              raise InvalidASCII85StringError, "Invalid value"
             end
           
           end
@@ -407,7 +419,7 @@ module Origami
       
     end
     
-    class InvalidLZWData < Exception #:nodoc:
+    class InvalidLZWDataError < Exception #:nodoc:
     end
     
     #
@@ -446,7 +458,7 @@ module Origami
       #
       def encode(string)
   
-        if not @params[:Predictor].nil?
+        if @params and not @params[:Predictor].nil?
           colors =  @params.has_key?(:Colors) ? @params[:Colors].to_i : 1
           bpc =     @params.has_key?(:BitsPerComponent) ? @params[:BitsPerComponent].to_i : 8
           columns = @params.has_key?(:Columns) ? @params[:Columns].to_i : 1
@@ -512,7 +524,7 @@ module Origami
             when 4094
               if byte != CLEARTABLE
               then
-                raise InvalidLZWData, "LZW table is full and no clear flag was set"
+                raise InvalidLZWDataError, "LZW table is full and no clear flag was set"
               end
           end
 
@@ -544,7 +556,7 @@ module Origami
           end
         end
  
-        if not @params[:Predictor].nil?
+        if @params and not @params[:Predictor].nil?
           colors =  @params.has_key?(:Colors) ? @params[:Colors].to_i : 1
           bpc =     @params.has_key?(:BitsPerComponent) ? @params[:BitsPerComponent].to_i : 8
           columns = @params.has_key?(:Columns) ? @params[:Columns].to_i : 1
@@ -573,7 +585,7 @@ module Origami
 
       def binary2byte(bstring, codesize)
         if bstring.size < codesize
-          raise InvalidLZWData, "Unterminated data"
+          raise InvalidLZWDataError, "Unterminated data"
         end
 
         bstring.slice!(0,codesize).to_i(2)
@@ -597,20 +609,17 @@ module Origami
     # Class representing a Filter used to encode and decode data with zlib/Flate compression algorithm.
     #
     class Flate
-      
       include Filter
       
       EOD = 257 #:nodoc:
  
       class DecodeParms < Dictionary
-
         include Configurable
 
         field   :Predictor,         :Type => Integer, :Default => 1
         field   :Colors,            :Type => Integer, :Default => 1
         field   :BitsPerComponent,  :Type => Integer, :Default => 8
         field   :Columns,           :Type => Integer, :Default => 1
-
       end
       
       #
@@ -627,7 +636,7 @@ module Origami
       #
       def encode(stream)
 
-        if not @params[:Predictor].nil?
+        if @params and not @params[:Predictor].nil?
           colors =  @params.has_key?(:Colors) ? @params[:Colors].to_i : 1
           bpc =     @params.has_key?(:BitsPerComponent) ? @params[:BitsPerComponent].to_i : 8
           columns = @params.has_key?(:Columns) ? @params[:Columns].to_i : 1
@@ -646,7 +655,7 @@ module Origami
         
         uncompressed = Zlib::Inflate.inflate(stream)
         
-        if not @params[:Predictor].nil?
+        if @params and not @params[:Predictor].nil?
           colors =  @params.has_key?(:Colors) ? @params[:Colors].to_i : 1
           bpc =     @params.has_key?(:BitsPerComponent) ? @params[:BitsPerComponent].to_i : 8
           columns = @params.has_key?(:Columns) ? @params[:Columns].to_i : 1
@@ -659,7 +668,7 @@ module Origami
       
     end
     
-    class InvalidRunLengthData < Exception #:nodoc:
+    class InvalidRunLengthDataError < Exception #:nodoc:
     end
     
     #
@@ -724,12 +733,10 @@ module Origami
       # _stream_:: The data to decode.
       #
       def decode(stream)
+        raise InvalidRunLengthDataError, "No end marker" unless stream.include?(EOD)
         
         i = 0
         result = ""
-        
-        if not stream.include?(EOD) then raise InvalidRunLengthData, "No end marker" end
-        
         until stream[i] == EOD do
         
           length = stream[i]
@@ -781,15 +788,14 @@ module Origami
       # Not supported.
       #
       def encode(stream)
-        raise NotImplementedError, "#{self.class} is not (yet?) supported"
+        raise NotImplementedError, "#{self.class} is not yet supported"
       end
       
       #
       # Not supported.
       #
       def decode(stream)
-        puts "#{self.class} : Not yet supported"
-        nil
+        raise NotImplementedError, "#{self.class} is not yet supported"
       end
       
     end
@@ -817,15 +823,14 @@ module Origami
       # Not supported.
       #
       def encode(stream)
-        raise NotImplementedError, "#{self.class} is not (yet?) supported"
+        raise NotImplementedError, "#{self.class} is not yet supported"
       end
       
       #
       # Not supported.
       #
       def decode(stream)
-        puts "#{self.class} : Not yet supported"
-        nil
+        raise NotImplementedError, "#{self.class} is not yet supported"
       end
       
     end
@@ -853,15 +858,16 @@ module Origami
       # Not supported.
       #
       def encode(stream)
-        raise NotImplementedError, "#{self.class} is not (yet?) supported"
+        #raise NotImplementedError, "#{self.class} is not yet supported"
+        stream
       end
       
       #
       # Not supported.
       #
       def decode(stream)
-        puts "#{self.class} : Not yet supported"
-        nil
+        #raise NotImplementedError, "#{self.class} is not yet supported"
+        stream
       end
       
     end
@@ -877,15 +883,14 @@ module Origami
       # Not supported.
       #
       def encode(stream)
-        raise NotImplementedError, "#{self.class} is not (yet?) supported"
+        raise NotImplementedError, "#{self.class} is not yet supported"
       end
       
       #
       # Not supported.
       #
       def decode(stream)
-        puts "#{self.class} : Not yet supported"
-        nil
+        raise NotImplementedError, "#{self.class} is not yet supported"
       end
       
     end

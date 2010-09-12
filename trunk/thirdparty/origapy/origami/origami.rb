@@ -1,14 +1,10 @@
 =begin
 
 = File
-	graphics.rb
+	origami.rb
 
 = Info
-	This file is part of Origami, PDF manipulation framework for Ruby
-	Copyright (C) 2010	Guillaume Delugré <guillaume@security-labs.org>
-	All right reserved.
-	
-  Origami is free software: you can redistribute it and/or modify
+	Origami is free software: you can redistribute it and/or modify
   it under the terms of the GNU Lesser General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
@@ -23,11 +19,5 @@
 
 =end
 
-require 'origami/graphics/instruction'
-require 'origami/graphics/colors'
-require 'origami/graphics/path'
-require 'origami/graphics/xobject'
-require 'origami/graphics/patterns'
-require 'origami/graphics/text'
-require 'origami/graphics/state'
+require 'origami/parser'
 

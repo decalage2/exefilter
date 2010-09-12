@@ -5,20 +5,20 @@
 
 = Info
 	This file is part of Origami, PDF manipulation framework for Ruby
-	Copyright (C) 2009	Guillaume Delugré <guillaume@security-labs.org>
+	Copyright (C) 2010	Guillaume Delugré <guillaume@security-labs.org>
 	All right reserved.
 	
   Origami is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
+  it under the terms of the GNU Lesser General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
   Origami is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+  GNU Lesser General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
+  You should have received a copy of the GNU Lesser General Public License
   along with Origami.  If not, see <http://www.gnu.org/licenses/>.
 
 =end
@@ -35,7 +35,6 @@ module Origami
     field   :Type,                    :Type => Name, :Default => :Font, :Required => true
     field   :Subtype,                 :Type => Name, :Default => :Type1, :Required => true
     field   :Name,                    :Type => Name
-    field   :BaseFont,                :Type => Name, :Default => :Helvetica, :Required => true
     field   :FirstChar,               :Type => Integer
     field   :LastChar,                :Type => Integer
     field   :Widths,                  :Type => Array
@@ -43,11 +42,16 @@ module Origami
     field   :Encoding,                :Type => [ Name, Dictionary ], :Default => :MacRomanEncoding
     field   :ToUnicode,               :Type => Stream, :Version => "1.2"
    
+    # TODO: Type0 and CID Fonts
+
     #
     # Type1 Fonts.
     #
     class Type1 < Font
 
+      field   :BaseFont,              :Type => Name, :Default => :Helvetica, :Required => true
+      field   :Subtype,               :Type => Name, :Default => :Type1, :Required => true
+      
       #
       # 14 standard Type1 fonts.
       #
@@ -110,10 +114,40 @@ module Origami
         end
 
       end
-      
-      field   :SubType,               :Type => Name, :Default => :Type1, :Required => true
 
     end
+
+    #
+    # TrueType Fonts
+    #
+    class TrueType < Font
+      field   :Subtype,               :Type => Name, :Default => :TrueType, :Required => true
+    end
+
+    #
+    # Type 3 Fonts
+    #
+    class Type3 < Font
+
+      field   :Subtype,               :Type => Name, :Default => :Type3, :Required => true
+      field   :FontBBox,              :Type => Array, :Required => true
+      field   :FontMatrix,            :Type => Array, :Required => true
+      field   :CharProcs,             :Type => Dictionary, :Required => true
+      field   :Resources,             :Type => Dictionary, :Version => "1.2"
+
+    end
+
+  end
+
+  #
+  # Embedded font stream.
+  #
+  class FontStream < Stream
+    
+    field   :Subtype,                 :Type => Name
+    field   :Length1,                 :Type => Integer
+    field   :Length2,                 :Type => Integer
+    field   :Length3,                 :Type => Integer
 
   end
   
@@ -124,15 +158,15 @@ module Origami
     
     include Configurable
     
-    FIXEDPITCH = 1 << 1
-    SERIF = 1 << 2
-    SYMBOLIC = 1 << 3
-    SCRIPT = 1 << 4
+    FIXEDPITCH  = 1 << 1
+    SERIF       = 1 << 2
+    SYMBOLIC    = 1 << 3
+    SCRIPT      = 1 << 4
     NONSYMBOLIC = 1 << 6
-    ITALIC = 1 << 7
-    ALLCAP = 1 << 17
-    SMALLCAP = 1 << 18
-    FORCEBOLD = 1 << 19
+    ITALIC      = 1 << 7
+    ALLCAP      = 1 << 17
+    SMALLCAP    = 1 << 18
+    FORCEBOLD   = 1 << 19
 
     field   :Type,                    :Type => Name, :Default => :FontDescriptor, :Required => true
     field   :FontName,                :Type => Name, :Required => true
