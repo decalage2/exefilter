@@ -14,7 +14,7 @@ License: GPL v3 (see COPYING.txt file)
 
 Project website: http://www.decalage.info/python/origapy
 """
-__version__ = '0.08'
+__version__ = '0.09'
 __author__  = 'Philippe Lagadec'
 
 #--- CHANGELOG ----------------------------------------------------------------
@@ -28,11 +28,13 @@ __author__  = 'Philippe Lagadec'
 # 2009-09-30 v0.07 PL: - detect when file is clean or cleaned
 #                      - raise an exception when an error occurs
 # 2009-10-02 v0.08 PL: - updated origami to v1.0.0-beta1
+# 2010-09-12 v0.09 PL: - updated origami to v1.0.0-beta3
 
 #-------------------------------------------------------------------------------
 #TODO:
 # + handle [error] properly, and when slave quits during the loop
 # + generic RubyPipe class?
+# + use rython for full access to the Origami API
 # + add timeout option to kill ruby process if it takes too long
 
 
