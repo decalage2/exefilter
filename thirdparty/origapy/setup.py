@@ -4,12 +4,17 @@ import distutils.core
 
 from origapy import __version__, __author__
 
+DESCRIPTION = "A Python module to clean PDF files by disabling active content (javascript, launch, etc), using the Ruby Origami PDF parser."
+
+LONG_DESCRIPTION = open("README.txt").read()
+
 kw = {
     'name': "origapy",
     'version': __version__,
-    'description': "A Python module to clean PDF files by disabling active content (javascript, launch, etc), using the Ruby Origami PDF parser.",
+    'description': DESCRIPTION,
+    'long_description': LONG_DESCRIPTION,
     'author': __author__,
-    #'author_email': "decalage(a)laposte.net",
+    'author_email': "decalage (a) laposte.net",
     'url': "http://www.decalage.info/python/origapy",
     'license': "GPL v3",
     'py_modules': ['origapy'],

@@ -24,7 +24,12 @@ INSTALLATION:
 
 HOW TO USE THIS MODULE:
 
-See main at the end of the module, and also docstrings.
+import origapy
+pc = origapy.PDF_Cleaner()
+pc.clean('file.pdf', 'cleaned.pdf')
+
+
+See also the main code at the end of the module, and docstrings.
 
 
 
