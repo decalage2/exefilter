@@ -2,8 +2,8 @@
 
 __description__ = 'Tool to test a PDF file'
 __author__ = 'Didier Stevens, Philippe Lagadec'
-__version__ = '0.0.11'
-__date__ = '2010/05/02'
+__version__ = '0.0.11b'
+__date__ = '2010/06/15'
 
 """
 
