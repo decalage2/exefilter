@@ -83,7 +83,9 @@ __version__   = "1.04"
 # 2010-02-23 v1.04 PL: - updated plx import
 
 #------------------------------------------------------------------------------
-# A FAIRE:
+# TODO:
+# + replace global variables by threading.local variables to support
+#   multithreading?
 # - ajouter parametres pour le comportement de chemin_relatif_incorrect()
 # - chemin_relatif_incorrect(): ajout verif variable environnement Windows %xy%
 # ? chemin_relatif_incorrect(): ajout verif chemin relatif MacOS avec ':' ?

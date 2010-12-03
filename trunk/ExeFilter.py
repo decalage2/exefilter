@@ -31,7 +31,7 @@ URL du projet: U{http://www.decalage.info/exefilter}
 @license: CeCILL (open-source compatible GPL)
           cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.12
+@version: 1.14
 
 @status: beta
 """
@@ -40,8 +40,8 @@ URL du projet: U{http://www.decalage.info/exefilter}
 __docformat__ = 'epytext en'
 
 #__author__  = "Philippe Lagadec, Tanguy Vinceleux, Arnaud Kerréneur (DGA/CELAR)"
-__date__    = "2010-05-02"
-__version__ = "1.12"
+__date__    = "2010-12-03"
+__version__ = "1.14"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
@@ -112,9 +112,16 @@ __version__ = "1.12"
 # 2010-02-23 v1.10 PL: - removed plx import
 # 2010-04-20 v1.11 PL: - added new option -f to force filename extension
 # 2010-05-02 v1.12 PL: - added display_html_report to display HTML report
+# 2010-09-24 v1.13 PL: - translated log folder names to English
+#                      - no log file by default
+# 2010-12-03 v1.14 PL: - new command line option -l to enable log file
 
 #------------------------------------------------------------------------------
 # TODO:
+# + temp dir: use system default unless specified - add a function to create
+#   a temp file
+# + add option to set log file names or "auto" for automatic name
+# + add option to set log file level
 # + handle assert errors with -o option
 # - fix init_gettext() when application is compiled with py2exe
 # + finir traduction gettext
@@ -206,10 +213,10 @@ import Conteneur  # pour importer la variable Conteneur.RACINE_TEMP
 
 #=== CONSTANTES ===============================================================
 
-REP_RAPPORT    = os.path.join("log", "rapports")+os.sep # log\rapports\
-REP_LOG        = os.path.join("log", "journaux")+os.sep # log\journaux\
+REP_RAPPORT    = os.path.join("log", "reports")+os.sep # log\reports\
+REP_LOG        = os.path.join("log", "logs")+os.sep # log\logs\
 REP_TEMP       = "temp" + os.sep        # temp\
-REP_ARCHIVE    = "archivage" + os.sep   # archivage\
+REP_ARCHIVE    = "archive" + os.sep   # archive\
 TAILLE_TEMP    = 10000    # taille max répertoire temp, en Mo
 TAILLE_ARCHIVE = 10000    # taille max archive, en Mo
 
@@ -223,12 +230,18 @@ EXITCODE_ERROR   = 3    # error during analysis
 #=== VARIABLES GLOBALES =======================================================
 
 #TODO: a supprimer pour permettre plusieurs transferts simultanés
+# (or use threading.local)
 nom_rapport       = None
 nom_journal_secu  = None
 nom_journal_debug = None
 transfert_termine = False
 
-# Paramètres d'ExeFilter, avec leurs valeurs par défaut:
+# full path of the security logfile:
+path_logfile = None
+# full path of the debug logfile:
+path_debugfile = None
+
+# ExeFilter parameters, with default values:
 parametres = {}
 
 #--- REPERTOIRES ---
@@ -254,7 +267,7 @@ Parametres.Parametre("taille_archives", int, nom=_(u"Taille maximale des archive
 #--- JOURNAUX ---
 Parametres.Parametre("journal_securite", bool, nom=_(u"Ecrire un journal sécurité dans un fichier"),
     description=_(u"Le journal sécurité décrit synthétiquement les évènements concernant la sécurité des transferts."),
-    valeur_defaut = True).ajouter(parametres)
+    valeur_defaut = False).ajouter(parametres)
 Parametres.Parametre("journal_syslog", bool, nom=_(u"Envoyer un journal sécurité par syslog"),
     description=_("Le journal sécurité décrit synthétiquement les évènements "
     "concernant la sécurité des transferts. Syslog permet de centraliser ces "
@@ -263,7 +276,7 @@ Parametres.Parametre("journal_syslog", bool, nom=_(u"Envoyer un journal sécurité
 Parametres.Parametre("journal_debug", bool, nom=_("Ecrire un journal technique de débogage"),
     description=_("Le journal technique contient les évènements détaillés des "
         "transferts, pour un débogage en cas de problème."),
-    valeur_defaut = True).ajouter(parametres)
+    valeur_defaut = False).ajouter(parametres)
 Parametres.Parametre("serveur_syslog", str, nom=_("Serveur syslog (nom ou adresse IP)"),
     description=_("Nom ou adresse IP du serveur syslog qui centralise les journaux sécurité."),
     valeur_defaut = "localhost").ajouter(parametres)
@@ -348,13 +361,14 @@ def get_journal() :
     @return: le chemin du fichier journal
     @rtype: str
     """
-    global nom_journal_secu
-    if nom_journal_secu == None:
-        #TODO: renvoyer une valeur par defaut ?
-        return None
-    else:
-        rep_journaux = path(p.parametres['rep_journaux'].valeur)
-        return (rep_journaux / nom_journal_secu).abspath()
+    return path_logfile
+##    global nom_journal_secu
+##    if nom_journal_secu == None:
+##        #TODO: renvoyer une valeur par defaut ?
+##        return None
+##    else:
+##        rep_journaux = path(p.parametres['rep_journaux'].valeur)
+##        return (rep_journaux / nom_journal_secu).abspath()
 
 #------------------------------------------------------------------------------
 # GET_JOURNAL_DEBUG
@@ -367,6 +381,7 @@ def get_journal_debug() :
     @return: le chemin du fichier journal
     @rtype: str
     """
+    return path_debugfile
     global nom_journal_debug
     if nom_journal_debug == None:
         #TODO: renvoyer une valeur par defaut ?
@@ -400,7 +415,8 @@ def display_html_report():
     """
     Display HTML report in the web browser
     """
-    plx.display_html_file(os.path.abspath(get_rapport()+'.html'))
+    if get_rapport():
+        plx.display_html_file(os.path.abspath(get_rapport()+'.html'))
 
 
 #------------------------------------------------------------------------------
@@ -505,10 +521,9 @@ def init_archivage(politique, taille_src):
 # TRANSFERT
 #-------------------
 
-#def transfert(liste_source, destination, type_transfert="entree", handle=None,
-#              taille_temp = TAILLE_ARCHIVE*1000000, pol=None):
 def transfert(liste_source, destination, type_transfert="entree", handle=None,
-              pol=None, dest_is_a_file=False, force_extension=None):
+              pol=None, dest_is_a_file=False, force_extension=None,
+              logfile=None):
     """
     Lance le transfert et l'analyse des répertoires et/ou fichiers source
 
@@ -538,10 +553,13 @@ def transfert(liste_source, destination, type_transfert="entree", handle=None,
     """
 
     global nom_journal_secu
+    global path_logfile
     global nom_journal_debug
+    global path_debugfile
     global nom_rapport
     global p
 
+    # obsolete, to be removed?
     if sys.platform == 'win32':
         if handle != None :
             win32security.ImpersonateLoggedOnUser(handle)
@@ -563,10 +581,6 @@ def transfert(liste_source, destination, type_transfert="entree", handle=None,
     heure = time.strftime("%Hh%Mm%Ss", time.localtime())
     nom_commun = date + "_" + nom_machine + "_" + username + "_" + heure
 
-    # nom des fichiers log = nom de la machine + date et heure du transfert
-    nom_journal_secu = "Journal_secu_" + nom_commun + ".log"
-    nom_journal_debug = "Journal_debug_" + nom_commun + ".log"
-
 #    on transmet à transfert :
 #            soit un objet Politique déjà configuré,
 #            soit un nom de fichier de config directement,
@@ -578,6 +592,7 @@ def transfert(liste_source, destination, type_transfert="entree", handle=None,
             p = pol
         elif isinstance (pol,  [file, str, unicode, list]):
             p = Politique.Politique(pol)
+    # obsolete, to be removed?
     elif type_transfert in ("entree", "sortie"):
             # vérifier si le fichier existe
             # si le fichier existe alors on le charge
@@ -588,10 +603,42 @@ def transfert(liste_source, destination, type_transfert="entree", handle=None,
         # politique par défaut
         p = Politique.Politique()
 
+    # store policy in a global variable: to be removed for multithreading
     commun.politique = p
 
+    # nom des fichiers log = nom de la machine + date et heure du transfert
+    if logfile == 'auto':
+        print 'logfile=auto'
+        # generate log filename automatically (one per session):
+        nom_journal_secu = nom_commun + ".log"
+        # set full path in logs folder:
+        logs_folder = path(p.parametres['rep_journaux'].valeur)
+        # make sure the logs folder exists (if logging to file is enabled):
+        if (not os.path.exists(logs_folder)) and p.parametres['journal_securite'].valeur:
+            logs_folder.makedirs()
+        path_logfile = (logs_folder / nom_journal_secu).abspath()
+    elif logfile:
+        print 'logfile=%s' % logfile
+        # use provided log filename:
+        nom_journal_secu = logfile
+        # set full path directly:
+        path_logfile = path(nom_journal_secu).abspath()
+    else:
+        nom_journal_secu = None
+        path_logfile = None
+
+    # debug logfile: only handled via policy, auto name
+    nom_journal_debug = "debug_" + nom_commun + ".log"
+    # set full path in logs folder:
+    logs_folder = path(p.parametres['rep_journaux'].valeur)
+    # make sure the logs folder exists (if logging to file is enabled):
+    if (not os.path.exists(logs_folder)) and p.parametres['journal_debug'].valeur:
+        logs_folder.makedirs()
+    path_debugfile = (logs_folder / nom_journal_debug).abspath()
+
+
     # création du journal d'évènements:
-    Journal.init_journal(p, journal_secu = get_journal(), journal_debug = get_journal_debug())
+    Journal.init_journal(p, journal_secu = path_logfile, journal_debug = path_debugfile)
 
     # création des sous-répertoires temp et archivage:
     commun.sous_rep_archive = "transfert_" + nom_commun
@@ -760,6 +807,8 @@ if __name__ == '__main__':
         default=False, help=_("Batch mode (do not open HTML report after analysis)"))
     op.add_option("-f", "--force-ext", dest="force_extension", default=None,
         help='Force filename extension to control which filters are applied')
+    op.add_option("-l", "--logfile", dest="logfile", default='',
+        help='Filename of the log file, or "auto" for an automatic name in the logs folder')
 
     # on parse les options de ligne de commande:
     (options, args) = op.parse_args(sys.argv[1:])
@@ -777,6 +826,9 @@ if __name__ == '__main__':
     # on exploite les éventuelles options
     if options.debug:
         mode_debug(True)
+
+    # init console logging (after setting the debug mode if -v option):
+    Journal.init_console_logging()
 
     # On crée d'abord une politique par défaut:
     pol = Politique.Politique()
@@ -808,18 +860,28 @@ if __name__ == '__main__':
             # add the dot if missing:
             options.force_extension = '.' + options.force_extension
 
+    # check logfile option (-l):
+    if options.logfile:
+        # force logfile parameter:
+        #TODO: enable debug logfile instead if -v option?
+        pol.parametres['journal_securite'].set(True)
+
+
     # enfin on lance le transfert:
     # (les répertoires et/ou fichiers source sont dans la liste args)
     try:
         if not options.output_file:
             # destination is a directory:
-            exitcode = transfert(args, options.destination, pol=pol)
+            exitcode = transfert(args, options.destination, pol=pol,
+                logfile=options.logfile)
         else:
             # destination is a filename:
             exitcode = transfert(args, options.output_file, pol=pol,
                                  dest_is_a_file=True,
-                                 force_extension=options.force_extension)
+                                 force_extension=options.force_extension,
+                                 logfile=options.logfile)
     except:
+        raise
         Journal.exception('Error during analysis')
         exitcode = pol.parametres['exitcode_error'].valeur
 
