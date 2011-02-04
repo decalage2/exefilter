@@ -1,5 +1,8 @@
 Main changes in ExeFilter versions:
 
+v1.1.4-alpha3 2011-02-03:
+  - new GUI using wxPython (initial version)
+
 v1.1.4-alpha2 2010-12-03:
   - logging to file disabled by default
   - new command line option -l to enable logging to file
