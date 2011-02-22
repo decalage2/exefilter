@@ -7,7 +7,7 @@ Ce module contient la classe L{Filtre_HTML.Filtre_HTML} permettant de filtrer
 les fichiers de type "document HTML".
 
 Ce fichier fait partie du projet ExeFilter.
-URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
+URL du projet: U{http://www.decalage.info/exefilter}
 
 @organization: DGA/CELAR
 @author: U{Philippe Lagadec<mailto:philippe.lagadec(a)laposte.net>}
@@ -22,15 +22,15 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 @license: CeCILL (open-source compatible GPL)
           cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.03
+@version: 1.04
 
 @status: beta
 """
 #==============================================================================
 __docformat__ = 'epytext en'
 
-__date__    = "2010-02-23"
-__version__ = "1.03"
+__date__    = "2011-02-18"
+__version__ = "1.04"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
@@ -79,6 +79,7 @@ __version__ = "1.03"
 # 2008-03-24 v1.02 PL: - ajout de _() pour traduction gettext des chaines
 #                      - simplification dans nettoyer() en appelant resultat_*
 # 2010-02-23 v1.03 PL: - updated HTMLParser_PL import
+# 2011-02-18 v1.04 PL: - fixed temp file creation using new commun functions
 
 #------------------------------------------------------------------------------
 # A FAIRE:
@@ -488,8 +489,9 @@ class Filtre_HTML (Filtre.Filtre):
         # 4) 2ème passe pour nettoyer le code HTML vers un fichier temporaire
         # Création d'un fichier HTML temporaire:
         #f_temp, chem_temp = tempfile.mkstemp(suffix=".html", dir=Conteneur.RACINE_TEMP)
-        f_temp, chem_temp = tempfile.mkstemp(suffix=".html",
-            dir=commun.politique.parametres['rep_temp'].valeur)
+##        f_temp, chem_temp = tempfile.mkstemp(suffix=".html",
+##            dir=commun.politique.parametres['rep_temp'].valeur)
+        f_temp, chem_temp = newTempFile(suffix=".html")
         Journal.info2 (_(u"Fichier HTML temporaire: %s") % chem_temp)
         # f_temp est un handle de fichier (cf. os.open), il faut le
         # convertir en objet file:
@@ -501,7 +503,8 @@ class Filtre_HTML (Filtre.Filtre):
         #    os.write(f_temp, BOM[encodage_BOM])
         # Bidouille à améliorer: on ferme le fichier pour le réouvrir
         # avec l'encodage correspondant à l'original:
-        os.close(f_temp)
+        f_temp.close()
+##        os.close(f_temp)
         # ouverture en mode append pour écrire après le BOM éventuel:
         fich_dest = codecs.open(chem_temp, 'ab', encodage)
         hn = HTML_Nettoyeur(fich_dest)

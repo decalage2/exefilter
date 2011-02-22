@@ -7,7 +7,7 @@ Ce module contient la classe L{Filtre_BMP.Filtre_BMP},
 pour filtrer les fichiers images BMP.
 
 Ce fichier fait partie du projet ExeFilter.
-URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
+URL du projet: U{http://www.decalage.info/exefilter}
 
 @organization: DGA/CELAR
 @author: U{Philippe Lagadec<mailto:philippe.lagadec(a)laposte.net>}

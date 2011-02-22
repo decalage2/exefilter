@@ -7,7 +7,7 @@ Ce module contient la classe L{Filtre_RTF.Filtre_RTF},
 pour filtrer les documents RTF.
 
 Ce fichier fait partie du projet ExeFilter.
-URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
+URL du projet: U{http://www.decalage.info/exefilter}
 
 @organization: DGA/CELAR
 @author: U{Philippe Lagadec<mailto:philippe.lagadec(a)laposte.net>}
@@ -22,15 +22,15 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 @license: CeCILL (open-source compatible GPL)
           cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.04
+@version: 1.05
 
 @status: beta
 """
 #==============================================================================
 __docformat__ = 'epytext en'
 
-__date__    = "2010-02-23"
-__version__ = "1.04"
+__date__    = "2011-02-18"
+__version__ = "1.05"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
@@ -81,6 +81,7 @@ __version__ = "1.04"
 #                      - simplification dans nettoyer() en appelant resultat_*
 # 2009-11-02 v1.03 PL: - updated parameters for gettext translation
 # 2010-02-23 v1.04 PL: - updated RechercherRemplacer import
+# 2011-02-18 v1.05 PL: - fixed temp file creation using new commun functions
 
 #------------------------------------------------------------------------------
 # A FAIRE:
@@ -186,9 +187,8 @@ class Filtre_RTF (Filtre.Filtre):
         Retourne un code résultat suivant l'action effectuée."""
         if self.parametres["supprimer_OLE_Package"].valeur == True:
             # creation d'un nouveau fichier temporaire
-            f_temp, chem_temp = tempfile.mkstemp(dir=self.politique.parametres['rep_temp'].valeur)
+            f_dest, chem_temp = newTempFile()
             Journal.info2 (u"Fichier temporaire: %s" % chem_temp)
-            f_dest = os.fdopen(f_temp, 'wb')
             # on ouvre le fichier source
             f_src = open(fichier.copie_temp(), 'rb')
             Journal.info2 (u"Nettoyage RTF par remplacement de chaine")

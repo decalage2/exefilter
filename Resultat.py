@@ -7,7 +7,7 @@ Module qui contient la classe L{Resultat.Resultat},
 afin de décrire le résultat des filtres appliqués à un fichier.
 
 Ce fichier fait partie du projet ExeFilter.
-URL du projet: http://admisource.gouv.fr/projects/exefilter
+URL du projet: http://www.decalage.info/exefilter
 
 @organization: DGA/CELAR, NATO/NC3A
 @author: U{Philippe Lagadec<mailto:philippe.lagadec(a)laposte.net>}

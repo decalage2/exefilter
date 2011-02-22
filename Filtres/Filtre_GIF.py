@@ -7,7 +7,7 @@ Ce module contient la classe L{Filtre_GIF.Filtre_GIF},
 pour filtrer les fichiers images GIF.
 
 Ce fichier fait partie du projet ExeFilter.
-URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
+URL du projet: U{http://www.decalage.info/exefilter}
 
 @organization: DGA/CELAR
 @author: U{Philippe Lagadec<mailto:philippe.lagadec(a)laposte.net>}
