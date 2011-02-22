@@ -17,7 +17,7 @@ URL du projet: U{http://www.decalage.info/exefilter}
 
 @license: CeCILL (open-source compatible GPL) - cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.04
+@version: 1.05
 @status: beta
 
 @var MODE_DEBUG: Activation du mode debug
@@ -25,8 +25,8 @@ URL du projet: U{http://www.decalage.info/exefilter}
 __docformat__ = 'epytext en'
 
 #__author__    = "Philippe Lagadec, Arnaud Kerréneur (DGA/CELAR)"
-__date__      = "2010-02-23"
-__version__   = "1.04"
+__date__      = "2011-02-18"
+__version__   = "1.05"
 
 
 #------------------------------------------------------------------------------
@@ -34,6 +34,7 @@ __version__   = "1.04"
 
 # Copyright DGA/CELAR 2004-2008
 # Copyright NATO/NC3A 2008-2010 (modifications PL apres ExeFilter v1.1.0)
+#
 # Auteurs:
 # - Philippe Lagadec (PL) - philippe.lagadec(a)laposte.net
 # - Arnaud Kerréneur (AK) - arnaud.kerreneur(a)dga.defense.gouv.fr
@@ -81,6 +82,7 @@ __version__   = "1.04"
 # 2010-02-04 v1.02 PL: - disabled sous_rep_temp to avoid race conditions
 # 2010-02-07 v1.03 PL: - updated path module import
 # 2010-02-23 v1.04 PL: - updated plx import
+# 2011-02-18 v1.05 PL: - added getTempBase, newTempFile and newTempDir
 
 #------------------------------------------------------------------------------
 # TODO:
@@ -107,6 +109,9 @@ try:
 except:
     raise ImportError, "the plx module is not installed: "\
                         +"see http://www.decalage.info/python/plx/"
+
+import tempfile, os
+import thirdparty.tempfilemgr.tempfilemgr as tempfilemgr
 
 # modules du projet
 import Journal
@@ -240,6 +245,68 @@ def chemin_relatif_incorrect (chemin):
     #TODO: vérifier si codage unicode, ou autre ??
     # Sinon c'est OK, le chemin est valide:
     return False
+
+
+def getTempBase ():
+    """
+    returns the base directory for temporary files and dirs (absolute path).
+    If not defined by the policy, or defined as "auto", it will be a
+    subdirectory named "xf" in the default system temp dir.
+    Else it will be the one defined in the policy.
+    The directory is created if it does not exist.
+    """
+    try:
+        dir=politique.parametres['rep_temp'].valeur
+    except:
+        dir='auto'
+    if dir == 'auto':
+        dir = os.path.join(tempfile.gettempdir(), 'xf')
+    dir = os.path.abspath(dir)
+    Journal.debug('temp base directory: %s' % dir)
+    # create the dir if it doesn't exist:
+    if not os.path.exists(dir):
+        Journal.debug('creating dir %s' % dir)
+        os.makedirs(dir)
+    return dir
+
+
+def newTempFile (suffix="", prefix=tempfile.template, text=False):
+    """
+    creates a new temporary file using tempfilemgr.newTempFile, in the directory
+    specified in the policy.
+    returns a tuple: (file object, file name)
+    """
+    f, fname = tempfilemgr.newTempFile(suffix=suffix, prefix=prefix,
+        dir=getTempBase(), text=text)
+    Journal.debug('new temp file: %s' % fname)
+    return f, fname
+
+
+def newTempFilename (suffix="", prefix=tempfile.template, text=False):
+    """
+    creates a new temporary file using tempfilemgr.newTempFile, in the directory
+    specified in the policy. The file is closed afterwards, with a null size.
+    returns only the file name.
+    """
+    f, fname = newTempFile(suffix=suffix, prefix=prefix, text=text)
+    f.close()
+    return fname
+
+
+def newTempDir (suffix="", prefix=tempfile.template):
+    """
+    creates a new temporary directory using tempfilemgr.newTempDir
+    returns a str: absolute pathname of the new directory
+    """
+    dirname = tempfilemgr.newTempDir(suffix=suffix, prefix=prefix,
+        dir=getTempBase())
+    Journal.debug('new temp dir: %s' % dirname)
+    return dirname
+
+
+# set atexit to delete all temp files when the application terminates:
+tempfilemgr.set_atexit_deleteall()
+
 
 #------------------------------------------------------------------------------
 # TESTS
