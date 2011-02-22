@@ -1,7 +1,8 @@
 Main changes in ExeFilter versions:
 
-v1.1.4-alpha3 2011-02-03:
+v1.1.4-alpha3 2011-02-21:
   - new GUI using wxPython (initial version)
+  - improved temporary files management, now uses the system temp dir by default
 
 v1.1.4-alpha2 2010-12-03:
   - logging to file disabled by default
