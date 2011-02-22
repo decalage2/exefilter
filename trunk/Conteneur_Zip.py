@@ -7,7 +7,7 @@ Module qui contient la classe L{Conteneur_Zip.Conteneur_Zip},
 pour traiter les fichiers d'une archive Zip.
 
 Ce fichier fait partie du projet ExeFilter.
-URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
+URL du projet: U{http://www.decalage.info/exefilter}
 
 @organization: DGA/CELAR
 @author: U{Philippe Lagadec<mailto:philippe.lagadec(a)laposte.net>}
@@ -21,15 +21,15 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 @license: CeCILL (open-source compatible GPL)
           cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.05
+@version: 1.06
 
 @status: beta
 """
 #==============================================================================
 __docformat__ = 'epytext en'
 
-__date__    = "2010-02-22"
-__version__ = "1.05"
+__date__    = "2011-02-18"
+__version__ = "1.06"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
@@ -80,6 +80,7 @@ __version__ = "1.05"
 # 2008-04-20 v1.03 PL: - ajout parametre politique a Conteneur_Zip.__init__
 # 2010-02-07 v1.04 PL: - removed import path
 # 2010-02-22 v1.05 PL: - fixed import zipfile_PL
+# 2011-02-18 v1.06 PL: - fixed temp file creation using new commun functions
 
 #------------------------------------------------------------------------------
 # A FAIRE:
@@ -156,15 +157,16 @@ class Conteneur_Zip (Conteneur.Conteneur):
         self.zip = zipfile_PL.ZipFile_PL(nom_archive)
 
 
-    def creer_rep_temp(self):
-        """Pour initialiser le répertoire temporaire nécessaire à l'analyse du
-        conteneur."""
-        # rep_temp va différer si le conteneur est une archive Zip ou si c'est un rép
-        # répertoire temporaire: un nouveau sous-répertoire dans RACINE_TEMP
-        # mkdtemp permet d'avoir un répertoire sécurisé, accessible
-        # seulement à l'utilisateur
-        #self.rep_temp = path( tempfile.mkdtemp(dir=Conteneur.RACINE_TEMP) )
-        self.rep_temp_complet = path( tempfile.mkdtemp(dir=commun.politique.parametres['rep_temp'].valeur) )
+# now there is no need for a different method for creer_rep_tem here:
+##    def creer_rep_temp(self):
+##        """Pour initialiser le répertoire temporaire nécessaire à l'analyse du
+##        conteneur."""
+##        # rep_temp va différer si le conteneur est une archive Zip ou si c'est un rép
+##        # répertoire temporaire: un nouveau sous-répertoire dans RACINE_TEMP
+##        # mkdtemp permet d'avoir un répertoire sécurisé, accessible
+##        # seulement à l'utilisateur
+##        #self.rep_temp = path( tempfile.mkdtemp(dir=Conteneur.RACINE_TEMP) )
+##        self.rep_temp_complet = path( tempfile.mkdtemp(dir=commun.politique.parametres['rep_temp'].valeur) )
 
 
     def lister_fichiers (self):
@@ -266,7 +268,8 @@ class Conteneur_Zip (Conteneur.Conteneur):
             # puisqu'il faudra remplacer le fichier déjà obtenu par copie_temp.
             # Obtention d'un nom de fichier zip temporaire:
             #f_zip_temp, chem_zip_temp = tempfile.mkstemp(suffix=".zip", dir=Conteneur.RACINE_TEMP)
-            f_zip_temp, chem_zip_temp = tempfile.mkstemp(suffix=".zip", dir=commun.politique.parametres['rep_temp'].valeur)
+            #f_zip_temp, chem_zip_temp = tempfile.mkstemp(suffix=".zip", dir=commun.politique.parametres['rep_temp'].valeur)
+            f_zip_temp, chem_zip_temp = newTempFile(suffix=".zip")
             Journal.debug (u"Fichier Zip temporaire: %s" % chem_zip_temp)
             # Ouverture en écriture du fichier Zip temporaire:
             # le mode ZIP_DEFLATED est nécessaire sinon les fichiers ne
@@ -289,7 +292,7 @@ class Conteneur_Zip (Conteneur.Conteneur):
                     #zip_temp.write(str_lat1(fichier._copie_temp) , str_oem(fichier.chemin) )
             # On doit fermer le ZipFile mais aussi le fichier temporaire
             zip_temp.close()
-            os.close(f_zip_temp)
+            f_zip_temp.close()
             # on modifie la date du nouveau zip pour correspondre à
             # celle d'origine:
             date_zip = os.path.getmtime(self.fichier._copie_temp)

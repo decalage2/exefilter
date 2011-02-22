@@ -6,7 +6,7 @@ Rapport - ExeFilter
 Module pour générer des rapports aux formats HTML et XML après un transfert.
 
 Ce fichier fait partie du projet ExeFilter.
-URL du projet: http://admisource.gouv.fr/projects/exefilter
+URL du projet: http://www.decalage.info/exefilter
 
 @organization: DGA/CELAR
 @author: U{Philippe Lagadec<mailto:philippe.lagadec(a)laposte.net>}

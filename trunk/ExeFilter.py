@@ -31,7 +31,7 @@ URL du projet: U{http://www.decalage.info/exefilter}
 @license: CeCILL (open-source compatible GPL)
           cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.14
+@version: 1.15
 
 @status: beta
 """
@@ -40,8 +40,8 @@ URL du projet: U{http://www.decalage.info/exefilter}
 __docformat__ = 'epytext en'
 
 #__author__  = "Philippe Lagadec, Tanguy Vinceleux, Arnaud Kerréneur (DGA/CELAR)"
-__date__    = "2010-12-03"
-__version__ = "1.14"
+__date__    = "2011-02-18"
+__version__ = "1.15"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
@@ -115,11 +115,10 @@ __version__ = "1.14"
 # 2010-09-24 v1.13 PL: - translated log folder names to English
 #                      - no log file by default
 # 2010-12-03 v1.14 PL: - new command line option -l to enable log file
+# 2011-02-18 v1.15 PL: - now uses the system temp dir by default
 
 #------------------------------------------------------------------------------
 # TODO:
-# + temp dir: use system default unless specified - add a function to create
-#   a temp file
 # + add option to set log file names or "auto" for automatic name
 # + add option to set log file level
 # + handle assert errors with -o option
@@ -215,7 +214,7 @@ import Conteneur  # pour importer la variable Conteneur.RACINE_TEMP
 
 REP_RAPPORT    = os.path.join("log", "reports")+os.sep # log\reports\
 REP_LOG        = os.path.join("log", "logs")+os.sep # log\logs\
-REP_TEMP       = "temp" + os.sep        # temp\
+#REP_TEMP       = "temp" + os.sep        # temp\
 REP_ARCHIVE    = "archive" + os.sep   # archive\
 TAILLE_TEMP    = 10000    # taille max répertoire temp, en Mo
 TAILLE_ARCHIVE = 10000    # taille max archive, en Mo
@@ -253,7 +252,7 @@ Parametres.Parametre("rep_journaux", str, nom=_(u"Répertoire des fichiers journa
     valeur_defaut = REP_LOG).ajouter(parametres)
 Parametres.Parametre("rep_temp", str, nom=_(u"Répertoire des fichiers temporaires"),
     description=_(u"Répertoire où sont stockés tous les fichiers temporaires"),
-    valeur_defaut = REP_TEMP).ajouter(parametres)
+    valeur_defaut = 'auto').ajouter(parametres)
 Parametres.Parametre("rep_archives", str, nom=_(u"Répertoire des fichiers archivés"),
     description=_(u"Répertoire où sont archivés tous les fichiers transférés"),
     valeur_defaut = REP_ARCHIVE).ajouter(parametres)
@@ -808,7 +807,8 @@ if __name__ == '__main__':
     op.add_option("-f", "--force-ext", dest="force_extension", default=None,
         help='Force filename extension to control which filters are applied')
     op.add_option("-l", "--logfile", dest="logfile", default='',
-        help='Filename of the log file, or "auto" for an automatic name in the logs folder')
+        help='Log messages to a file with the provided filename, '
+            +'or "auto" for an automatic name in the logs folder')
 
     # on parse les options de ligne de commande:
     (options, args) = op.parse_args(sys.argv[1:])

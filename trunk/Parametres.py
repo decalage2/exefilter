@@ -10,7 +10,7 @@ Les paramètres d'un filtre doivent être regroupés dans un dictionnaire indexé
 suivant les codes des paramètres, et manipulés grâce aux fonctions de ce module.
 
 Ce fichier fait partie du projet ExeFilter.
-URL du projet: http://admisource.gouv.fr/projects/exefilter
+URL du projet: http://www.decalage.info/exefilter
 
 @organization: DGA/CELAR
 @author: U{Philippe Lagadec<mailto:philippe.lagadec(a)laposte.net>}

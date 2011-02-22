@@ -7,7 +7,7 @@ Ce module contient la classe L{Filtre_PDF.Filtre_PDF},
 pour filtrer les documents PDF.
 
 Ce fichier fait partie du projet ExeFilter.
-URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
+URL du projet: U{http://www.decalage.info/exefilter}
 
 @organization: DGA/CELAR
 @author: U{Philippe Lagadec<mailto:philippe.lagadec(a)laposte.net>}
@@ -22,15 +22,15 @@ URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
 @license: CeCILL (open-source compatible GPL)
           cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.08
+@version: 1.09
 
 @status: beta
 """
 #==============================================================================
 __docformat__ = 'epytext en'
 
-__date__    = "2010-05-02"
-__version__ = "1.08"
+__date__    = "2011-02-18"
+__version__ = "1.09"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
@@ -86,6 +86,7 @@ __version__ = "1.08"
 # 2009-10-09 v1.06 PL: - added pdfid engine to improve PDF cleaning
 # 2010-02-23 v1.07 PL: - updated RechercherRemplacer import
 # 2010-05-02 v1.08 PL: - added parameter to disable launch actions with PDFiD
+# 2011-02-18 v1.09 PL: - fixed temp file creation using new commun functions
 
 #------------------------------------------------------------------------------
 # TODO:
@@ -256,9 +257,10 @@ class Filtre_PDF (Filtre.Filtre):
         # source file: temp copy of input file on disk:
         src_path = os.path.abspath(fichier.copie_temp())
         # output file: new temp file
-        f_temp, temp_path = tempfile.mkstemp(dir=self.politique.parametres['rep_temp'].valeur)
-        # close file because we only need the file path:
-        os.close(f_temp)
+##        f_temp, temp_path = tempfile.mkstemp(dir=self.politique.parametres['rep_temp'].valeur)
+        temp_path = newTempFilename()
+##        # close file because we only need the file path:
+##        os.close(f_temp)
         Journal.info2 (u"Fichier temporaire: %s" % temp_path)
         try:
             result = self.pdfclean.clean(src_path, temp_path)
@@ -298,9 +300,7 @@ class Filtre_PDF (Filtre.Filtre):
         # source file: temp copy of input file on disk:
         src_path = os.path.abspath(fichier.copie_temp())
         # output file: new temp file
-        f_temp, temp_path = tempfile.mkstemp(dir=self.politique.parametres['rep_temp'].valeur)
-        # close file because we only need the file path:
-        os.close(f_temp)
+        temp_path = newTempFilename()
         Journal.info2 (u"Fichier temporaire: %s" % temp_path)
         # default active keywords to be cleaned:
         active_keywords = []
@@ -367,9 +367,8 @@ class Filtre_PDF (Filtre.Filtre):
                 regex=r'/FileAttachment', remplacement='/NOFileAttachmt'))
         if len(motifs)>0:
             # creation d'un nouveau fichier temporaire
-            f_temp, chem_temp = tempfile.mkstemp(dir=self.politique.parametres['rep_temp'].valeur)
+            f_dest, chem_temp = newTempFile()
             Journal.info2 (u"Fichier temporaire: %s" % chem_temp)
-            f_dest = os.fdopen(f_temp, 'wb')
             # on ouvre le fichier source
             f_src = open(fichier.copie_temp(), 'rb')
             Journal.info2 (u"Nettoyage PDF par remplacement de chaine")

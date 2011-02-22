@@ -7,7 +7,7 @@ Ce module contient la classe L{Filtre_PNG.Filtre_PNG},
 pour filtrer les fichiers images PNG.
 
 Ce fichier fait partie du projet ExeFilter.
-URL du projet: U{http://admisource.gouv.fr/projects/exefilter}
+URL du projet: U{http://www.decalage.info/exefilter}
 
 @organization: DGA/CELAR
 @author: U{Philippe Lagadec<mailto:philippe.lagadec(a)laposte.net>}
