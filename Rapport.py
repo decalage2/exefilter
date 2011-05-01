@@ -20,14 +20,14 @@ URL du projet: http://www.decalage.info/exefilter
 @license: CeCILL (open-source compatible GPL)
           cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.04
+@version: 1.05
 
 @status: beta
 """
 __docformat__ = 'epytext en'
 
-__date__    = "2010-02-09"
-__version__ = "1.04"
+__date__    = "2011-05-01"
+__version__ = "1.05"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
@@ -79,6 +79,8 @@ __version__ = "1.04"
 # 2008-03-23 v1.02 PL: - ajout _() a chaque constante chaine pour traduction
 # 2010-02-07 v1.03 PL: - removed path module import
 # 2010-02-09 v1.04 PL: - workaround when username cannot be determined
+# 2011-05-01 v1.05 PL: - fix when destination dir is None
+#                      - added initial support for scan mode
 
 #------------------------------------------------------------------------------
 # A FAIRE:
@@ -98,6 +100,7 @@ __version__ = "1.04"
 import sys, os, socket, codecs, xml.sax.saxutils, os.path, time, locale
 
 # modules du projet:
+import commun
 from commun import *
 import Resultat
 
@@ -126,10 +129,14 @@ def ajouter_resultat (resultat):
 #-------------------
 
 def echap (chaine):
-    """Pour remplacer tous les caractères ayant une signification en HTML
+    """
+    Pour remplacer tous les caractères ayant une signification en HTML
     comme '<', '>' ou '&' par un encodage correct: '&lt;', '&gt;', '&amp;', ...
     """
-    return xml.sax.saxutils.escape(chaine)
+    if chaine:
+        return xml.sax.saxutils.escape(chaine)
+    else:
+        return ''
 
 #------------------------------------------------------------------------------
 # GENERER_RAPPORT
@@ -207,8 +214,9 @@ def generer_rapport(nom_rapport, repertoire_src, repertoire_dest, version,
     f.write(_(u"généré le %(date)s sur la machine %(hostname)s par l'utilisateur %(user)s")\
         % {'date':date, 'hostname':hostname, 'user':username_withdomain})
     f.write("\n<br>")
-    f.write(_(u'Répertoire de destination : ') + echap(repertoire_dest))
-    f.write('\n<br>')
+    if repertoire_dest:
+        f.write(_(u'Répertoire de destination : ') + echap(repertoire_dest))
+        f.write('\n<br>')
     f.write(_(u'Répertoire(s) et/ou fichier(s) analysé(s) : ') + echap(repertoire_src))
     f.write(u'\n</b></center></td></tr></table><p>\n\n')
 
@@ -222,9 +230,14 @@ def generer_rapport(nom_rapport, repertoire_src, repertoire_dest, version,
     # écriture du résumé (nb fichiers analysés, nb fichiers acceptés, etc.)
     f.write('<br><b>'+_(u'RESUME :')+'</b><br>\n')
     f.write(_(u'Nombre de fichiers analysés : ') + str(nb_fichier) + '<br>\n')
-    f.write(_(u'Nombre de fichiers acceptés : ') + str(nb_accepte) + '<br>\n')
-    f.write(_(u'Nombre de fichiers nettoyés : ') + str(nb_nettoye) + '<br>\n')
-    f.write(_(u'Nombre de fichiers refusés  : ') + str(nb_refuse) + '<br>\n')
+    if commun.clean_mode:
+        f.write(_(u'Nombre de fichiers acceptés : ') + str(nb_accepte) + '<br>\n')
+        f.write(_(u'Nombre de fichiers nettoyés : ') + str(nb_nettoye) + '<br>\n')
+        f.write(_(u'Nombre de fichiers refusés  : ') + str(nb_refuse) + '<br>\n')
+    else:
+        f.write(u'Number of clean files        : ' + str(nb_accepte) + '<br>\n')
+        f.write(u'Number of files to be cleaned: ' + str(nb_nettoye) + '<br>\n')
+        f.write(u'Number of not allowed files  : ' + str(nb_refuse) + '<br>\n')
     f.write(_(u"Nombre d'erreurs            : ") + str(nb_erreur) + '<br>\n\n')
 
     # écriture du tableau contenant les fichiers analysés
@@ -233,6 +246,17 @@ def generer_rapport(nom_rapport, repertoire_src, repertoire_dest, version,
     f.write(u'<td><center><b>'+_(u'Fichier analysé')+'</b></center></td>\n')
     f.write(u'<td><center><b>'+_(u'Résultat')+'</b></center></td>\n')
     f.write(u'<td><center><b>'+_(u'Commentaire')+'</b><center></td></tr>\n\n')
+
+    if commun.clean_mode:
+        MSG_ACCEPTED = _(u'Accepté')
+        MSG_CLEANED  = _(u'Nettoyé')
+        MSG_BLOCKED  = _(u'Refusé')
+        MSG_ERROR    = _(u'Erreur')
+    else:
+        MSG_ACCEPTED = u'Clean'
+        MSG_CLEANED  = u'To be cleaned'
+        MSG_BLOCKED  = u'Not allowed'
+        MSG_ERROR    = _(u'Erreur')
 
     # on modifie la couleur de fond de la colonne résultat suivant le code_resultat
     for resultat in liste_resultats:
@@ -243,20 +267,20 @@ def generer_rapport(nom_rapport, repertoire_src, repertoire_dest, version,
         f.write(u'<tr valign=top><td>' + chemin_fichier + '</td>\n')
         if   resultat.code_resultat == Resultat.ACCEPTE:
             # couleur verte
-            f.write(u'<td BGCOLOR="#66FF00"><center>'+_(u'Accepté')+'</center></td>\n')
+            f.write(u'<td BGCOLOR="#66FF00"><center>'+MSG_ACCEPTED+'</center></td>\n')
         elif resultat.code_resultat == Resultat.NETTOYE:
             # couleur jaune
-            f.write(u'<td BGCOLOR="#FFFF00"><center>'+_(u'Nettoyé')+'</center></td>\n')
+            f.write(u'<td BGCOLOR="#FFFF00"><center>'+MSG_CLEANED+'</center></td>\n')
         elif resultat.code_resultat == Resultat.REFUSE \
         or   resultat.code_resultat == Resultat.EXT_NON_AUTORISEE \
         or   resultat.code_resultat == Resultat.FORMAT_INCORRECT \
         or   resultat.code_resultat == Resultat.VIRUS :
             # couleur rouge
-            f.write(u'<td BGCOLOR="#FF0000"><center>'+_(u'Refusé')+'</center></td>\n')
+            f.write(u'<td BGCOLOR="#FF0000"><center>'+MSG_BLOCKED+'</center></td>\n')
         elif resultat.code_resultat == Resultat.ERREUR_LECTURE \
         or   resultat.code_resultat == Resultat.ERREUR_ANALYSE:
             # couleur orange
-            f.write(u'<td BGCOLOR="#FF9900"><center>'+_(u'Erreur')+'</center></td>\n')
+            f.write(u'<td BGCOLOR="#FF9900"><center>'+MSG_ERROR+'</center></td>\n')
         f.write('<td>')
         if resultat.code_resultat == Resultat.EXT_NON_AUTORISEE:
             f.write(echap(resultat.details()) + '<br>')
@@ -282,7 +306,8 @@ def generer_rapport(nom_rapport, repertoire_src, repertoire_dest, version,
     f.write(u'        <heure>' + time.strftime("%d/%m/%Y : %H:%M", time.localtime()) + '</heure>\n')
     # nom répertoire avec accent dcm2205
     f.write(u'        <rep_src>' + echap(repertoire_src) + '</rep_src>\n')
-    f.write(u'        <rep_dest>' + echap(repertoire_dest) + '</rep_dest>\n')
+    if repertoire_dest:
+        f.write(u'        <rep_dest>' + echap(repertoire_dest) + '</rep_dest>\n')
     f.write(u'    </titre>\n')
 
     # affichage d'un message particulier s'il y a eu une interruption pendant l'analyse

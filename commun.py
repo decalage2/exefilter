@@ -17,7 +17,7 @@ URL du projet: U{http://www.decalage.info/exefilter}
 
 @license: CeCILL (open-source compatible GPL) - cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.05
+@version: 1.06
 @status: beta
 
 @var MODE_DEBUG: Activation du mode debug
@@ -25,8 +25,8 @@ URL du projet: U{http://www.decalage.info/exefilter}
 __docformat__ = 'epytext en'
 
 #__author__    = "Philippe Lagadec, Arnaud Kerréneur (DGA/CELAR)"
-__date__      = "2011-02-18"
-__version__   = "1.05"
+__date__      = "2011-04-17"
+__version__   = "1.06"
 
 
 #------------------------------------------------------------------------------
@@ -83,6 +83,7 @@ __version__   = "1.05"
 # 2010-02-07 v1.03 PL: - updated path module import
 # 2010-02-23 v1.04 PL: - updated plx import
 # 2011-02-18 v1.05 PL: - added getTempBase, newTempFile and newTempDir
+# 2011-04-17 v1.06 PL: - added global for clean mode
 
 #------------------------------------------------------------------------------
 # TODO:
@@ -127,6 +128,7 @@ transfert_commence  = False
 ##sous_rep_temp       = None
 sous_rep_archive    = None
 politique           = None
+clean_mode          = True  # indicates if scan-only or clean mode
 
 
 #=== FONCTIONS ================================================================
@@ -136,14 +138,14 @@ get_username      = plx.get_username
 display_html_file = plx.display_html_file
 main_is_frozen    = plx.main_is_frozen
 get_main_dir      = plx.get_main_dir
-print_console = plx.print_console
-print_oem     = plx.print_console
-str_console   = plx.str_console
-str_oem       = plx.str_console
-str_lat1      = plx.str_lat1
-unistr        = plx.unistr
-Popen_timer   = plx.Popen_timer
-EXIT_KILL_PTIMER = plx.EXIT_KILL_PTIMER
+print_console     = plx.print_console
+print_oem         = plx.print_console
+str_console       = plx.str_console
+str_oem           = plx.str_console
+str_lat1          = plx.str_lat1
+unistr            = plx.unistr
+Popen_timer       = plx.Popen_timer
+EXIT_KILL_PTIMER  = plx.EXIT_KILL_PTIMER
 
 
 #------------------------------------------------------------------------------

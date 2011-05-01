@@ -19,15 +19,15 @@ URL du projet: U{http://www.decalage.info/exefilter}
 @copyright: NATO/NC3A 2008-2010 (PL changes after ExeFilter v1.1.0)
 @license: CeCILL (open-source compatible GPL) - cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.06
+@version: 1.07
 
 @status: beta
 """
 #==============================================================================
 __docformat__ = 'epytext en'
 
-__date__    = "2011-02-18"
-__version__ = "1.06"
+__date__    = "2011-04-17"
+__version__ = "1.07"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
@@ -80,9 +80,16 @@ __version__ = "1.06"
 # 2010-02-04 v1.04 PL: - fixed temp dir creation to avoid race conditions
 # 2010-02-07 v1.05 PL: - removed path module import
 # 2011-02-18 v1.06 PL: - fixed temp dir creation using new commun functions
+# 2011-04-17 v1.07 PL: - added method to delete temp dir
+#                      - added scan/clean mode to nettoyer()
 
 #------------------------------------------------------------------------------
-# A FAIRE:
+# TODO:
+# - in fact the scan/clean mode should be handled in a session object, to avoid
+#   passing a parameter to several methods. For now the scan mode can only be
+#   seen by the first container (else it should go through Fichier and each
+#   Filtre subclass).
+
 #------------------------------------------------------------------------------
 
 #=== IMPORTS ==================================================================
@@ -136,7 +143,8 @@ class Conteneur:
         (chemin relatif par rapport au conteneur)
         @type nom_source : str
 
-        @param nom_destination: nom de fichier/répertoire du conteneur nettoyé.
+        @param nom_destination: nom de fichier/répertoire du conteneur nettoyé,
+                                or None/'' for scan-only mode.
         @type nom_destination : str
 
         @param fichier: objet Fichier du conteneur, ou bien None si c'est le
@@ -146,7 +154,7 @@ class Conteneur:
         @type  fichier: objet L{Politique.Politique} ou  None
         """
         self.nom_src   = nom_source
-        self.nom_dest  = nom_destination
+        self.nom_dest  = nom_destination  # may be None/'' for scan-only mode
         self.chem_src  = path(nom_source)
         self.chem_dest = path(nom_destination)
         self.fichier = fichier
@@ -262,6 +270,16 @@ class Conteneur:
         raise NotImplementedError
 
 
+    def delete_tempdir (self):
+        """
+        Delete the temporary directory used to analyze the container.
+        To be called after scanning/cleaning is finished.
+        """
+        if self.rep_temp_complet.exists():
+            debug ("Deleting container's temp dir %s" % self.rep_temp_complet)
+            self.rep_temp_complet.rmtree()
+
+
     def nettoyer(self, politique):
         """
         Nettoie le Conteneur et tous les fichiers qu'il contient.
@@ -298,8 +316,17 @@ class Conteneur:
         # on efface les éventuels répertoires vides de conteneur
         if self.rep_relatif_source!= "":
             effacer_rep_vide(self.rep_temp_complet)
-        # on reconstruit le conteneur à partir des fichiers temporaires nettoyés
-        self.reconstruire()
+        # in clean mode, rebuild the container and copy it to destination:
+        Journal.debug('clean_mode=%s' % commun.clean_mode)
+        if commun.clean_mode:
+            # on reconstruit le conteneur à partir des fichiers temporaires nettoyés
+            Journal.debug('Rebuilding the container and copying to destination')
+            self.reconstruire()
+        else:
+            # scan only mode, no rebuilding/copying
+            Journal.debug('Scan only mode, no need to rebuild the container.')
+        # then delete the temp dir used to scan/clean the container:
+        self.delete_tempdir()
         return liste_resultats
 
 

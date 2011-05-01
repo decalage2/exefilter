@@ -21,15 +21,15 @@ URL du projet: U{http://www.decalage.info/exefilter}
 @license: CeCILL (open-source compatible GPL)
           cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.06
+@version: 1.07
 
 @status: beta
 """
 #==============================================================================
 __docformat__ = 'epytext en'
 
-__date__    = "2011-02-18"
-__version__ = "1.06"
+__date__    = "2011-04-17"
+__version__ = "1.07"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
@@ -81,6 +81,7 @@ __version__ = "1.06"
 # 2010-02-07 v1.04 PL: - removed import path
 # 2010-02-22 v1.05 PL: - fixed import zipfile_PL
 # 2011-02-18 v1.06 PL: - fixed temp file creation using new commun functions
+# 2011-04-17 v1.07 PL: - code to delete temp dir moved to Conteneur
 
 #------------------------------------------------------------------------------
 # A FAIRE:
@@ -308,9 +309,9 @@ class Conteneur_Zip (Conteneur.Conteneur):
         else:
             Journal.info2(_(u"Aucun fichier accepté dans le Zip: suppression."))
             self.fichier._copie_temp.remove()
-        # pour finir on détruit le répertoire temporaire:
-        if self.rep_temp_complet.exists():
-            self.rep_temp_complet.rmtree()
+##        # pour finir on détruit le répertoire temporaire:
+##        if self.rep_temp_complet.exists():
+##            self.rep_temp_complet.rmtree()
 
 
     def est_chiffre(self, fichier):

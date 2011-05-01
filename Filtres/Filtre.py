@@ -16,26 +16,26 @@ URL du projet: U{http://www.decalage.info/exefilter}
 @contact: U{Philippe Lagadec<mailto:philippe.lagadec(a)laposte.net>}
 
 @copyright: DGA/CELAR 2004-2008
-@copyright: NATO/NC3A 2008 (modifications PL apres v1.1.0)
+@copyright: NATO/NC3A 2008-2010 (modifications PL apres v1.1.0)
 
 @license: CeCILL (open-source compatible GPL)
           cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.02
+@version: 1.03
 
 @status: beta
 """
 #==============================================================================
 __docformat__ = 'epytext en'
 
-__date__    = "2008-03-24"
-__version__ = "1.02"
+__date__    = "2011-04-17"
+__version__ = "1.03"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
 
 # Copyright DGA/CELAR 2004-2008
-# Copyright NATO/NC3A 2008 (PL changes after v1.1.0)
+# Copyright NATO/NC3A 2008-2010 (PL changes after v1.1.0)
 # Auteurs:
 # - Philippe Lagadec (PL) - philippe.lagadec(a)laposte.net
 # - Arnaud Kerréneur (AK) - arnaud.kerreneur(a)dga.defense.gouv.fr
@@ -77,6 +77,7 @@ __version__ = "1.02"
 # 2007-09-10 v1.01 PL: - ajout licence CeCILL
 # 2008-03-24 v1.02 PL: - ajout de _() pour traduction gettext des chaines
 #                      - ajout methodes resultat_*() pour simplifier filtres
+# 2011-04-17 v1.03 PL: - added support for scan mode
 
 # A FAIRE:
 # - Completer fonctions resultat_*() pour retourner des objets Resultat
@@ -88,6 +89,7 @@ __version__ = "1.02"
 #=== IMPORTS ==================================================================
 
 # modules du projet:
+import commun
 from commun import *
 import Parametres
 import Resultat
@@ -183,8 +185,12 @@ class Filtre:
 
         @param: objet Fichier correspondant
         """
+        if commun.clean_mode:
+            msg = _(u" : Pas de contenu actif détecté")
+        else:
+            msg = u' : Allowed format, no active content detected'
         return Resultat.Resultat(Resultat.ACCEPTE,
-            self.nom + _(u" : Pas de contenu actif détecté"), fichier)
+            self.nom + msg, fichier)
 
 
     def resultat_nettoye (self, fichier):
@@ -193,8 +199,12 @@ class Filtre:
 
         @param: objet Fichier correspondant
         """
+        if commun.clean_mode:
+            msg = _(u" : Contenu actif détecté et nettoyé")
+        else:
+            msg = u' : Contains active content that can be cleaned'
         return Resultat.Resultat(Resultat.NETTOYE,
-            self.nom + _(u" : Contenu actif détecté et nettoyé"), fichier)
+            self.nom + msg, fichier)
 
 
     def resultat_format_incorrect (self, fichier, erreur=None):
@@ -205,7 +215,11 @@ class Filtre:
         @param: objet Fichier correspondant
         @param erreur: message d'erreur optionnel pour donner plus de details
         """
-        msg = self.nom + _(u" : Format de fichier incorrect ou non supporté, ne peut être analysé.")
+        if commun.clean_mode:
+            msg = _(u" : Format de fichier incorrect ou non supporté, ne peut être analysé.")
+        else:
+            msg = u' : File format not allowed or not matching extension'
+        msg = self.nom + msg
         if erreur: msg += u"(%s)" % erreur
         Journal.info2(msg)
         return Resultat.Resultat(Resultat.FORMAT_INCORRECT, msg, fichier)
@@ -251,7 +265,10 @@ class Filtre:
         """
         msg = self.nom + " : "
         if raison: msg += raison + ", "
-        msg += _(u"Nettoyage impossible.")
+        if commun.clean_mode:
+            msg += _(u"Nettoyage impossible.")
+        else:
+            msg += u'Contains active content that cannot be cleaned'
         if erreur: msg += u"(%s)" % erreur
         Journal.info2(msg)
         return Resultat.Resultat(Resultat.REFUSE, msg, fichier)
