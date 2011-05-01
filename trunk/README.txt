@@ -19,13 +19,40 @@ License: CeCILL (open-source GPL compatible), see source code for details.
 For more information, see ExeFilter_documentation_EN.pdf.
 
 -------------------------------------------------------------------------------
-SAMPLE USAGE:
+REQUIREMENTS:
+
+- Python 2.5 or 2.6 (v3 is not supported yet)
+- Pywin32 extensions on Windows
+- wxPython for the GUI
+- Ruby if you want to use the Origami engine for PDF analysis
+
+-------------------------------------------------------------------------------
+SAMPLE GUI USAGE:
+
+1) Open ExeFilter_GUI.py 
+2) select source file or directory
+3) click on the Scan button.
+4) or select select destination file or directory, then click the Clean button.
+
+
+-------------------------------------------------------------------------------
+SAMPLE COMMAND-LINE USAGE:
+
+1) How to SCAN a file or directory: 
+
+On Windows:
+ExeFilter.py <source file or dir>
+
+On Unix/Linux/MacOSX:
+python ExeFilter.py <source file or dir>
+
+
+2) How to CLEAN a file or directory: 
 
 On Windows:
 ExeFilter.py <source file or dir> -d <destination dir>
 or
 ExeFilter.py <source file> -o <destination file>
-
 
 On Unix/Linux/MacOSX:
 python ExeFilter.py <source file or dir> -d <destination dir>
