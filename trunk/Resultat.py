@@ -21,15 +21,15 @@ URL du projet: http://www.decalage.info/exefilter
 @license: CeCILL (open-source compatible GPL)
           cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.02
+@version: 1.03
 
 @status: beta
 """
 #==============================================================================
 __docformat__ = 'epytext en'
 
-__date__    = "2008-03-24"
-__version__ = "1.02"
+__date__    = "2011-04-17"
+__version__ = "1.03"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
@@ -76,6 +76,7 @@ __version__ = "1.02"
 # 12/01/2007 v1.00 PL: - version 1.00 officielle
 # 2007-09-18 v1.01 PL: - ajout licence CeCILL
 # 2008-03-24 v1.02 PL: - ajout de _() pour traduction gettext des chaines
+# 2011-04-17 v1.03 PL: - added detailed result strings for scan-only mode
 
 # A FAIRE:
 #------------------------------------------------------------------------------
@@ -85,6 +86,7 @@ __version__ = "1.02"
 import sys, copy
 
 # modules du projet:
+import commun
 from commun import *
 import Fichier
 
@@ -112,6 +114,17 @@ resultat_detaille = {
     ERREUR_ANALYSE :    _(u"Erreur lors de l'analyse"),
     REFUSE :            _(u"Fichier refusé (analyse ou nettoyage impossible)"),
     VIRUS :             _(u"Fichier infecté par un virus")
+    }
+# Detailed result strings for scan-only mode
+resultat_detaille_scan = {
+    EXT_NON_AUTORISEE : 'File extension not allowed',
+    FORMAT_INCORRECT :  'File format not allowed or not matching extension',
+    ACCEPTE :           'Allowed and clean',
+    NETTOYE :           'Contains active content that can be cleaned',
+    ERREUR_LECTURE :    'Read error',
+    ERREUR_ANALYSE :    'Analysis error',
+    REFUSE :            'Cannot be analyzed or cleaned',
+    VIRUS :             'Infected by a virus'
     }
 
 # indique pour chaque code résultat s'il s'agit d'un refus du fichier:
@@ -234,7 +247,10 @@ class Resultat:
 
     def details (self):
         "Retourne une chaîne détaillant le code résultat."
-        return resultat_detaille[ self.code_resultat ]
+        if commun.clean_mode:
+            return resultat_detaille[ self.code_resultat ]
+        else:
+            return resultat_detaille_scan[ self.code_resultat ]
 
     def est_refuse (self):
         "Retourne True si le résultat correspond à un refus."

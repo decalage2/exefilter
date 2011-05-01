@@ -21,15 +21,15 @@ URL du projet: U{http://www.decalage.info/exefilter}
 @license: CeCILL (open-source compatible GPL)
           cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.07
+@version: 1.08
 
 @status: beta
 """
 #==============================================================================
 __docformat__ = 'epytext en'
 
-__date__    = "2010-04-20"
-__version__ = "1.07"
+__date__    = "2011-04-17"
+__version__ = "1.08"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
@@ -82,6 +82,7 @@ __version__ = "1.07"
 # 2010-02-04 v1.05 PL: - fixed temp dir deletion
 # 2010-02-07 v1.06 PL: - removed path module import
 # 2010-04-20 v1.07 PL: - added force_extension attrib to Conteneur_Fichier
+# 2011-04-17 v1.08 PL: - code to delete temp dir moved to Conteneur
 
 #------------------------------------------------------------------------------
 # A FAIRE:
@@ -130,7 +131,7 @@ class Conteneur_Fichier (Conteneur_Repertoire.Conteneur_Repertoire):
         @param dest_is_a_file: False if repertoire_destination is a dir (default),
                                True if it's a filename.
         @type dest_is_a_file: bool
-        
+
         @param force_extension: if set, force filename extension to a specific value
                                 (used to control which filters are applied)
                                 Note: force_extension may be "" or must start with a dot
@@ -163,7 +164,7 @@ class Conteneur_Fichier (Conteneur_Repertoire.Conteneur_Repertoire):
         # pour le chemin du fichier on ne garde que le
         # chemin relatif par rapport au répertoire
         if len(self.liste_fichiers) == 0:
-            f = Fichier.Fichier(self.nom_fichier, conteneur=self, 
+            f = Fichier.Fichier(self.nom_fichier, conteneur=self,
                                 force_extension=self.force_extension)
             self.liste_fichiers.append(f)
         return self.liste_fichiers
@@ -207,7 +208,7 @@ class Conteneur_Fichier (Conteneur_Repertoire.Conteneur_Repertoire):
 ##                    debug(_(u'Copie: "%s" -> "%s"...') % (fichier._copie_temp, fichier_dest))
 ##                    fichier._copie_temp.copy2(fichier_dest)
 
-            # puis détruire le répertoire temporaire !
-            debug ("Effacement du repertoire temporaire %s" % self.rep_temp_complet)
-            self.rep_temp_complet.rmtree()
+##            # puis détruire le répertoire temporaire !
+##            debug ("Effacement du repertoire temporaire %s" % self.rep_temp_complet)
+##            self.rep_temp_complet.rmtree()
 

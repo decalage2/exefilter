@@ -31,7 +31,7 @@ URL du projet: U{http://www.decalage.info/exefilter}
 @license: CeCILL (open-source compatible GPL)
           cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.15
+@version: 1.17
 
 @status: beta
 """
@@ -40,8 +40,8 @@ URL du projet: U{http://www.decalage.info/exefilter}
 __docformat__ = 'epytext en'
 
 #__author__  = "Philippe Lagadec, Tanguy Vinceleux, Arnaud Kerréneur (DGA/CELAR)"
-__date__    = "2011-02-18"
-__version__ = "1.15"
+__date__    = "2011-04-30"
+__version__ = "1.17"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
@@ -116,6 +116,8 @@ __version__ = "1.15"
 #                      - no log file by default
 # 2010-12-03 v1.14 PL: - new command line option -l to enable log file
 # 2011-02-18 v1.15 PL: - now uses the system temp dir by default
+# 2011-04-17 v1.16 PL: - scan-only mode when no destination is specified
+# 2011-04-30 v1.17 PL: - new functions to scan and clean files or dirs
 
 #------------------------------------------------------------------------------
 # TODO:
@@ -529,7 +531,7 @@ def transfert(liste_source, destination, type_transfert="entree", handle=None,
     @param liste_source: la liste des sources à transférer
     @type  liste_source: list
 
-    @param destination: le répertoire destination
+    @param destination: destination directory, or None/'' for scan-only mode
     @type  destination: str
 
     @param type_transfert: le type de transfert pour charger la politique de filtre
@@ -664,6 +666,16 @@ def transfert(liste_source, destination, type_transfert="entree", handle=None,
         assert(len(liste_source)==1)
         assert(os.path.isfile(liste_source[0]))
 
+    # if destination is empty (None or ''), set mode to scan-only instead of clean:
+    if destination:
+        commun.clean_mode = True
+        Journal.debug('Analysis mode: clean')
+    else:
+        commun.clean_mode = False
+        Journal.debug('Analysis mode: scan only')
+    Journal.debug('clean_mode=%s' % commun.clean_mode)
+
+
     # boucle pour lire chaque répertoire et/ou fichier contenu dans    la liste
     for source in liste_source :
         # on vérifie le type de source: répertoire ou fichier ?
@@ -764,6 +776,62 @@ def transfert(liste_source, destination, type_transfert="entree", handle=None,
     #return
 
 
+def clean_dir(source_dir, dest_dir, policy=None, logfile=None):
+    """
+    Clean all files of a directory (source_dir) according to the specified
+    policy, store the result in dest_dir.
+    Optionally write log to logfile.
+    Return an exit code according to the overall result (see doc).
+    """
+    exitcode = transfert([source_dir], dest_dir, pol=policy, logfile=logfile)
+    return exitcode
+
+
+def scan_dir(source_dir, policy=None, logfile=None):
+    """
+    Scan all files of a directory (source_dir) according to the specified
+    policy.
+    Optionally write log to logfile.
+    Return an exit code according to the overall result (see doc).
+    """
+    exitcode = transfert([source_dir], None, pol=policy, logfile=logfile)
+    return exitcode
+
+
+def clean_file(source_file, dest_file, policy=None, logfile=None):
+    """
+    Clean a single file (source_file) according to the specified policy,
+    store the result in dest_file.
+    Optionally write log to logfile.
+    Return an exit code according to the overall result (see doc).
+    """
+    exitcode = transfert([source_file], dest_file, pol=policy, logfile=logfile,
+        dest_is_a_file=True)
+    return exitcode
+
+
+def clean_file_to_dir(source_file, dest_dir, policy=None, logfile=None):
+    """
+    Clean a single file (source_file) according to the specified policy,
+    store the result in a file with the same name in a destination directory
+    (dest_dir).
+    Optionally write log to logfile.
+    Return an exit code according to the overall result (see doc).
+    """
+    exitcode = transfert([source_file], dest_dir, pol=policy, logfile=logfile)
+    return exitcode
+
+
+def scan_file(source_file, policy=None, logfile=None):
+    """
+    Scan a single file (source_file) according to the specified policy.
+    Optionally write log to logfile.
+    Return an exit code according to the overall result (see doc).
+    """
+    exitcode = transfert([source_file], None, pol=policy, logfile=logfile)
+    return exitcode
+
+
 
 #==============================================================================
 # PROGRAMME PRINCIPAL
@@ -793,9 +861,9 @@ if __name__ == '__main__':
     op.add_option("-p", "--policy", dest="politique", default="",
         help=_("Fichier de configuration pour la politique de filtrage"))
     op.add_option("-d", "--dest", dest="destination", default="",
-        help=_("Repertoire destination pour les fichiers nettoyes (obligatoire)"))
+        help='Output directory for cleaned files (or scan-only mode if omitted)')
     op.add_option("-o", "--output", dest="output_file", default="",
-        help=_("Output file (may only be used when source is a single file, instead of -d)."))
+        help="Output file (may only be used when source is a single file, instead of -d).")
     op.add_option("-v", "--verbose", action="store_true", dest="debug",
         default=False, help=_("Mode Debug (pour le developpement)"))
     op.add_option("-n", "--new", dest="nouv_politique", default='',
@@ -815,12 +883,13 @@ if __name__ == '__main__':
 
     # si aucun fichier/répertoire à nettoyer, et si la destination n'est pas
     # spécifiée, on force l'affichage de l'aide:
-    if (len(args)==0 or (options.destination == "" and options.output_file==""))\
+    if (len(args)==0 or (options.destination!="" and options.output_file!=""))\
         and options.export_html==''\
         and options.nouv_politique=='':
         op.print_help()
         print ""
-        print _("Il faut indiquer les fichiers/repertoires a nettoyer, ainsi qu'une destination.")
+        print 'Please specify files to be analyzed, and an optional destination.'
+##        print _("Il faut indiquer les fichiers/repertoires a nettoyer, ainsi qu'une destination.")
         sys.exit(parametres['exitcode_error'].valeur)
 
     # on exploite les éventuelles options
@@ -871,7 +940,7 @@ if __name__ == '__main__':
     # (les répertoires et/ou fichiers source sont dans la liste args)
     try:
         if not options.output_file:
-            # destination is a directory:
+            # destination is a directory or none (scan-only mode):
             exitcode = transfert(args, options.destination, pol=pol,
                 logfile=options.logfile)
         else:

@@ -21,15 +21,15 @@ URL du projet: U{http://www.decalage.info/exefilter}
 @license: CeCILL (open-source compatible GPL)
           cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.05
+@version: 1.06
 
 @status: beta
 """
 #==============================================================================
 __docformat__ = 'epytext en'
 
-__date__    = "2010-02-07"
-__version__ = "1.05"
+__date__    = "2011-04-17"
+__version__ = "1.06"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
@@ -81,6 +81,7 @@ __version__ = "1.05"
 #                      - archivage en fonction du parametre 'archive_after'
 # 2010-02-04 v1.04 PL: - fixed temp dir deletion
 # 2010-02-07 v1.05 PL: - removed path import
+# 2011-04-17 v1.06 PL: - code to delete temp dir moved to Conteneur
 
 
 #------------------------------------------------------------------------------
@@ -228,6 +229,6 @@ class Conteneur_Repertoire (Conteneur.Conteneur):
                     debug(_(u'Copie: "%s" -> "%s"...') % (fichier._copie_temp, fichier_dest))
                     fichier._copie_temp.copy2(fichier_dest)
 
-        # puis détruire le répertoire temporaire !
-        debug ("Effacement du repertoire temporaire %s" % self.rep_temp_complet)
-        self.rep_temp_complet.rmtree()
+##        # puis détruire le répertoire temporaire !
+##        debug ("Effacement du repertoire temporaire %s" % self.rep_temp_complet)
+##        self.rep_temp_complet.rmtree()
