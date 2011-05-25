@@ -26,6 +26,8 @@ REQUIREMENTS:
 - wxPython for the GUI
 - Ruby if you want to use the Origami engine for PDF analysis
 
+(unless you use the Portable ExeFilter version: see README_portable.txt)
+
 -------------------------------------------------------------------------------
 SAMPLE GUI USAGE:
 

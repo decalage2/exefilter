@@ -1,23 +1,31 @@
 """
 Setup script for ExeFilter
 """
+# CHANGELOG:
+# 2010-05-25: - added short/long descriptions
 
 import distutils.core
 import __init__ as thispackage
 
-DESCRIPTION = """ExeFilter is an open-source tool and framework to filter file formats in e-mails, web pages or files.
-It detects many common file formats and can remove active content (scripts, macros, etc) according to a configurable policy.
+DESCRIPTION = 'A tool and python framework to analyze files and sanitize active content such as javascript and macros'
+
+LONG_DESCRIPTION = """ExeFilter is an open-source tool and python framework to filter file formats in e-mails, web pages or files.
+It detects many common file formats and can remove active content (javascript, macros, etc) according to a configurable policy.
 See http://www.decalage.info/exefilter for more information.
 """
 
 kw = {
-    'name': "ExeFilter",
+    'name': "exefilter",
     'version': thispackage.__version__,
     'description': DESCRIPTION,
+    'long_description': LONG_DESCRIPTION,
     'author': thispackage.__author__,
     'author_email': "decalage (a) laposte.net",
+    'maintainer': 'Philippe Lagadec',
+    'maintainer_email': "decalage (a) laposte.net",
     'url': "http://www.decalage.info/exefilter",
     'license': "CeCILL (open-source GPL compatible)",
+    'platforms': ['any'],
     #'py_modules': ['ExeFilter', '__init__'],
     'packages': ['', 'Filtres', 'thirdparty', 'thirdparty.origapy', 'thirdparty.pdfid'],
     }
