@@ -1,7 +1,11 @@
 #!/usr/bin/python
 # -*- coding: iso-8859-1 -*-
 """
-ExeFilter - programme principal
+ExeFilter - main module / programme principal
+
+ExeFilter is an open-source tool and framework to filter file formats in
+e-mails, web pages or files. It detects many common file formats and can remove
+active content (scripts, macros, etc) according to a configurable policy.
 
 ExeFilter permet de filtrer des fichiers, courriels ou pages web, afin de
 supprimer tout code exécutable et tout contenu potentiellement dangereux en
@@ -26,12 +30,12 @@ URL du projet: U{http://www.decalage.info/exefilter}
 @contact: U{Philippe Lagadec<mailto:philippe.lagadec(a)laposte.net>}
 
 @copyright: DGA/CELAR 2004-2008
-@copyright: NATO/NC3A 2008-2010 (modifications PL apres ExeFilter v1.1.0)
+@copyright: NATO/NC3A 2008-2011 (modifications PL apres ExeFilter v1.1.0)
 
 @license: CeCILL (open-source compatible GPL)
           cf. code source ou fichier LICENCE.txt joint
 
-@version: 1.17
+@version: 1.18
 
 @status: beta
 """
@@ -40,8 +44,8 @@ URL du projet: U{http://www.decalage.info/exefilter}
 __docformat__ = 'epytext en'
 
 #__author__  = "Philippe Lagadec, Tanguy Vinceleux, Arnaud Kerréneur (DGA/CELAR)"
-__date__    = "2011-04-30"
-__version__ = "1.17"
+__date__    = "2011-08-25"
+__version__ = "1.18"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
@@ -118,6 +122,7 @@ __version__ = "1.17"
 # 2011-02-18 v1.15 PL: - now uses the system temp dir by default
 # 2011-04-17 v1.16 PL: - scan-only mode when no destination is specified
 # 2011-04-30 v1.17 PL: - new functions to scan and clean files or dirs
+# 2011-08-25 v1.18 PL: - added initial support for multithreading
 
 #------------------------------------------------------------------------------
 # TODO:
@@ -182,6 +187,7 @@ init_gettext()
 
 # modules standards Python:
 import os, sys, time, socket, optparse, tempfile, os.path
+import threading
 
 # hack to change default encoding to Latin-1 instead of ASCII:
 reload(sys)
@@ -522,10 +528,16 @@ def init_archivage(politique, taille_src):
 # TRANSFERT
 #-------------------
 
+# lock for multithreading
+lock_transfert = threading.Lock()
+
 def transfert(liste_source, destination, type_transfert="entree", handle=None,
               pol=None, dest_is_a_file=False, force_extension=None,
               logfile=None):
     """
+    Main function to scan or clean files and directories.
+    (thread safe: uses a lock to make sure only one thread runs it)
+
     Lance le transfert et l'analyse des répertoires et/ou fichiers source
 
     @param liste_source: la liste des sources à transférer
@@ -552,7 +564,22 @@ def transfert(liste_source, destination, type_transfert="entree", handle=None,
                             Note: force_extension may be "" or must start with a dot
     @type  force_extension: str, unicode
     """
+    # run the function with a lock to make sure only one thread can run it at a
+    # time:
+    with lock_transfert:
+        exitcode = _transfert_not_threadsafe(liste_source, destination,
+            type_transfert, handle, pol, dest_is_a_file, force_extension,
+            logfile)
+    return exitcode
 
+
+def _transfert_not_threadsafe(liste_source, destination, type_transfert="entree", handle=None,
+              pol=None, dest_is_a_file=False, force_extension=None,
+              logfile=None):
+    """
+    Main function to scan or clean files and directories.
+    Not thread safe: should not be called directly, use transfert() instead.
+    """
     global nom_journal_secu
     global path_logfile
     global nom_journal_debug
