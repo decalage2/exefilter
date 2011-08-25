@@ -123,9 +123,12 @@ __version__ = "1.18"
 # 2011-04-17 v1.16 PL: - scan-only mode when no destination is specified
 # 2011-04-30 v1.17 PL: - new functions to scan and clean files or dirs
 # 2011-08-25 v1.18 PL: - added initial support for multithreading
+#                      - added scan_string and clean_string functions
 
 #------------------------------------------------------------------------------
 # TODO:
+# + improve scan_string and clean_string (see TODOs)
+# + improve logfile support in scan/clean functions
 # + add option to set log file names or "auto" for automatic name
 # + add option to set log file level
 # + handle assert errors with -o option
@@ -810,6 +813,7 @@ def clean_dir(source_dir, dest_dir, policy=None, logfile=None):
     Optionally write log to logfile.
     Return an exit code according to the overall result (see doc).
     """
+    # TODO: force logfile option in policy if logfile is set
     exitcode = transfert([source_dir], dest_dir, pol=policy, logfile=logfile)
     return exitcode
 
@@ -857,6 +861,131 @@ def scan_file(source_file, policy=None, logfile=None):
     """
     exitcode = transfert([source_file], None, pol=policy, logfile=logfile)
     return exitcode
+
+# mapping from content-types to extensions corresponding to ExeFilter filters:
+# (sources http://en.wikipedia.org/wiki/Internet_media_type,
+#  http://www.iana.org/assignments/media-types/index.html
+#  and http://www.w3schools.com/media/media_mimeref.asp)
+# Note: we could have used mimetypes.guess_extension, but it does not work very
+# well, for example for 'text/plain' it returns '.ksh'...
+CT_to_ext = {
+	'application/msword':       '.doc',
+	'application/pdf':          '.pdf',
+    'application/rtf':          '.rtf',
+	'application/soap+xml':     '.xml',
+	'application/vnd.ms-excel': '.xls',
+	'application/vnd.ms-powerpoint': '.ppt',
+    #TODO: add also the macro enabled versions from IANA, just in case
+	'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': '.xlsx',
+	'application/vnd.openxmlformats-officedocument.presentationml.presentation':   '.pptx',
+	'application/vnd.openxmlformats-officedocument.wordprocessingml.document':   '.docx',
+	'application/xhtml+xml':    '.html',
+	'application/xml':          '.xml',
+    'application/zip':          '.zip',
+    'audio/mpeg':               '.mp3',
+    'audio/vnd.wave':           '.wav',
+    'image/gif':                '.gif',
+    'image/jpeg':               '.jpg',
+    'image/png':                '.png',
+    'image/x-ms-bmp':           '.bmp',
+	'message/rfc822':           '.eml',
+	'text/html':                '.html',
+	'text/plain':               '.txt',
+	'text/xml':                 '.xml',
+	'video/x-msvideo':          '.avi',
+    }
+
+
+def scan_string(data, filename=None, content_type=None, policy=None, logfile=None):
+    """
+    Scan a string according to the specified policy. The filename and/or the
+    content-type may be provided (at least one of them is required).
+    It will be used to select the right filter(s).
+
+    If only the content-type is provided, a default file extension will be used.
+    If both filename and content-type are given, content-type is ignored.
+    The string will be written to a temporary file for analysis.
+    NOTE: this is a quick and dirty solution which will be improved in future
+          versions
+
+    Optionally write log to logfile.
+    Return an exit code according to the overall result (see doc).
+    """
+    if filename is not None:
+        # only keep the filename, in case it contains a path with directories:
+        # (to avoid directory traversal and other issues)
+        fname = os.path.basename(filename)
+        #ext = os.path.splitext(filename)[1]
+    elif content_type is not None:
+        if content_type not in CT_to_ext:
+            #TODO: here we should return a "blocked" result rather than an exception
+            raise ValueError, 'Content-type not allowed: "%s"' % content_type
+        ext = CT_to_ext[content_type]
+        # use a temporary filename = temp.ext
+        fname = 'temp'+ext
+    else:
+        raise RuntimeError, 'Either filename or content-type is required'
+    # create a new temporary dir to store the file with its original filename
+    tempdir = tempfilemgr.newTempDir()
+    fpath = os.path.join(tempdir, fname)
+    #f, fname = tempfilemgr.newTempFile(suffix=ext)
+    f = open(fpath, 'wb')
+    f.write(data)
+    f.close()
+    exitcode = transfert([fpath], None, pol=policy, logfile=logfile)
+    # remove temp file and dir:
+    os.remove(fpath)
+    os.rmdir(tempdir)
+    return exitcode
+
+
+def clean_string(data, filename=None, content_type=None, policy=None, logfile=None):
+    """
+    Clean a string according to the specified policy. The filename and/or the
+    content-type may be provided (at least one of them is required).
+    It will be used to select the right filter(s).
+
+    If only the content-type is provided, a default file extension will be used.
+    If both filename and content-type are given, content-type is ignored.
+    The string will be written to a temporary file for analysis.
+    NOTE: this is a quick and dirty solution which will be improved in future
+          versions
+
+    Optionally write log to logfile.
+    Return a tuple (exitcode, cleaned_data):
+    - exit code according to the overall result (see doc).
+    """
+    if filename is not None:
+        # only keep the filename, in case it contains a path with directories:
+        # (to avoid directory traversal and other issues)
+        fname = os.path.basename(filename)
+        #ext = os.path.splitext(filename)[1]
+    elif content_type is not None:
+        if content_type not in CT_to_ext:
+            #TODO: here we should return a "blocked" result rather than an exception
+            raise ValueError, 'Content-type not allowed: "%s"' % content_type
+        ext = CT_to_ext[content_type]
+        # use a temporary filename = temp.ext
+        fname = 'temp'+ext
+    else:
+        raise RuntimeError, 'Either filename or content-type is required'
+    # create a new temporary dir to store the file with its original filename
+    tempdir = tempfilemgr.newTempDir()
+    fpath = os.path.join(tempdir, fname)
+    f = open(fpath, 'wb')
+    f.write(data)
+    f.close()
+    # temp file for the cleaned destination:
+    f, fdest = tempfilemgr.newTempFile()
+    f.close()
+    exitcode = transfert([fpath], fdest, pol=policy, logfile=logfile,
+        dest_is_a_file=True)
+    cleaned_data = open(fdest, 'rb').read()
+    # remove temp files and dir:
+    os.remove(fdest)
+    os.remove(fpath)
+    os.rmdir(tempdir)
+    return (exitcode, cleaned_data)
 
 
 
