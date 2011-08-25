@@ -1,7 +1,9 @@
 Main changes in ExeFilter versions:
 
-v1.1.4-alpha5 2011-08-24:
+v1.1.4-alpha5 2011-08-25:
   - new filter for XML files
+  - new functions to scan or clean a string, with content-type support
+  - initial support for multithreading
 
 v1.1.4-alpha4 2011-05-01:
   - new scan-only mode (both CLI and GUI)
