@@ -28,8 +28,8 @@ URL du projet: U{http://www.decalage.info/exefilter}
 #==============================================================================
 __docformat__ = 'epytext en'
 
-__date__    = "2011-04-17"
-__version__ = "1.03"
+__date__    = "2011-08-24"
+__version__ = "1.04"
 
 #------------------------------------------------------------------------------
 # LICENCE pour le projet ExeFilter:
@@ -78,6 +78,7 @@ __version__ = "1.03"
 # 2008-03-24 v1.02 PL: - ajout de _() pour traduction gettext des chaines
 #                      - ajout methodes resultat_*() pour simplifier filtres
 # 2011-04-17 v1.03 PL: - added support for scan mode
+# 2011-08-24 v1.04 PL: - added attribute for allowed content-types
 
 # A FAIRE:
 # - Completer fonctions resultat_*() pour retourner des objets Resultat
@@ -128,6 +129,7 @@ class Filtre:
     nom = _(u"Filtre Generique")    # nom détaillé du filtre
     nom_code = "GEN"        # nom de code du filtre
     extensions = []            # liste des extensions de fichiers possibles
+    content_types = []  # list of allowed content-types for this file type
     format_conteneur = False    # indique si c'est un format conteneur
     extractible = False
     nettoyable = False

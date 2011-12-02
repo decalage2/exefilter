@@ -82,7 +82,18 @@ __version__ = "1.04"
 # 2011-02-18 v1.04 PL: - fixed temp file creation using new commun functions
 
 #------------------------------------------------------------------------------
-# A FAIRE:
+# TODO:
+# + option to use lxml.html or html5lib instead of HTMLParser, which is too
+#   picky for many normal but slightly malformed HTML pages. See:
+#   http://lxml.de/lxmlhtml.html
+#   http://lxml.de/lxmlhtml.html#cleaning-up-html
+#   => seems great but need to add code to report what was cleaned
+#   http://lxml.de/elementsoup.html
+#   http://lxml.de/elementsoup.html#using-soupparser-as-a-fallback
+#   http://lxml.de/html5parser.html
+#   http://wiki.whatwg.org/wiki/Sanitization_rules
+#   http://code.google.com/p/html5lib/wiki/UserDocumentation#Sanitizing_Tokenizer
+#   BUT the issue is how to be informed when html is actually sanitized...
 #------------------------------------------------------------------------------
 
 #=== IMPORTS ==================================================================
