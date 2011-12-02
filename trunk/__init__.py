@@ -27,8 +27,8 @@ URL du projet: U{http://www.decalage.info/exefilter}
 @contact: U{Philippe Lagadec<mailto:philippe.lagadec(a)laposte.net>}
 
 @copyright: DGA/CELAR 2004-2008
-@copyright: NATO/NC3A 2008-2010 (modifications PL apres ExeFilter v1.1.0)
-@version: 1.1.4-alpha4
+@copyright: NATO/NC3A 2008-2011 (modifications PL apres ExeFilter v1.1.0)
+@version: 1.1.4-alpha5
 
 @status: alpha
 
@@ -38,7 +38,7 @@ URL du projet: U{http://www.decalage.info/exefilter}
 LICENCE pour le projet ExeFilter:
 
 Copyright DGA/CELAR 2004-2008
-Copyright NATO/NC3A 2008-2010 (modifications PL apres ExeFilter v1.1.0)
+Copyright NATO/NC3A 2008-2011 (modifications PL apres ExeFilter v1.1.0)
 
 Auteurs:
     - Philippe Lagadec (PL) - philippe.lagadec(a)laposte.net
@@ -77,7 +77,7 @@ termes.
 __docformat__ = 'epytext en'
 
 __author__    = 'Philippe Lagadec, Tanguy Vinceleux, Arnaud Kerréneur (DGA/CELAR)'
-__date__      = '2011-08-24'
+__date__      = '2011-11-29'
 __version__   = '1.1.4-alpha5' #: le numero de version ExeFilter global suit la logique Linux
 
 # ce fichier __init__.py sert uniquement à faire en sorte que Python considère
