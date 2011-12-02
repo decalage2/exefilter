@@ -1,5 +1,9 @@
 Main changes in ExeFilter versions:
 
+v1.1.4-alpha6 2011-12-02:
+  - new filter for OpenXML files (Microsoft Office 2007 documents)
+  - added xfweb, a HTTP proxy integrating the ExeFilter engine
+
 v1.1.4-alpha5 2011-08-25:
   - new filter for XML files
   - new functions to scan or clean a string, with content-type support

@@ -28,7 +28,7 @@ URL du projet: U{http://www.decalage.info/exefilter}
 
 @copyright: DGA/CELAR 2004-2008
 @copyright: NATO/NC3A 2008-2011 (modifications PL apres ExeFilter v1.1.0)
-@version: 1.1.4-alpha5
+@version: 1.1.4-alpha6
 
 @status: alpha
 
@@ -77,8 +77,8 @@ termes.
 __docformat__ = 'epytext en'
 
 __author__    = 'Philippe Lagadec, Tanguy Vinceleux, Arnaud Kerréneur (DGA/CELAR)'
-__date__      = '2011-11-29'
-__version__   = '1.1.4-alpha5' #: le numero de version ExeFilter global suit la logique Linux
+__date__      = '2011-12-02'
+__version__   = '1.1.4-alpha6' #: le numero de version ExeFilter global suit la logique Linux
 
 # ce fichier __init__.py sert uniquement à faire en sorte que Python considère
 # ce répertoire comme un package de modules, et à constituer la racine de la
