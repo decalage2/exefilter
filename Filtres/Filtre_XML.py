@@ -169,13 +169,9 @@ class Filtre_XML (Filtre.Filtre):
         """
         motifs = []
         motifs.append( RechercherRemplacer.Motif(case_sensitive=False,
-            regex=r'ddeService="cmd"', remplacement='ddeService="___"'))
+            regex=r' ddeService(\s*)=(\s*)"[^_"]', remplacement=r' ddeService\1=\2"_'))
         motifs.append( RechercherRemplacer.Motif(case_sensitive=False,
-            regex=r'ddeService="powershell"', remplacement='ddeService="__________"'))
-        motifs.append( RechercherRemplacer.Motif(case_sensitive=False,
-            regex=r'instrText>DDEAUTO c:', remplacement='instrText>_______ __'))
-        motifs.append( RechercherRemplacer.Motif(case_sensitive=False,
-            regex=r'instrText>DDE c:', remplacement='instrText>___ __'))
+            regex=r'<w:instrText>(\s*)DDE', remplacement=r'<w:instrText>\1___'))
         if len(motifs)>0:
             # Create a temporary file
             f_dest, chem_temp = newTempFile()
