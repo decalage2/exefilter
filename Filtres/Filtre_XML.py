@@ -101,6 +101,7 @@ except ImportError:
 from commun import *
 import Resultat, Conteneur
 import Filtre
+import thirdparty.RechercherRemplacer.RechercherRemplacer as RechercherRemplacer
 
 
 #=== CONSTANTES ===============================================================
@@ -137,6 +138,9 @@ class Filtre_XML (Filtre.Filtre):
     date = __date__
     version = __version__
 
+    def __init__ (self, politique, parametres=None):
+        Filtre.Filtre.__init__(self, politique, parametres)
+
     def reconnait_format(self, fichier):
         """
         analyse le format du fichier, et retourne True s'il correspond
@@ -153,8 +157,46 @@ class Filtre_XML (Filtre.Filtre):
         Retourne un code résultat suivant l'action effectuée.
         """
         # For now, let's just accept any XML without cleaning:
-        return self.resultat_accepte(fichier)
+        #return self.resultat_accepte(fichier)
+        return self.clean_simple_replace(fichier)
 
+    def clean_simple_replace (self, fichier):
+        """
+        Clean XML file using builtin simple replace method.
+        To be called from nettoyer() method.
+        Return Result object according to result.
+        Trigger an exception if an error occurs.
+        """
+        motifs = []
+        motifs.append( RechercherRemplacer.Motif(case_sensitive=False,
+            regex=r' ddeService(\s*)=(\s*)"[^_"]', remplacement=r' ddeService\1=\2"_'))
+        motifs.append( RechercherRemplacer.Motif(case_sensitive=False,
+            regex=r'<w:instrText>(\s*)DDE', remplacement=r'<w:instrText>\1___'))
+        if len(motifs)>0:
+            # Create a temporary file
+            f_dest, chem_temp = newTempFile()
+            Journal.info2 (u"Temporary file: %s" % chem_temp)
+            # Open the source file
+            f_src = open(fichier.copie_temp(), 'rb')
+            Journal.info2 (u"Cleaning XML by replacing keywords")
+            n = RechercherRemplacer.rechercherRemplacer(motifs=motifs,
+                fich_src=f_src, fich_dest=f_dest, taille_identique=True, controle_apres=True)
+            f_src.close()
+            f_dest.close()
+            if n:
+                Journal.info2 (u"Tags in XML files have been disarmed.")
+                # File disarmed, replace original file
+                fichier.remplacer_copie_temp(chem_temp)
+                return self.resultat_nettoye(fichier)
+            else:
+                # No tag found
+                Journal.info2 (u"No XML tag disarmed.")
+                # Remove temporary file
+                os.remove(chem_temp)
+                return self.resultat_accepte(fichier)
+        else:
+            resultat = self.resultat_accepte(fichier)
+        return resultat
 
 #------------------------------------------------------------------------------
 # TESTS
