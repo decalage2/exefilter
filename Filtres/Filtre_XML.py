@@ -171,7 +171,7 @@ class Filtre_XML (Filtre.Filtre):
         motifs.append( RechercherRemplacer.Motif(case_sensitive=False,
             regex=r' ddeService(\s*)=(\s*)"[^_"]', remplacement=r' ddeService\1=\2"_'))
         motifs.append( RechercherRemplacer.Motif(case_sensitive=False,
-            regex=r'<w:instrText>(\s*)DDE', remplacement=r'<w:instrText>\1___'))
+            regex=r'(<w:instrText( [^>]*)?>\s*)DDE', remplacement=r'\1___'))
         if len(motifs)>0:
             # Create a temporary file
             f_dest, chem_temp = newTempFile()
