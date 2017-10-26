@@ -122,7 +122,7 @@ class Filtre_Texte (Filtre.Filtre):
     """
 
     nom = _(u"Fichier Texte ASCII")
-    extensions = [".txt", ".doc", "", ".ini", ".inf"]
+    extensions = [".txt", ".doc", "", ".ini", ".inf", ".xls"]
     format_conteneur = False
     extractible = False
     nettoyable = False
