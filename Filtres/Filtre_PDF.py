@@ -240,7 +240,9 @@ class Filtre_PDF (Filtre.Filtre):
         # Un fichier PDF bien formé doit obligatoirement commencer par "%PDF-"
         # (en fait Acrobat accepte jusqu'à 1019 caractères quelconques
         # avant, mais ce n'est pas la structure classique d'un PDF...)
-        if debut.startswith("%PDF-"):
+        #if debut.startswith("%PDF-"):
+        #    return True
+        if debut.find("%PDF-", 1, 1024):
             return True
 
     def clean_origami (self, fichier):
